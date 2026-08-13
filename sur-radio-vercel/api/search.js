@@ -48,14 +48,16 @@ module.exports = async (req, res) => {
 
   if (!results) {
     const piped = [
-      'https://pipedapi.kavin.rocks/search?filter=music_songs&q=',
-      'https://pipedapi.adminforge.de/search?filter=music_songs&q=',
-      'https://api.piped.private.coffee/search?filter=music_songs&q=',
+      'https://pipedapi.kavin.rocks/search?filter=videos&q=',
+      'https://pipedapi.adminforge.de/search?filter=videos&q=',
+      'https://api.piped.private.coffee/search?filter=videos&q=',
     ].map(base => get(base + encodeURIComponent(q)).then(j => {
       const arr = (j && j.items) || (Array.isArray(j) ? j : []);
       const out = [];
       for (const it of arr) {
         const u = it && it.url;
+        const dur = it && typeof it.duration === 'number' ? it.duration : null;
+        if (dur !== null && (dur < 45 || dur > 1500)) continue;   // skip clips and full-album rips
         if (u && u.includes('watch?v=')) {
           const id = u.split('watch?v=')[1].split('&')[0];
           if (valid(id)) out.push({ id, title: clean(it.title), author: clean(it.uploaderName) });

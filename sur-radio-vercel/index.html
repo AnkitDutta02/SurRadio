@@ -180,6 +180,9 @@
   .qrow.on .tt{color:var(--gold);font-weight:600;}
   .qrow .bad{font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--madder);flex:none;}
   .qempty{padding:12px 9px;font-size:.8rem;color:var(--dim);}
+  .qrow.on{background:rgba(232,163,61,.14);}
+  .qrow.on .tt{color:var(--gold);font-weight:600;}
+  .qrow.on .num{color:var(--gold);}
   .qrow.dead{opacity:.42;cursor:default;}
   .qrow.dead:hover{background:transparent;transform:none;}
   .qrow.dead .tt{text-decoration:line-through;text-decoration-thickness:1px;}
@@ -857,7 +860,7 @@
       </div>
 
       <div class="card">
-        <div class="card-head" style="padding-bottom:12px;"><h2>Up next</h2><span id="qStatus">&mdash;</span></div>
+        <div class="card-head" style="padding-bottom:12px;"><h2>Songs</h2><span id="qStatus">&mdash;</span></div>
         <div class="queue" id="queue"></div>
       </div>
 
@@ -4528,8 +4531,12 @@ async function loadMap(){
   });
 
   /* the two island UTs, placed in open water and clearly labelled */
-  const ISLE_POS={ lakshadweep:{lon:73.0,lat:9.2,side:'left'},
-                   andaman:{lon:93.4,lat:18.6,side:'right'} };
+  /* Real coordinates, not eyeballed ones. Andaman was sitting at 18.6N, level with
+     Kolkata, when Port Blair is at 11.6N - south-east of Chennai. Lakshadweep is
+     Kavaratti's position, west of the Kerala coast. Both fall inside the frame and
+     clear of the preset masts. */
+  const ISLE_POS={ lakshadweep:{lon:72.6,lat:10.6,side:'left'},
+                   andaman:{lon:92.8,lat:11.7,side:'right'} };
   REGIONS.filter(r=>ISLANDS[r.id]).forEach(function(r){
     const o=ISLE_POS[r.id]; if(!o) return;
     const x=PXf(o.lon), y=PYf(o.lat);
@@ -4732,7 +4739,7 @@ async function resolve(query){
       }
     }catch(e){ console.warn('[Sur Radio] API key lookup failed, using mirrors:',e.message); }
   }
-  const attempts=MIRRORS.map(b=>jget(b+'/search?q='+encodeURIComponent(query)+'&filter=music_songs',4500)
+  const attempts=MIRRORS.map(b=>jget(b+'/search?q='+encodeURIComponent(query)+'&filter=videos',4500)
       .then(j=>{
         const arr=j.items||(Array.isArray(j)?j:[]);
         for(let k=0;k<arr.length;k++){
@@ -4780,7 +4787,7 @@ async function searchYouTube(query){
     }
   }
   if(!out.length){
-    const attempts=MIRRORS.map(b=>jget(b+'/search?q='+encodeURIComponent(q)+'&filter=music_songs',4500)
+    const attempts=MIRRORS.map(b=>jget(b+'/search?q='+encodeURIComponent(q)+'&filter=videos',4500)
       .then(j=>{
         const arr=j.items||(Array.isArray(j)?j:[]);
         const r=[];
@@ -4896,7 +4903,10 @@ const ICON_PAUSE='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x
 window.onYouTubeIframeAPIReady=function(){
   player=new YT.Player('ytplayer',{
     height:'100%',width:'100%',
-    playerVars:{autoplay:0,controls:0,disablekb:1,modestbranding:1,rel:0,playsinline:1,iv_load_policy:3},
+    /* An explicit origin is recommended for the IFrame API and avoids a class of
+       embed rejections; enablejsapi is required alongside it. */
+    playerVars:{autoplay:0,controls:0,disablekb:1,modestbranding:1,rel:0,playsinline:1,
+      iv_load_policy:3,enablejsapi:1,origin:location.origin},
     events:{
       onReady:function(){
         ytReady=true; setVol(document.getElementById('vol').value);
@@ -5099,8 +5109,10 @@ async function topUp(){
     }
     if(my!==cseq||current!==region) return;
     if(fresh.length){
-      queue=queue.concat(fresh);
-      if(queue.length>90){ const drop=queue.length-90; queue=queue.slice(drop); qi-=drop; }
+      /* Only ever append. The old code trimmed from the front once the queue passed
+         90, which shifted and renumbered every remaining row - another way the list
+         appeared to reshuffle. Instead we simply stop growing it. */
+      if(queue.length<200) queue=queue.concat(fresh).slice(0,200);
       renderQueue();
       setQStatus(MOODS[mk]?MOODS[mk].n+' \u00b7 '+queue.length+' songs':queue.length+' songs');
     }
@@ -5136,16 +5148,13 @@ async function recurate(){
   }
 }
 
-/* Clicking row 7 used to jump straight there, which silently dropped rows 1-6 from
-   "Up next" and read as the whole list reshuffling. Instead the chosen song is
-   lifted out and played next, so everything else keeps its place and only that one
-   row disappears. */
+/* The list is a fixed playlist, so choosing a song just plays it where it sits.
+   The earlier version spliced the track out and re-inserted it next to the current
+   position, which physically reordered the list on every single click - the
+   reshuffling that kept coming back. */
 async function playPicked(i){
   if(i<0||i>=queue.length) return;
-  const track=queue.splice(i,1)[0];
-  const at=Math.max(qi,-1)+1;
-  queue.splice(at,0,track);
-  return await playAt(at);
+  return await playAt(i);
 }
 
 async function playAt(i,depth){
@@ -5290,33 +5299,91 @@ function paintTrack(track,searching){
   setBar(searching?'Finding "'+track.t+'"...':trackTitle(track),
     trackArtist(track)+' \u00b7 '+current.name+' \u00b7 '+MOODS[moodKey].n);
 }
+let uidSeq=0;
+/* Rebuilding this list from scratch is what made choosing a song look like the
+   whole thing refreshed: innerHTML='' destroyed every row, the browser repainted
+   the lot, and scrollTop=0 threw the listener back to the top of the list. Now the
+   rows are keyed and reconciled - untouched rows keep their exact DOM node, only
+   the row that left is removed, and the scroll position is preserved. */
 function renderQueue(){
-  const el=document.getElementById('queue'); el.innerHTML='';
-  /* Up next means what is coming, so the song currently playing and anything
-     already heard are not listed. The bottom bar owns the current track. */
-  /* A song that could not be played stays exactly where it is, greyed out and
-     labelled. Removing those rows made the list appear to reshuffle every time
-     something failed, because the rows below all shifted up to fill the gap. */
-  let shown=0;
-  queue.forEach(function(t,i){
-    if(i<=qi) return;
-    shown++;
-    const n=shown;
-    const b=document.createElement('button');
-    b.className='qrow'+(t.bad?' dead':'');
-    b.innerHTML='<span class="num">'+String(n).padStart(2,'0')+'</span>'+
-      '<span class="meta"><span class="tt">'+esc(t.realT||t.t)+'</span>'+
-      '<span class="aa">'+esc(t.realA||t.a)+'</span></span>'+
-      (t.bad?'<span class="bad">UNAVAILABLE</span>':'');
-    if(!t.bad) b.addEventListener('click',()=>{buzz(PICK);fire(playPicked(i),'queue click');});
-    el.appendChild(b);
+  const el=document.getElementById('queue');
+  if(!el) return;
+  const scrollWas=el.scrollTop;
+
+  /* The whole playlist is on screen, in a fixed order, with stable numbering. The
+     playing row is marked rather than removed: taking it out shifted and renumbered
+     everything below, which is what read as the list reshuffling. */
+  const want=[];
+  for(let i=0;i<queue.length;i++){
+    const t=queue[i];
+    if(!t.uid) t.uid='q'+(++uidSeq);
+    want.push(t);
+  }
+
+  const byUid={};
+  const kids=Array.prototype.slice.call(el.children);
+  kids.forEach(function(c){
+    const u=c.dataset&&c.dataset.uid;
+    if(u) byUid[u]=c; else if(c.parentNode) c.parentNode.removeChild(c);
   });
-  if(!shown){
+
+  /* drop only the rows that genuinely left */
+  const wanted={};
+  want.forEach(function(t){ wanted[t.uid]=1; });
+  Object.keys(byUid).forEach(function(u){
+    if(!wanted[u]){
+      const n=byUid[u];
+      if(n.parentNode) n.parentNode.removeChild(n);
+      delete byUid[u];
+    }
+  });
+
+  want.forEach(function(t,idx){
+    let node=byUid[t.uid];
+    if(!node){
+      node=document.createElement('button');
+      node.dataset.uid=t.uid;
+      /* built from real elements rather than an innerHTML string, so the parts can
+         be updated in place on later renders without reparsing anything */
+      const nn=document.createElement('span'); nn.className='num';
+      const mm=document.createElement('span'); mm.className='meta';
+      const tt=document.createElement('span'); tt.className='tt';
+      const aa=document.createElement('span'); aa.className='aa';
+      mm.appendChild(tt); mm.appendChild(aa);
+      const bb=document.createElement('span'); bb.className='bad'; bb.textContent='UNAVAILABLE';
+      node.appendChild(nn); node.appendChild(mm); node.appendChild(bb);
+      /* the index moves as the queue changes, so resolve it at click time */
+      node.addEventListener('click',function(){
+        const at=queue.indexOf(t);
+        if(at<0||t.bad||at===qi) return;      /* already playing: leave it be */
+        buzz(PICK);
+        fire(playPicked(at),'queue click');
+      });
+      byUid[t.uid]=node;
+    }
+    /* update in place rather than re-creating */
+    const num=node.children[0], meta=node.children[1], bad=node.children[2];
+    const label=String(idx+1).padStart(2,'0');
+    if(num&&num.textContent!==label) num.textContent=label;
+    if(meta){
+      const tt=meta.children[0], aa=meta.children[1];
+      const nt=t.realT||t.t, na=t.realA||t.a;
+      if(tt&&tt.textContent!==nt) tt.textContent=nt;
+      if(aa&&aa.textContent!==na) aa.textContent=na;
+    }
+    if(bad) bad.style.display=t.bad?'':'none';
+    const cls='qrow'+(t.bad?' dead':'')+(queue[qi]===t?' on':'');
+    if(node.className!==cls) node.className=cls;
+
+    if(el.children[idx]!==node) el.insertBefore(node,el.children[idx]||null);
+  });
+
+  if(!want.length){
     const d=document.createElement('div');
-    d.className='qempty'; d.textContent='Finding more songs\u2026';
+    d.className='qempty'; d.textContent='Pick a state to load its songs\u2026';
     el.appendChild(d);
   }
-  el.scrollTop=0;
+  el.scrollTop=scrollWas;      /* never yank the listener back to the top */
 }
 function next(){ fire(playAt(qi+1),'next'); }
 function prev(){ fire(playAt(Math.max(0,qi-1)),'prev'); }
