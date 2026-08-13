@@ -64,16 +64,36 @@
   /* ---- map ---- */
   .maphold{padding:6px 10px 10px;position:relative;min-height:320px;}
   svg#map{width:100%;height:auto;display:block;max-height:74vh;}
-  .state{stroke:var(--ink);stroke-width:.7;cursor:pointer;transition:fill-opacity .18s ease;fill-opacity:.30;}
+  .state{stroke:var(--ink);stroke-width:1.1;cursor:pointer;transition:fill-opacity .18s ease;fill-opacity:.30;}
   .state:hover{fill-opacity:.62;}
   .state.live{fill-opacity:.9;stroke:var(--paper);stroke-width:1.4;}
   .state.nodata{fill:#2a2f52;fill-opacity:.35;cursor:default;pointer-events:none;}
   .rail{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.5;stroke-dasharray:3 4;}
   .train{fill:var(--paper);}
   .hub{stroke:var(--ink);stroke-width:1.2;pointer-events:none;}
-  .slabel{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:rgba(242,236,217,.72);pointer-events:none;text-anchor:middle;}
-  .slabel.big{font-size:10px;fill:var(--paper);}
+  /* Sized in SVG user units so they hold their proportion at any scale. These are
+     roughly double the old values, which rendered at about 4 CSS pixels on a phone. */
+  .slabel{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;
+    fill:rgba(242,236,217,.86);pointer-events:none;text-anchor:middle;
+    paint-order:stroke;stroke:rgba(9,11,26,.72);stroke-width:3px;stroke-linejoin:round;}
+  .slabel.big{font-size:19px;font-weight:600;fill:#fff;letter-spacing:.4px;stroke-width:3.6px;}
+  .slabel.mid{font-size:15px;}
+  .slabel.tiny{font-size:13px;fill:rgba(242,236,217,.72);}
+  .isle{cursor:pointer;}
+  .isle .isledot{stroke:var(--ink);stroke-width:1.6;transition:r .16s ease;}
+  .isle:hover .isledot{r:6.4;}
+  .isle:hover .slabel{fill:var(--gold);}
+  .isle.live .isledot{stroke:var(--paper);stroke-width:2.4;}
+  .isle.live .slabel{fill:var(--gold);}
   .pulse-ring{fill:none;stroke-width:2;pointer-events:none;}
+  /* Touch a state and its name comes up in real type, not 4px SVG text. */
+  .statename{position:absolute;z-index:4;pointer-events:none;transform:translate(-50%,-135%);
+    background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 11px;
+    font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;white-space:nowrap;
+    box-shadow:0 8px 20px -8px rgba(0,0,0,.7);opacity:0;transition:opacity .16s ease;}
+  .statename.show{opacity:1;}
+  .statename small{display:block;font-family:'IBM Plex Mono',monospace;font-size:.55rem;
+    font-weight:500;letter-spacing:.08em;text-transform:uppercase;opacity:.62;margin-top:1px;}
   /* offshore national bands */
   .natstn{cursor:pointer;}
   .natstn .natmast{fill:rgba(242,236,217,.55);transition:fill .18s ease;}
@@ -126,14 +146,19 @@
 
   .pad{padding:16px 18px 18px;}
   .lbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
-  .moods{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;}
+  .moods{display:grid;grid-template-columns:repeat(auto-fit,minmax(76px,1fr));gap:7px;}
   /* My Mix is the personal one, so it reads differently from the genre buttons */
   .mood[data-k="mymix"]{border-color:rgba(232,163,61,.4);background:rgba(232,163,61,.10);}
   .mood[data-k="mymix"] b{color:var(--gold);}
   .mood[data-k="mymix"].on{background:var(--gold);border-color:var(--gold);}
   .mood[data-k="mymix"].on b,.mood[data-k="mymix"].on i{color:var(--ink);}
-  .mood{background:var(--ink-3);border:1px solid transparent;border-radius:9px;padding:10px 6px;cursor:pointer;color:var(--dim);text-align:center;transition:all .16s ease;}
-  .mood b{display:block;font-size:.76rem;font-weight:600;color:var(--paper);margin-bottom:2px;}
+  /* Fixed height and centred content, so a longer label like "Devotional" or
+     "Radio Mix" wraps inside its own button instead of pushing the row out of line. */
+  .mood{background:var(--ink-3);border:1px solid transparent;border-radius:9px;
+    padding:9px 5px;cursor:pointer;color:var(--dim);text-align:center;transition:all .16s ease;
+    min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}
+  .mood b{display:block;font-size:.72rem;font-weight:600;color:var(--paper);margin-bottom:0;
+    line-height:1.15;hyphens:none;}
   .mood i{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.55rem;}
   .mood:hover{border-color:rgba(242,236,217,.3);}
   .mood.on{background:var(--paper);border-color:var(--paper);}
@@ -220,7 +245,7 @@
   .ghost .ico{display:none;}
   @media (max-width:760px){
     .vol{display:none;}
-    .moods{grid-template-columns:repeat(4,1fr);gap:6px;}
+    .moods{gap:6px;}
     .shell{padding:0 14px 124px;}
     /* Transport bar rebuilt for thumbs: one big play, two round skip buttons,
        and a taller progress strip that is actually tappable. */
@@ -233,8 +258,8 @@
     .bar-info .t{font-size:.82rem;}
     .bar-info .s{font-size:.6rem;}
     .platter{width:min(240px,66vw);}
-    .mood{padding:9px 4px;}
-    .mood b{font-size:.7rem;}
+    .mood{padding:8px 3px;min-height:52px;}
+    .mood b{font-size:.67rem;}
     .mood i{font-size:.5rem;}
     .np{padding:15px;}
     .np-freq b{font-size:2.1rem;}
@@ -550,7 +575,7 @@
   @keyframes hintbob{0%,100%{top:14px;}50%{top:19px;}}
 
   /* states must look touchable: brighter at rest, lift on press */
-  .state{fill-opacity:.42;}
+  .state{fill-opacity:.42;stroke-width:1.2;}
   .state:hover{fill-opacity:.72;}
   .state:active{fill-opacity:.92;}
   .state.live{fill-opacity:.95;}
@@ -616,8 +641,16 @@
     .card-head h2{font-size:.95rem;}
 
     /* the map was eating the screen; keep it to a comfortable band */
-    .maphold{padding:2px 6px 8px;min-height:0;}
-    svg#map{max-height:38vh;margin:0 auto;}
+    .maphold{padding:2px 4px 8px;min-height:0;}
+    svg#map{max-height:44vh;margin:0 auto;}
+    /* the map is physically smaller here, so the type has to be proportionally larger */
+    .slabel{font-size:19px;stroke-width:4px;}
+    .slabel.big{font-size:24px;stroke-width:4.6px;}
+    .slabel.mid{font-size:19px;}
+    .slabel.tiny{display:none;}          /* dots only; tap to see the name */
+    .state{stroke-width:1.6;fill-opacity:.55;}
+    .hub{r:4.6;}
+    .isle .isledot{r:5.6;}
     .legend{padding:7px 13px 2px;gap:6px 10px;font-size:.55rem;}
     .legend i{width:8px;height:8px;margin-right:4px;}
     .taphint{top:8px;font-size:.55rem;padding:6px 11px;gap:7px;}
@@ -630,8 +663,8 @@
     .np-track{font-size:1rem;}
     .pad{padding:13px 13px 14px;}
     .moods{grid-template-columns:repeat(4,1fr);gap:6px;}
-    .mood{padding:8px 3px;border-radius:8px;}
-    .mood b{font-size:.66rem;}
+    .mood{padding:8px 3px;border-radius:8px;min-height:50px;}
+    .mood b{font-size:.64rem;}
     .mood i{font-size:.46rem;}
     .searchcard{padding:11px 12px;}
     .searchbox input{font-size:.85rem;padding:11px 0;}
@@ -648,9 +681,13 @@
     .preset{padding:8px 8px;}
     .preset b{font-size:.655rem;letter-spacing:-.01em;padding-right:11px;}
     .preset i{font-size:.48rem;}
-    .moods{grid-template-columns:repeat(3,1fr);}
-    svg#map{max-height:34vh;}
+    svg#map{max-height:40vh;}
     .brand-name{font-size:1.02rem;}
+    /* On the narrowest screens only the largest states stay labelled - anything
+       smaller would render under 8px, which is not worth showing. Tap for the name. */
+    .slabel.big{font-size:27px;stroke-width:5px;}
+    .slabel.mid{display:none;}
+    .state{stroke-width:1.8;fill-opacity:.6;}
   }
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;}}
@@ -723,6 +760,7 @@
       <div class="maphold">
         <svg id="map" viewBox="0 0 760 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of India by state"></svg>
         <!-- first-run affordance: says what to do, then gets out of the way -->
+        <div class="statename" id="stateName"></div>
         <div class="taphint" id="tapHint">
           <span class="tapdot"></span>Tap any state to start listening
         </div>
@@ -876,7 +914,7 @@ const MOODS = {
   chill:     {n:'Chill',     tag:'slow',    q:'soft romantic melody'},
   hits:      {n:'Hits',      tag:'popular', q:'superhit popular song'},
   rap:       {n:'Rap',       tag:'hip hop', q:'rap hip hop song'},
-  mymix:     {n:'My Mix',    tag:'curated', q:'best song'},
+  mymix:     {n:'Radio Mix', tag:'curated', q:'best song'},
 };
 
 /* ---------------------------------------------------------------------------
@@ -4154,6 +4192,27 @@ function buzz(ms){
 const TAP=8, PICK=14, CONFIRM=[10,28,16];
 
 
+let nameTimer=null;
+/* SVG text has to stay small enough not to collide, so the readable name lives in
+   an HTML bubble that follows the touch. This is what makes the map usable on a
+   phone without cluttering it on a desktop. */
+function showName(region,ev){
+  const el=document.getElementById('stateName');
+  const host=document.querySelector('.maphold');
+  if(!el||!host||!region) return;
+  const r=host.getBoundingClientRect();
+  el.innerHTML=esc(region.name)+'<small>'+esc(region.lang.split(',')[0])+' \u00b7 '+region.freq+' MHz</small>';
+  el.style.left=(ev.clientX-r.left)+'px';
+  el.style.top=(ev.clientY-r.top)+'px';
+  el.classList.add('show');
+  clearTimeout(nameTimer);
+  nameTimer=setTimeout(()=>el.classList.remove('show'),1800);
+}
+function hideName(){
+  const el=document.getElementById('stateName');
+  if(el) el.classList.remove('show');
+}
+
 let beaconStop=null;
 /* Confirms the touch landed, which matters most on phones where there is no cursor. */
 function tapRipple(ev){
@@ -4246,13 +4305,22 @@ async function loadMap(){
   const feats=(gj.features||[]).filter(f=>f&&f.geometry);
   if(!feats.length){ loading.textContent='Boundary file had no shapes.'; return; }
 
-  /* pass 1: bounding box over every coordinate, for an automatic fit */
+  /* pass 1: bounding box for the automatic fit.
+     Andaman & Nicobar reaches down to 6.7N and Lakshadweep sits far out west, so
+     including them in the fit shrinks the mainland by roughly a fifth - which is
+     what made every state label tiny on a phone. They are fitted out and drawn as
+     labelled island markers instead. */
+  const ISLANDS={andaman:1,lakshadweep:1};
   let minLon=1e9,maxLon=-1e9,minY=1e9,maxY=-1e9;
-  feats.forEach(f=>ringsOf(f.geometry).forEach(ring=>ring.forEach(pt=>{
-    const lon=pt[0], y=mercY(pt[1]);
-    if(lon<minLon)minLon=lon; if(lon>maxLon)maxLon=lon;
-    if(y<minY)minY=y; if(y>maxY)maxY=y;
-  })));
+  feats.forEach(f=>{
+    const hit=featureRegion(f.properties);
+    if(hit&&hit.region&&ISLANDS[hit.region.id]) return;      /* out of the fit */
+    ringsOf(f.geometry).forEach(ring=>ring.forEach(pt=>{
+      const lon=pt[0], y=mercY(pt[1]);
+      if(lon<minLon)minLon=lon; if(lon>maxLon)maxLon=lon;
+      if(y<minY)minY=y; if(y>maxY)maxY=y;
+    }));
+  });
   const sx=(VB_W-PAD*2)/(maxLon-minLon), sy=(VB_H-PAD*2)/(maxY-minY);
   const s=Math.min(sx,sy);
   const offX=PAD+((VB_W-PAD*2)-(maxLon-minLon)*s)/2;
@@ -4266,6 +4334,7 @@ async function loadMap(){
     const hit=featureRegion(f.properties);
     const region=hit&&hit.region;
     if(!region&&hit&&hit.raw) unmatched.push(hit.raw);
+    if(region&&ISLANDS[region.id]) return;   /* drawn as a marker further down */
 
     const rings=ringsOf(f.geometry);
     if(!rings.length) return;
@@ -4297,7 +4366,9 @@ async function loadMap(){
       path.dataset.id=region.id;
       path.setAttribute('tabindex','0');
       path.setAttribute('role','button');
-      path.addEventListener('pointerdown',function(ev){ buzz(PICK); tapRipple(ev); });
+      path.addEventListener('pointerdown',function(ev){ buzz(PICK); tapRipple(ev); showName(region,ev); });
+      path.addEventListener('pointerenter',function(ev){ if(ev.pointerType!=='touch') showName(region,ev); });
+      path.addEventListener('pointerleave',hideName);
       const ti=mk('title',{}); ti.textContent=region.name+' - '+region.genres; path.appendChild(ti);
       path.addEventListener('click',()=>fire(tune(region.id),'tune'));
       path.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fire(tune(region.id),'tune');}});
@@ -4333,12 +4404,12 @@ async function loadMap(){
      masts - in the Arabian Sea and the Bay of Bengal. Clickable like any state,
      and clearly not pretending to be one. */
   const OFFSHORE={
-    bollywood:      {lon:68.9,lat:17.6,side:'right'},
-    indie:          {lon:90.8,lat:13.4,side:'left'},
-    bengalirock:    {lon:89.2,lat:10.2,side:'left'},
-    hindiclassics:  {lon:69.4,lat:13.6,side:'right'},
-    englishclassics:{lon:79.2,lat:6.4, side:'right'},
-    shaadi:         {lon:70.2,lat:9.8, side:'right'}
+    bollywood:      {lon:69.6,lat:19.4,side:'right'},
+    hindiclassics:  {lon:68.6,lat:15.4,side:'right'},
+    shaadi:         {lon:69.6,lat:11.8,side:'right'},
+    indie:          {lon:91.4,lat:15.2,side:'left'},
+    bengalirock:    {lon:90.4,lat:12.2,side:'left'},
+    englishclassics:{lon:85.4,lat:9.0, side:'left'}
   };
   REGIONS.filter(r=>r.zone==='national').forEach(r=>{
     const o=OFFSHORE[r.id]; if(!o) return;
@@ -4387,16 +4458,49 @@ async function loadMap(){
 
   /* Label only the roomiest states. 36 labels at this scale collide badly, and
      the searchable list already covers naming, so the map stays legible. */
-  const labelled=REGIONS.filter(r=>r.cx!=null).sort((a,b)=>b.area-a.area);
-  labelled.forEach((r,i)=>{
-    const big=i<12;
-    if(i>=22){ /* tiny UTs: a dot instead of a name */
-      svg.appendChild(mk('circle',{cx:r.cx,cy:r.cy,r:2.6,class:'hub',fill:ZONES[r.zone].c}));
+  /* Labels are sized in user units, so whatever the map scales to they keep the
+     same proportion. Three tiers: the big states get a full name, mid states get
+     a shorter one, and the smallest are dots you tap rather than read. */
+  const SHORT={'Uttar Pradesh':'U.P.','Madhya Pradesh':'M.P.','Himachal Pradesh':'H.P.',
+    'Arunachal Pradesh':'Arunachal','Andhra Pradesh':'Andhra','Jammu & Kashmir':'J&K',
+    'West Bengal':'W. Bengal','Tamil Nadu':'Tamil Nadu','Uttarakhand':'U.K.',
+    'Chhattisgarh':'Chhattisgarh','Maharashtra':'Maharashtra'};
+  const labelled=REGIONS.filter(r=>r.cx!=null&&!ISLANDS[r.id]).sort((a,b)=>b.area-a.area);
+  labelled.forEach(function(r,i){
+    const tier = i<10 ? 'big' : (i<20 ? 'mid' : 'tiny');
+    if(tier==='tiny'){
+      svg.appendChild(mk('circle',{cx:r.cx,cy:r.cy,r:3.4,class:'hub',fill:ZONES[r.zone].c}));
+      const t=mk('text',{x:r.cx.toFixed(1),y:(r.cy-6).toFixed(1),class:'slabel tiny'});
+      t.textContent=SHORT[r.name]||r.name;
+      svg.appendChild(t);
       return;
     }
-    const t=mk('text',{x:r.cx.toFixed(1),y:(r.cy+3).toFixed(1),class:'slabel'+(big?' big':'')});
-    t.textContent = big ? r.name.toUpperCase() : r.name;
+    const t=mk('text',{x:r.cx.toFixed(1),y:(r.cy+4).toFixed(1),class:'slabel '+tier});
+    t.textContent = tier==='big' ? (SHORT[r.name]||r.name).toUpperCase() : (SHORT[r.name]||r.name);
     svg.appendChild(t);
+  });
+
+  /* the two island UTs, placed in open water and clearly labelled */
+  const ISLE_POS={ lakshadweep:{lon:73.0,lat:9.2,side:'left'},
+                   andaman:{lon:93.4,lat:18.6,side:'right'} };
+  REGIONS.filter(r=>ISLANDS[r.id]).forEach(function(r){
+    const o=ISLE_POS[r.id]; if(!o) return;
+    const x=PXf(o.lon), y=PYf(o.lat);
+    const g=mk('g',{class:'isle',tabindex:'0',role:'button'});
+    g.dataset.id=r.id;
+    const ti=mk('title',{}); ti.textContent=r.name; g.appendChild(ti);
+    g.appendChild(mk('circle',{cx:x,cy:y,r:16,fill:'transparent'}));
+    g.appendChild(mk('circle',{cx:x,cy:y,r:4.6,class:'isledot',fill:ZONES[r.zone].c}));
+    const right=o.side==='right';
+    const t=mk('text',{x:x+(right?9:-9),y:y+4,class:'slabel mid','text-anchor':right?'start':'end'});
+    t.textContent=r.id==='andaman'?'Andaman':'Lakshadweep';
+    g.appendChild(t);
+    g.addEventListener('pointerdown',function(ev){ showName(r,ev); });
+    g.addEventListener('pointerleave',hideName);
+    g.addEventListener('click',()=>{buzz(PICK);fire(tune(r.id),'isle tune');});
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fire(tune(r.id),'isle tune');}});
+    svg.appendChild(g);
+    r.cx=x; r.cy=y;
   });
 
   document.getElementById('mapLoading').style.display='none';
@@ -4428,6 +4532,7 @@ function runTrains(){
 function markLive(id){
   svg.querySelectorAll('.state').forEach(p=>p.classList.toggle('live',p.dataset.id===id));
   svg.querySelectorAll('.natstn').forEach(g=>g.classList.toggle('live',g.dataset.id===id));
+  svg.querySelectorAll('.isle').forEach(g=>g.classList.toggle('live',g.dataset.id===id));
   const r=byId(id);
   if(ring&&r&&r.cx!=null){
     ring.setAttribute('cx',r.cx); ring.setAttribute('cy',r.cy);
@@ -5180,7 +5285,7 @@ const MOOD_WORDS={
   chill:'chill slow soft romantic melody sad calm',
   hits:'hits popular superhit famous chartbuster top best trending',
   rap:'rap hiphop hip hop desi trap drill gully',
-  mymix:'my mix curated personal favourites handpicked',
+  mymix:'radio mix my mix curated personal favourites handpicked selection',
 };
 
 const INSTRUMENT_WORDS={
