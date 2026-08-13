@@ -64,7 +64,7 @@
   /* ---- map ---- */
   .maphold{padding:6px 10px 10px;position:relative;min-height:320px;}
   svg#map{width:100%;height:auto;display:block;max-height:74vh;}
-  .state{stroke:var(--ink);stroke-width:1.1;cursor:pointer;transition:fill-opacity .18s ease;fill-opacity:.30;}
+  .state{stroke:var(--ink);stroke-width:.8;cursor:pointer;transition:fill-opacity .18s ease;fill-opacity:.30;}
   .state:hover{fill-opacity:.62;}
   .state.live{fill-opacity:.9;stroke:var(--paper);stroke-width:1.4;}
   .state.nodata{fill:#2a2f52;fill-opacity:.35;cursor:default;pointer-events:none;}
@@ -73,12 +73,14 @@
   .hub{stroke:var(--ink);stroke-width:1.2;pointer-events:none;}
   /* Sized in SVG user units so they hold their proportion at any scale. These are
      roughly double the old values, which rendered at about 4 CSS pixels on a phone. */
-  .slabel{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:500;
-    fill:rgba(242,236,217,.86);pointer-events:none;text-anchor:middle;
-    paint-order:stroke;stroke:rgba(9,11,26,.72);stroke-width:3px;stroke-linejoin:round;}
-  .slabel.big{font-size:19px;font-weight:600;fill:#fff;letter-spacing:.4px;stroke-width:3.6px;}
-  .slabel.mid{font-size:15px;}
-  .slabel.tiny{font-size:13px;fill:rgba(242,236,217,.72);}
+  /* Desktop keeps the quiet, small-caps feel of the original. The outline stays so
+     names hold up over any state colour, but thin enough not to look bolded. */
+  .slabel{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;
+    fill:rgba(242,236,217,.82);pointer-events:none;text-anchor:middle;
+    paint-order:stroke;stroke:rgba(9,11,26,.6);stroke-width:2px;stroke-linejoin:round;}
+  .slabel.big{font-size:11.5px;font-weight:600;fill:rgba(255,255,255,.94);letter-spacing:.3px;stroke-width:2.4px;}
+  .slabel.mid{font-size:10px;}
+  .slabel.tiny{font-size:8.8px;fill:rgba(242,236,217,.66);}
   .isle{cursor:pointer;}
   .isle .isledot{stroke:var(--ink);stroke-width:1.6;transition:r .16s ease;}
   .isle:hover .isledot{r:6.4;}
@@ -102,7 +104,7 @@
   .natstn .natarc{fill:none;stroke:var(--gold);stroke-width:1;opacity:.34;
     animation:natpulse 3.2s ease-out infinite;}
   @keyframes natpulse{0%{opacity:.5;}70%{opacity:0;}100%{opacity:0;}}
-  .natstn .natlabel{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--paper);
+  .natstn .natlabel{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--paper);
     letter-spacing:.06em;pointer-events:none;font-weight:600;}
   .natstn .natfreq{font-family:'IBM Plex Mono',monospace;font-size:7.5px;
     fill:rgba(242,236,217,.6);letter-spacing:.08em;pointer-events:none;}
@@ -518,7 +520,10 @@
   /* the knob */
   .knob-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;}
   .knob{position:relative;width:128px;height:128px;border:none;background:none;padding:0;
-    cursor:pointer;border-radius:50%;-webkit-tap-highlight-color:transparent;}
+    cursor:grab;border-radius:50%;-webkit-tap-highlight-color:transparent;touch-action:none;}
+  .knob:active,.knob.turning-live{cursor:grabbing;}
+  .knob.turning-live .knob-body{box-shadow:0 20px 42px -14px rgba(0,0,0,.9),
+    inset 0 1px 0 rgba(242,236,217,.3), 0 0 0 6px rgba(232,163,61,.12);}
   .knob:focus-visible{outline:2px solid var(--gold);outline-offset:9px;}
   .knob-ticks{position:absolute;inset:-16px;pointer-events:none;}
   .knob-ticks i{position:absolute;top:0;left:50%;width:1.5px;height:7px;margin-left:-.75px;
@@ -575,7 +580,7 @@
   @keyframes hintbob{0%,100%{top:14px;}50%{top:19px;}}
 
   /* states must look touchable: brighter at rest, lift on press */
-  .state{fill-opacity:.42;stroke-width:1.2;}
+  .state{fill-opacity:.42;stroke-width:.9;}
   .state:hover{fill-opacity:.72;}
   .state:active{fill-opacity:.92;}
   .state.live{fill-opacity:.95;}
@@ -715,6 +720,7 @@
         </span>
       </button>
       <p class="knob-cap">Turn the dial</p>
+      <p class="knob-hint">drag it, or just tap</p>
     </div>
   </div>
 </div>
@@ -4464,8 +4470,13 @@ async function loadMap(){
   const SHORT={'Uttar Pradesh':'U.P.','Madhya Pradesh':'M.P.','Himachal Pradesh':'H.P.',
     'Arunachal Pradesh':'Arunachal','Andhra Pradesh':'Andhra','Jammu & Kashmir':'J&K',
     'West Bengal':'W. Bengal','Tamil Nadu':'Tamil Nadu','Uttarakhand':'U.K.',
-    'Chhattisgarh':'Chhattisgarh','Maharashtra':'Maharashtra'};
-  const labelled=REGIONS.filter(r=>r.cx!=null&&!ISLANDS[r.id]).sort((a,b)=>b.area-a.area);
+    'Chhattisgarh':'Chhattisgarh','Maharashtra':'Maharashtra',
+    'Dadra & Nagar Haveli and Daman & Diu':'DNH & DD',
+    'Andaman & Nicobar Islands':'Andaman','Jammu & Kashmir':'J&K'};
+  /* Preset bands get a centroid assigned by the mast code above, so they must be
+     excluded here or every band ends up labelled twice. */
+  const labelled=REGIONS.filter(r=>r.cx!=null&&!ISLANDS[r.id]&&r.zone!=='national')
+    .sort((a,b)=>b.area-a.area);
   labelled.forEach(function(r,i){
     const tier = i<10 ? 'big' : (i<20 ? 'mid' : 'tiny');
     if(tier==='tiny'){
@@ -4611,6 +4622,7 @@ document.getElementById('stnSearch').addEventListener('input',e=>renderList(e.ta
 /* ====================== YOUTUBE RESOLUTION =============================== */
 const resolveCache=new Map();
 const playedVids=new Set();   /* so two different queries cannot replay one video */
+let dupSkips=0;               /* consecutive duplicate skips, capped below */
 const MIRRORS=['https://pipedapi.kavin.rocks','https://pipedapi.adminforge.de','https://api.piped.private.coffee'];
 const INVIDIOUS=['https://inv.nadeko.net','https://invidious.nerdvpn.de'];
 /* The server route holds the key for everyone now, so there is no key field in
@@ -5025,6 +5037,18 @@ async function recurate(){
   }
 }
 
+/* Clicking row 7 used to jump straight there, which silently dropped rows 1-6 from
+   "Up next" and read as the whole list reshuffling. Instead the chosen song is
+   lifted out and played next, so everything else keeps its place and only that one
+   row disappears. */
+async function playPicked(i){
+  if(i<0||i>=queue.length) return;
+  const track=queue.splice(i,1)[0];
+  const at=Math.max(qi,-1)+1;
+  queue.splice(at,0,track);
+  return await playAt(at);
+}
+
 async function playAt(i){
   if(!queue.length||!current) return;
   if(i<0) i=0;
@@ -5065,11 +5089,16 @@ async function playAt(i){
     }
     return await playAt(i+1);
   }
-  /* Two generic probes can land on the same video. Skip rather than repeat. */
-  if(playedVids.has(id) && i+1<queue.length){
+  /* Two generic probes can land on the same video, so skip rather than repeat.
+     Capped: if several in a row resolve to the same thing we stop skipping and
+     just play it, otherwise one repeated video could walk the whole queue and
+     trigger a needless re-fetch. */
+  if(playedVids.has(id) && i+1<queue.length && dupSkips<3){
+    dupSkips++;
     track.bad=true; renderQueue();
     return await playAt(i+1);
   }
+  dupSkips=0;
   playedVids.add(id);
   if(playedVids.size>400) playedVids.clear();
 
@@ -5144,7 +5173,7 @@ function renderQueue(){
     b.innerHTML='<span class="num">'+String(n).padStart(2,'0')+'</span>'+
       '<span class="meta"><span class="tt">'+esc(t.realT||t.t)+'</span>'+
       '<span class="aa">'+esc(t.realA||t.a)+'</span></span>';
-    b.addEventListener('click',()=>{buzz(PICK);fire(playAt(i),'queue click');});
+    b.addEventListener('click',()=>{buzz(PICK);fire(playPicked(i),'queue click');});
     el.appendChild(b);
   });
   if(!shown){
@@ -5665,7 +5694,90 @@ function enterStation(){
      moment to actually start playing something. */
   setTimeout(()=>fire(tune(pick(REGIONS).id),'tune from landing'),520);
 }
-document.getElementById('enterBtn').addEventListener('click',enterStation);
+/* ---- turning the dial -------------------------------------------------------
+   A knob you can only click is a button wearing a costume. This tracks the angle
+   of the pointer around the knob's centre, turns it with the finger, and enters
+   once it has been rotated far enough. A plain tap still works. */
+(function makeKnobTurnable(){
+  const knob=document.getElementById('enterBtn');
+  if(!knob) return;
+  const ticks=document.getElementById('knobTicks');
+
+  /* Tapping must work no matter what, so it is bound first and independently of
+     the drag behaviour. A missing inner element should never make the only way
+     into the app stop working. */
+  let justDragged=false;
+  knob.addEventListener('click',function(){
+    if(entered||justDragged) return;
+    enterStation();
+  });
+
+  const body=knob.querySelector&&knob.querySelector('.knob-body');
+  if(!body) return;               /* no visual to rotate; tap still enters */
+
+  const START=-142, TARGET=158, SPAN=TARGET-START;   // matches the CSS rest/entered angles
+  let dragging=false, lastAngle=0, turned=0, moved=false;
+
+  const angleOf=(e)=>{
+    const r=knob.getBoundingClientRect();
+    return Math.atan2(e.clientY-(r.top+r.height/2), e.clientX-(r.left+r.width/2))*180/Math.PI;
+  };
+  const paint=(deg)=>{
+    body.style.transition='none';
+    body.style.transform='rotate('+(START+deg)+'deg)';
+    if(ticks){
+      const lit=Math.round((deg/SPAN)*ticks.children.length);
+      for(let i=0;i<ticks.children.length;i++) ticks.children[i].classList.toggle('lit',i<lit);
+    }
+  };
+
+  knob.addEventListener('pointerdown',function(e){
+    if(entered) return;
+    dragging=true; moved=false; turned=0;
+    lastAngle=angleOf(e);
+    knob.classList.add('turning-live');
+    if(knob.setPointerCapture) knob.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  knob.addEventListener('pointermove',function(e){
+    if(!dragging||entered) return;
+    const a=angleOf(e);
+    let d=a-lastAngle;
+    if(d>180) d-=360; if(d<-180) d+=360;      /* cross the -180/180 seam cleanly */
+    lastAngle=a;
+    if(Math.abs(d)>0.6) moved=true;
+    turned=Math.max(0,Math.min(SPAN,turned+d));
+    paint(turned);
+    if(turned>=SPAN*0.62){ dragging=false; buzz(CONFIRM); enterStation(); }
+  });
+  function release(){
+    if(!dragging) return;
+    dragging=false;
+    knob.classList.remove('turning-live');
+    if(entered) return;
+    if(!moved) return;                         /* a tap - the click handler owns it */
+    justDragged=true;                          /* suppress the click that follows a drag */
+    setTimeout(()=>{justDragged=false;},350);
+    /* not turned far enough - spring back */
+    body.style.transition='transform .45s cubic-bezier(.3,1.4,.5,1)';
+    body.style.transform='';
+    if(ticks) for(let i=0;i<ticks.children.length;i++) ticks.children[i].classList.remove('lit');
+    turned=0;
+  }
+  knob.addEventListener('pointerup',release);
+  knob.addEventListener('pointercancel',release);
+  /* keyboard: arrows turn it, Enter/Space still works */
+  knob.addEventListener('keydown',function(e){
+    if(entered) return;
+    if(e.key==='ArrowRight'||e.key==='ArrowUp'){
+      e.preventDefault(); turned=Math.min(SPAN,turned+SPAN/6); paint(turned);
+      if(turned>=SPAN*0.62) enterStation();
+    }
+    if(e.key==='ArrowLeft'||e.key==='ArrowDown'){
+      e.preventDefault(); turned=Math.max(0,turned-SPAN/6); paint(turned);
+    }
+  });
+})();
 document.getElementById('landing').addEventListener('keydown',function(e){
   if(e.key==='Enter'||e.code==='Space'){ e.preventDefault(); enterStation(); }
 });
