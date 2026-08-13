@@ -272,6 +272,16 @@
     margin:8px 0 2px;font-size:.82rem;transition:all .15s ease;}
   .sask:hover,.sask.sel{background:rgba(232,163,61,.2);border-color:rgba(232,163,61,.6);}
   .sask b{color:var(--gold);font-weight:600;}
+  .sres.yt{align-items:center;}
+  .sres .thumb{width:46px;height:26px;border-radius:4px;object-fit:cover;flex:none;background:var(--ink-3);}
+  .ytwait{display:flex;align-items:center;gap:9px;padding:9px 6px;font-size:.79rem;color:var(--dim);}
+  .ytwait .spin{width:13px;height:13px;border-radius:50%;flex:none;
+    border:2px solid rgba(242,236,217,.2);border-top-color:var(--gold);
+    animation:ytspin .8s linear infinite;}
+  @keyframes ytspin{to{transform:rotate(360deg);}}
+  .slink{background:none;border:none;padding:0;color:var(--gold);cursor:pointer;
+    font:inherit;text-decoration:underline;text-underline-offset:2px;}
+  .slink:hover{color:var(--paper);}
 
   /* ================= BACKDROP: one generated landscape per state ========= */
   .backdrop{position:fixed;inset:0;z-index:-2;overflow:hidden;background:var(--ink);}
@@ -329,6 +339,9 @@
   .rpm{display:inline-flex;gap:8px;align-items:center;font-family:'IBM Plex Mono',monospace;
     font-size:.55rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;}
   .rpm b{width:5px;height:5px;border-radius:50%;background:#5b6080;}
+  .lockhint{display:none;font-family:'IBM Plex Mono',monospace;font-size:.53rem;
+    letter-spacing:.05em;color:rgba(154,154,184,.7);margin:7px auto 0;max-width:30ch;line-height:1.6;}
+  @media (max-width:760px){.lockhint{display:block;}}
   .platter.spinning ~ .deck-meta .rpm b{background:var(--leaf);box-shadow:0 0 7px var(--leaf);}
 
   .srcstrip{margin-top:12px;border-radius:8px;overflow:hidden;background:var(--ink-3);position:relative;}
@@ -521,6 +534,7 @@
           </div>
           <div class="deck-meta">
             <span class="rpm"><b></b><span id="rpmText">Stopped</span></span>
+            <p class="lockhint">Keep this screen open &mdash; phones pause embedded players in the background.</p>
           </div>
           <h3 class="np-track" id="trackName">&mdash;</h3>
           <p class="np-artist" id="trackArtist">&mdash;</p>
@@ -685,7 +699,7 @@ const REGIONS = [
   {t:'Bulla Ki Jaana',a:'Rabbi Shergill',m:['devotional','chill','retro']},
   {t:'Jugni',a:'Punjabi folk',m:['folk','party']},
   {t:'Gurbani Shabad Kirtan',a:'Golden Temple kirtan',m:['devotional','chill']},
-  {t:'Tunak Tunak Tun',a:'Daler Mehndi',m:['party','modern','retro']},
+  {t:'Tunak Tunak Tun',a:'Daler Mehndi',m:['party','retro']},
   {t:'Bolo Ta Ra Ra',a:'Daler Mehndi',m:['party','retro']},
   {t:'Mundian To Bach Ke',a:'Panjabi MC',m:['party','modern']},
   {t:'Nit Khair Manga',a:'Nusrat Fateh Ali Khan',m:['devotional','chill','retro']},
@@ -864,7 +878,7 @@ const REGIONS = [
  seed:[
   {t:'Bebdo',a:'Lorna Cordeiro',m:['retro','folk','party']},
   {t:'Hanv Sanddun Vetam Gaon',a:'Konkani folk',m:['folk','chill','retro']},
-  {t:'O Meri Munni',a:'Remo Fernandes',m:['retro','party','modern']},
+  {t:'O Meri Munni',a:'Remo Fernandes',m:['retro','party']},
   {t:'Konkani mando',a:'Goan traditional',m:['retro','chill','folk']},
   {t:'Goa psytrance set',a:'Goa trance',m:['party','modern']},
   {t:'Konkani hymn',a:'Goan church choir',m:['devotional','chill']},
@@ -1000,7 +1014,7 @@ const REGIONS = [
   {t:'Ekla Chalo Re',a:'Rabindra Sangeet',m:['retro','devotional','chill']},
   {t:'Ami Chini Go Chini Tomare',a:'Rabindra Sangeet',m:['retro','chill']},
   {t:'Sob Loke Koy',a:'Lalon Baul geeti',m:['folk','devotional','chill']},
-  {t:'Bela Bose',a:'Anjan Dutt',m:['modern','chill','retro']},
+  {t:'Bela Bose',a:'Anjan Dutt',m:['retro','chill']},
   {t:'Tomake Chai',a:'Fossils',m:['modern','party']},
   {t:'Dhaker Taale Komor Dole',a:'Durga Puja dhak song',m:['party','devotional','folk']},
   {t:'Coffee House er Sei Addata',a:'Manna Dey',m:['retro','chill']},
@@ -1010,7 +1024,7 @@ const REGIONS = [
   {t:'Milon Hobe Koto Dine',a:'Lalon Baul geeti',m:['folk','devotional','chill']},
   {t:'Bhatiali song',a:'Bengali folk',m:['folk','chill']},
   {t:'Bengali kirtan',a:'Bengali devotional',m:['devotional','folk']},
-  {t:'Prithibita Naki',a:'Mohiner Ghoraguli',m:['modern','chill','retro']},
+  {t:'Prithibita Naki',a:'Mohiner Ghoraguli',m:['retro','chill']},
   {t:'Holud Pakhi',a:'Cactus',m:['modern','party']},
   {t:'Brishti Tomake Dilam',a:'Nachiketa',m:['modern','chill']},
   {t:'Shyama Sangeet',a:'Bengali devotional',m:['devotional','retro']},
@@ -1053,7 +1067,7 @@ const REGIONS = [
  seed:[
   {t:'Bistirno Parore',a:'Bhupen Hazarika',m:['retro','folk','chill']},
   {t:'Manuhe Manuhar Baabe',a:'Bhupen Hazarika',m:['retro','devotional','chill']},
-  {t:'Mayabini Ratir Bukut',a:'Zubeen Garg',m:['chill','modern','retro']},
+  {t:'Mayabini Ratir Bukut',a:'Zubeen Garg',m:['chill','modern']},
   {t:'Bihu geet dhol pepa',a:'Assamese Bihu folk',m:['folk','party']},
   {t:'Borgeet',a:'Sankardev devotional',m:['devotional','classical']},
   {t:'Assamese song',a:'Papon',m:['modern','chill']},
@@ -1073,7 +1087,7 @@ const REGIONS = [
 {id:'meghalaya',name:'Meghalaya',zone:'northeast',alias:['Meghalaya'],
  lang:'Khasi, Garo',genres:'Khasi indie rock, gospel choir and Garo folk',
  seed:[
-  {t:'Set Me Free',a:'Soulmate',m:['modern','party','retro']},
+  {t:'Set Me Free',a:'Soulmate',m:['modern','party']},
   {t:'Lou Majaw live',a:'Lou Majaw',m:['retro','chill','folk']},
   {t:'Khasi folk song',a:'Khasi traditional',m:['folk','chill']},
   {t:'Shillong Chamber Choir',a:'Shillong Chamber Choir',m:['devotional','retro','chill']},
@@ -1253,7 +1267,7 @@ const REGIONS = [
   {t:'Annamacharya Keerthana',a:'Annamayya',m:['devotional','classical']},
   {t:'Ghantasala songs',a:'Ghantasala',m:['retro','chill']},
   {t:'Telugu janapada geethalu',a:'Andhra folk',m:['folk','party']},
-  {t:'Samajavaragamana',a:'Sid Sriram',m:['chill','modern','classical']},
+  {t:'Samajavaragamana',a:'Sid Sriram',m:['chill','modern']},
   {t:'Butta Bomma',a:'Armaan Malik',m:['modern','party']},
   {t:'Kuchipudi dance music',a:'Kuchipudi',m:['classical','devotional']},
   {t:'Endaro Mahanubhavulu',a:'Tyagaraja kriti',m:['devotional','classical']},
@@ -1383,7 +1397,7 @@ const REGIONS = [
   {t:'Dooba Dooba',a:'Silk Route',m:['retro','chill']},
   {t:'Maeri',a:'Euphoria',m:['retro','chill']},
   {t:'Dhoom Pichak Dhoom',a:'Euphoria',m:['retro','party']},
-  {t:'Aahatein',a:'Agnee',m:['retro','modern']},
+  {t:'Aahatein',a:'Agnee',m:['modern','chill']},
   {t:'Chadariya Jhini',a:'Kabir Cafe',m:['folk','devotional']},
   {t:'Mann Lago Yaar Fakiri Mein',a:'Kabir Cafe',m:['devotional','folk','chill']},
   {t:'Pyaasi',a:'Swarathma',m:['folk','party']},
@@ -2181,6 +2195,7 @@ document.getElementById('stnSearch').addEventListener('input',e=>renderList(e.ta
 
 /* ====================== YOUTUBE RESOLUTION =============================== */
 const resolveCache=new Map();
+const playedVids=new Set();   /* so two different queries cannot replay one video */
 const MIRRORS=['https://pipedapi.kavin.rocks','https://pipedapi.adminforge.de','https://api.piped.private.coffee'];
 const INVIDIOUS=['https://inv.nadeko.net','https://invidious.nerdvpn.de'];
 /* The server route holds the key for everyone now, so there is no key field in
@@ -2250,6 +2265,74 @@ async function resolve(query){
   resolveCache.set(query,id);
   return id;
 }
+/* Returns a LIST of real YouTube matches so the listener chooses the song,
+   rather than the app silently picking one. Same tier order as resolve(). */
+const ytSearchCache=new Map();
+async function searchYouTube(query){
+  const q=query.trim();
+  if(q.length<2) return [];
+  if(ytSearchCache.has(q)) return ytSearchCache.get(q);
+  const ok=id=>/^[A-Za-z0-9_-]{11}$/.test(id||'');
+  const clean=x=>String(x||'').replace(/\s+/g,' ').trim().slice(0,140);
+  let out=[];
+
+  try{                                   /* our own route, cached for everyone */
+    const j=await jget('/api/search?q='+encodeURIComponent(q),6000);
+    if(j&&j.results&&j.results.length) out=j.results.filter(r=>ok(r.id));
+  }catch(e){}
+
+  if(!out.length){                       /* browser-side fallback */
+    const key=ytKey();
+    if(key){
+      try{
+        const j=await jget('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=10&q='+encodeURIComponent(q)+'&key='+encodeURIComponent(key),5000);
+        out=(j.items||[]).map(it=>({id:it.id&&it.id.videoId,
+          title:clean(it.snippet&&it.snippet.title),
+          author:clean(it.snippet&&it.snippet.channelTitle)})).filter(r=>ok(r.id));
+      }catch(e){}
+    }
+  }
+  if(!out.length){
+    const attempts=MIRRORS.map(b=>jget(b+'/search?q='+encodeURIComponent(q)+'&filter=music_songs',4500)
+      .then(j=>{
+        const arr=j.items||(Array.isArray(j)?j:[]);
+        const r=[];
+        for(const it of arr){
+          const u=it&&it.url;
+          if(u&&u.indexOf('watch?v=')>-1){
+            const id=u.split('watch?v=')[1].split('&')[0];
+            if(ok(id)) r.push({id,title:clean(it.title),author:clean(it.uploaderName)});
+          }
+          if(r.length>=10) break;
+        }
+        if(!r.length) throw new Error('empty');
+        return r;
+      }))
+    .concat(INVIDIOUS.map(b=>jget(b+'/api/v1/search?type=video&q='+encodeURIComponent(q),4500)
+      .then(j=>{
+        const arr=Array.isArray(j)?j:[];
+        const r=[];
+        for(const it of arr){
+          if(it&&ok(it.videoId)) r.push({id:it.videoId,title:clean(it.title),author:clean(it.author)});
+          if(r.length>=10) break;
+        }
+        if(!r.length) throw new Error('empty');
+        return r;
+      })));
+    try{ out=await anyOf(attempts,6000); }catch(e){ out=[]; }
+  }
+
+  /* drop duplicate ids and anything obviously not a track */
+  const seen={}, list=[];
+  for(const r of (out||[])){
+    if(!r||!ok(r.id)||seen[r.id]) continue;
+    seen[r.id]=1; list.push({id:r.id,title:r.title||q,author:r.author||'YouTube'});
+    if(list.length>=10) break;
+  }
+  ytSearchCache.set(q,list);
+  return list;
+}
+
 function searchPhrase(track,region){
   if(track.generic) return track.t+' '+region.name;
   return track.t+' '+track.a+' '+region.lang.split(',')[0]+' song';
@@ -2292,12 +2375,28 @@ async function curate(region,mKey,avoid){
 }
 function shuffled(a){ return a.slice().sort(()=>Math.random()-0.5); }
 function seedFor(region,mKey){
+  /* STRICT: only songs actually tagged with this mood. The old version appended
+     everything else after the matches, which is why a raga list ended up holding
+     indie tracks and a party list held ballads - the mood was only sorting the
+     queue, not filtering it. */
   const hit=region.seed.filter(s=>s.m.indexOf(mKey)>-1);
-  const rest=region.seed.filter(s=>s.m.indexOf(mKey)===-1);
-  const list=shuffled(hit).concat(shuffled(rest)).map(s=>({t:s.t,a:s.a,w:''}));
-  if(!hit.length){
-    list.unshift({t:region.lang.split(',')[0]+' '+MOODS[mKey].q,a:region.name+' selection',
-      w:'Picked live for '+MOODS[mKey].n.toLowerCase()+' in '+region.name,generic:true});
+  const list=shuffled(hit).map(s=>({t:s.t,a:s.a,w:''}));
+  /* Strict filtering can leave a short list, so top it out with live on-mood
+     searches for this region. Better a real party song found on demand than a
+     ballad borrowed from another mood. */
+  if(list.length<6){
+    const lang=region.lang.split(',')[0], q=MOODS[mKey].q;
+    const probes=[
+      lang+' '+q,
+      region.name+' '+q,
+      lang+' '+q+' songs',
+      'best '+lang+' '+q,
+      lang+' '+MOODS[mKey].n.toLowerCase()+' music'
+    ];
+    probes.slice(0, 6-list.length).forEach(pq=>{
+      list.push({t:pq,a:region.name+' \u00b7 '+MOODS[mKey].n,
+        w:'Found live for '+MOODS[mKey].n.toLowerCase()+' in '+region.name,generic:true});
+    });
   }
   return list;
 }
@@ -2313,6 +2412,7 @@ window.onYouTubeIframeAPIReady=function(){
     events:{
       onReady:function(){
         ytReady=true; setVol(document.getElementById('vol').value);
+        wireMediaSession();
         if(pendingVid){const v=pendingVid;pendingVid=null;player.loadVideoById(v);}
       },
       onStateChange:function(e){
@@ -2346,6 +2446,7 @@ function syncPlayBtn(){
      about what you are hearing. */
   const pl=document.getElementById('platter');
   if(pl) pl.classList.toggle('spinning',playing);
+  setSessionState();
   const rt=document.getElementById('rpmText');
   if(rt) rt.textContent=playing?'33\u2153 rpm \u00b7 on air':'Stopped';
 }
@@ -2371,6 +2472,7 @@ async function tune(id,opts){
   const region=byId(id); if(!region) return;
   opts=opts||{};
   const mySeq=++seq; cseq++;   /* invalidate any in-flight re-curation */
+  playedVids.clear();
   current=region;
 
   markLive(id);
@@ -2488,7 +2590,8 @@ async function playAt(i){
   const mySeq=seq; qi=i;
   const track=queue[i];
   renderQueue(); paintTrack(track,true); veil(true,'Finding the song...');
-  const id=await resolve(searchPhrase(track,current));
+  /* a track chosen from YouTube search already knows its video */
+  const id=track.vid||await resolve(searchPhrase(track,current));
   if(mySeq!==seq) return;
   if(!id){
     markBad(i);
@@ -2500,13 +2603,61 @@ async function playAt(i){
     }
     return await playAt(i+1);
   }
+  /* Two generic probes can land on the same video. Skip rather than repeat. */
+  if(playedVids.has(id) && i+1<queue.length){
+    track.bad=true; renderQueue();
+    return await playAt(i+1);
+  }
+  playedVids.add(id);
+  if(playedVids.size>400) playedVids.clear();
+
   track.vid=id; loadVideo(id); paintTrack(track,false);
 
   /* fetch more while this one plays, so the join is seamless */
   if(qi >= queue.length-3) fire(topUp(),'top up queue');
 }
 
+/* ===================== LOCK SCREEN / MEDIA SESSION =======================
+   Publishes what is playing to the OS, so the lock screen and notification
+   shade show the title, artist and artwork, and their play/pause/skip buttons
+   drive this page.
+
+   Worth being clear about the limit: this does NOT keep audio alive when a phone
+   is locked. Embedded YouTube players are paused by iOS and Android when the tab
+   goes to the background, and that is enforced outside the page. Media Session
+   makes the controls correct wherever background audio IS permitted, and keeps
+   the lock screen honest rather than showing nothing.
+   ========================================================================= */
+function updateMediaSession(track){
+  if(!('mediaSession' in navigator)) return;
+  try{
+    const art=track.vid
+      ? [{src:'https://i.ytimg.com/vi/'+track.vid+'/hqdefault.jpg',sizes:'480x360',type:'image/jpeg'}]
+      : [];
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:track.t||'Sur Radio',
+      artist:track.a||'',
+      album:(current?current.name:'Sur Radio')+' \u00b7 '+MOODS[moodKey].n,
+      artwork:art
+    });
+  }catch(e){ /* older MediaMetadata implementations */ }
+}
+function wireMediaSession(){
+  if(!('mediaSession' in navigator)) return;
+  const set=(k,fn)=>{ try{ navigator.mediaSession.setActionHandler(k,fn); }catch(e){} };
+  set('play',()=>{ if(player&&player.playVideo) player.playVideo(); });
+  set('pause',()=>{ if(player&&player.pauseVideo) player.pauseVideo(); });
+  set('nexttrack',()=>next());
+  set('previoustrack',()=>prev());
+  set('stop',()=>{ if(player&&player.pauseVideo) player.pauseVideo(); });
+}
+function setSessionState(){
+  if(!('mediaSession' in navigator)) return;
+  try{ navigator.mediaSession.playbackState=playing?'playing':'paused'; }catch(e){}
+}
+
 function paintTrack(track,searching){
+  if(!searching) updateMediaSession(track);
   document.getElementById('trackName').textContent=track.t;
   document.getElementById('trackArtist').textContent=track.a;
   document.getElementById('trackWhy').textContent=track.w||current.genres;
@@ -2697,8 +2848,10 @@ function renderSearch(qRaw){
     h+='<div class="snone">Nothing in the built-in library matches that.</div>';
   }
   /* always offer to go and find it anyway */
-  h+='<button class="sask" id="askYt"><svg class="ic sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg> Play <b>'+esc(qRaw.trim())+'</b> anyway</button>';
-  searchRows.push({kind:'ask',data:qRaw.trim()});
+  /* a slot for real YouTube matches, filled in a moment */
+  h+='<div id="ytzone"><div class="shead">On YouTube</div>'+
+     '<div class="ytwait"><span class="spin"></span>Searching YouTube for '+esc(qRaw.trim())+'\u2026</div></div>';
+
 
   box.innerHTML=h;
   box.classList.add('open');
@@ -2709,8 +2862,50 @@ function renderSearch(qRaw){
       else pickState(btn.dataset.id);
     });
   });
-  const ask=document.getElementById('askYt');
-  if(ask) ask.addEventListener('click',()=>pickRequest(qRaw.trim()));
+  fire(fillYouTube(qRaw),'youtube search');
+}
+
+/* Fills the "On YouTube" section with pickable results. Guarded by the raw query
+   so a slower earlier request cannot overwrite a newer one. */
+let ytQueryToken='', ytRows=[];
+async function fillYouTube(qRaw){
+  const q=qRaw.trim();
+  ytQueryToken=q;
+  let list=[];
+  try{ list=await searchYouTube(q); }catch(e){ list=[]; }
+  if(ytQueryToken!==q) return;                       /* a newer query won */
+  const zone=document.getElementById('ytzone');
+  if(!zone) return;
+  if(!list.length){
+    zone.innerHTML='<div class="shead">On YouTube</div>'+
+      '<div class="snone">Could not reach YouTube search just now. '+
+      '<button class="slink" id="askYt">Play '+esc(q)+' anyway</button></div>';
+    const a=document.getElementById('askYt');
+    if(a) a.addEventListener('click',()=>pickRequest(q));
+    return;
+  }
+  let h='<div class="shead">On YouTube \u00b7 '+list.length+'</div>';
+  list.forEach(function(r,i){
+    h+='<button class="sres yt" data-yt="'+i+'">'+
+       '<img class="thumb" src="https://i.ytimg.com/vi/'+r.id+'/default.jpg" alt="" loading="lazy">'+
+       '<span class="meta"><span class="tt">'+hi(r.title,q)+'</span>'+
+       '<span class="aa">'+esc(r.author)+'</span></span></button>';
+  });
+  zone.innerHTML=h;
+  ytRows=list;
+  zone.querySelectorAll('.sres.yt').forEach(function(btn){
+    btn.addEventListener('click',()=>pickYouTube(ytRows[+btn.dataset.yt]));
+  });
+  list.forEach(r=>searchRows.push({kind:'yt',data:r}));   /* keyboard reachable */
+}
+
+/* Plays the exact video the listener chose - no re-guessing from the title. */
+function pickYouTube(r){
+  if(!r) return;
+  closeSearch(true);
+  const region=current||byId('bollywood')||REGIONS[0];
+  toast('Playing '+r.title);
+  fire(tune(region.id,{first:{t:r.title,a:r.author,w:'Chosen from YouTube search',vid:r.id}}),'youtube pick');
 }
 
 function closeSearch(keepText){
@@ -2753,7 +2948,7 @@ function pickRequest(q){
     if(e.key==='ArrowDown'||e.key==='ArrowUp'){
       e.preventDefault();
       searchSel=(searchSel+(e.key==='ArrowDown'?1:-1)+rows.length)%rows.length;
-      const btns=document.querySelectorAll('#sresults .sres, #sresults .sask');
+      const btns=document.querySelectorAll('#sresults .sres, #sresults .sask, #sresults .slink');
       btns.forEach((b,i)=>b.classList.toggle('sel',i===searchSel));
       if(btns[searchSel]&&btns[searchSel].scrollIntoView) btns[searchSel].scrollIntoView({block:'nearest'});
     }
@@ -2764,6 +2959,7 @@ function pickRequest(q){
       if(!row) return;
       if(row.kind==='song') pickSong(row.data);
       else if(row.kind==='state') pickState(row.data.id);
+      else if(row.kind==='yt') pickYouTube(row.data);
       else pickRequest(row.data);
     }
   });
