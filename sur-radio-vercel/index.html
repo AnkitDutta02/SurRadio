@@ -25,10 +25,11 @@
     background:transparent;
     color:var(--paper); font-family:'IBM Plex Sans',sans-serif;
     -webkit-font-smoothing:antialiased; overflow-x:hidden;
+    -webkit-text-size-adjust:100%;   /* stop iOS inflating type on rotate */
   }
   ::selection{background:var(--gold);color:var(--ink);}
   button{font-family:inherit;}
-  .shell{max-width:1400px;margin:0 auto;padding:0 24px 132px;}
+  .shell{max-width:1400px;margin:0 auto;padding:0 24px 132px;overflow-x:clip;}
 
   header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 14px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:11px;}
@@ -41,9 +42,13 @@
   @media (max-width:1040px){
     .grid{grid-template-columns:1fr;}
     /* Single column stacks map above deck, so the map is capped to leave the
-       record player just below the fold rather than far down the page. */
-    svg#map{max-height:48vh;}
-    .maphold{min-height:260px;}
+       record player just below the fold rather than far down the page. On tablets
+       the map would otherwise fill the whole first screen on its own. */
+    svg#map{max-height:44vh;}
+    .maphold{min-height:220px;}
+  }
+  @media (min-width:561px) and (max-width:1040px){
+    svg#map{max-height:40vh;}
   }
   .card{background:rgba(21,25,54,.80);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(242,236,217,.10);border-radius:var(--r);}
   .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:15px 18px 0;}
@@ -290,17 +295,19 @@
   /* the mood grid is irrelevant while a preset band is on air */
   .moodcard.hidden{display:none;}
 
-  @media (max-width:900px){
+  @media (max-width:1040px){
     .presets-row{grid-template-columns:repeat(3,1fr);}
   }
+  /* Phones: a 2 x 3 grid so all six presets are on screen at once. The old
+     horizontally swiped row hid half of them, which is no way to present the
+     main navigation. */
   @media (max-width:560px){
-    .presets{padding:11px 14px 2px;}
-    /* one swipeable row on phones, with snap so it lands cleanly */
-    .presets-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;
-      gap:8px;padding-bottom:6px;-webkit-overflow-scrolling:touch;}
-    .presets-row::-webkit-scrollbar{display:none;}
-    .preset{flex:0 0 46%;scroll-snap-align:start;}
-    .legend-hint{margin-left:0;}
+    .presets{padding:11px 13px 2px;}
+    .presets-row{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;}
+    .preset{min-height:50px;padding:8px 10px;}
+    .preset b{font-size:.72rem;}
+    .preset i{font-size:.52rem;}
+    .preset .num{font-size:.46rem;right:7px;top:6px;}
   }
 
   /* ===================== SEARCH ========================================== */
@@ -592,6 +599,58 @@
     .qrow,.srow{padding:10px 9px;}      /* easier to hit with a thumb */
     .sres{padding:10px 9px;}
     .legend{font-size:.58rem;gap:7px 11px;}
+  }
+
+
+  /* ===================== PHONE LAYOUT ==================================== */
+  @media (max-width:560px){
+    .shell{padding:0 12px 118px;}
+    header{padding:14px 0 8px;gap:10px;}
+    .brand svg{width:28px;height:28px;}
+    .brand-name{font-size:1.12rem;}
+    .brand-name small{font-size:.5rem;letter-spacing:.14em;}
+    .tagline{font-size:.78rem;line-height:1.5;}
+
+    .grid{gap:14px;}
+    .card-head{padding:13px 13px 0;}
+    .card-head h2{font-size:.95rem;}
+
+    /* the map was eating the screen; keep it to a comfortable band */
+    .maphold{padding:2px 6px 8px;min-height:0;}
+    svg#map{max-height:38vh;margin:0 auto;}
+    .legend{padding:7px 13px 2px;gap:6px 10px;font-size:.55rem;}
+    .legend i{width:8px;height:8px;margin-right:4px;}
+    .taphint{top:8px;font-size:.55rem;padding:6px 11px;gap:7px;}
+    @keyframes hintbob{0%,100%{top:8px;}50%{top:12px;}}
+
+    .np{padding:14px;}
+    .np-freq b{font-size:2rem;}
+    .np-place{font-size:.62rem;letter-spacing:.09em;}
+    .platter{width:min(210px,60vw);}
+    .np-track{font-size:1rem;}
+    .pad{padding:13px 13px 14px;}
+    .moods{grid-template-columns:repeat(4,1fr);gap:6px;}
+    .mood{padding:8px 3px;border-radius:8px;}
+    .mood b{font-size:.66rem;}
+    .mood i{font-size:.46rem;}
+    .searchcard{padding:11px 12px;}
+    .searchbox input{font-size:.85rem;padding:11px 0;}
+    .queue{max-height:196px;padding:0 13px 13px;}
+    .stnlist{max-height:210px;padding:0 13px 13px;}
+    .search{margin:0 13px 9px;}
+    .sresults.open{max-height:260px;}
+    details.settings{padding:0 13px 13px;}
+    .srcnote{padding:2px 13px 12px;font-size:.52rem;}
+  }
+  /* very small phones */
+  @media (max-width:360px){
+    .presets-row{gap:6px;}
+    .preset{padding:8px 8px;}
+    .preset b{font-size:.655rem;letter-spacing:-.01em;padding-right:11px;}
+    .preset i{font-size:.48rem;}
+    .moods{grid-template-columns:repeat(3,1fr);}
+    svg#map{max-height:34vh;}
+    .brand-name{font-size:1.02rem;}
   }
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;}}
