@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sur Radio — Real music from every state of India</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1024; --ink-2:#151936; --ink-3:#1e2347;
+    --paper:#f2ecd9; --dim:#9a9ab8;
+    --gold:#e8a33d; --madder:#c85043; --teal:#2f9c8b;
+    --plum:#9463b0; --leaf:#57a86c; --bronze:#c9a15e;
+    --r:12px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  /* While the landing is up, the tall page behind it must not scroll - otherwise
+     you can dismiss the dial and land halfway down the page with the map above
+     the fold. */
+  html.locked,body.locked{overflow:hidden;height:100%;}
+  body{
+    background:transparent;
+    color:var(--paper); font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  ::selection{background:var(--gold);color:var(--ink);}
+  button{font-family:inherit;}
+  .shell{max-width:1400px;margin:0 auto;padding:0 24px 132px;}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 14px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:11px;}
+  .brand svg{width:32px;height:32px;flex:none;}
+  .brand-name{font-family:'Fraunces',serif;font-weight:700;font-size:1.3rem;line-height:1;}
+  .brand-name small{display:block;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:.55rem;letter-spacing:.17em;color:var(--dim);margin-top:4px;}
+  .tagline{font-size:.86rem;color:var(--dim);max-width:46ch;line-height:1.5;}
+
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+  @media (max-width:1040px){
+    .grid{grid-template-columns:1fr;}
+    /* Single column stacks map above deck, so the map is capped to leave the
+       record player just below the fold rather than far down the page. */
+    svg#map{max-height:48vh;}
+    .maphold{min-height:260px;}
+  }
+  .card{background:rgba(21,25,54,.80);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(242,236,217,.10);border-radius:var(--r);}
+  .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:15px 18px 0;}
+  .card-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;margin:0;}
+  .card-head span{font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.09em;color:var(--dim);}
+
+  /* ---- map ---- */
+  .maphold{padding:6px 10px 10px;position:relative;min-height:320px;}
+  svg#map{width:100%;height:auto;display:block;max-height:74vh;}
+  .state{stroke:var(--ink);stroke-width:.7;cursor:pointer;transition:fill-opacity .18s ease;fill-opacity:.30;}
+  .state:hover{fill-opacity:.62;}
+  .state.live{fill-opacity:.9;stroke:var(--paper);stroke-width:1.4;}
+  .state.nodata{fill:#2a2f52;fill-opacity:.35;cursor:default;pointer-events:none;}
+  .rail{fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;opacity:.5;stroke-dasharray:3 4;}
+  .train{fill:var(--paper);}
+  .hub{stroke:var(--ink);stroke-width:1.2;pointer-events:none;}
+  .slabel{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:rgba(242,236,217,.72);pointer-events:none;text-anchor:middle;}
+  .slabel.big{font-size:10px;fill:var(--paper);}
+  .pulse-ring{fill:none;stroke-width:2;pointer-events:none;}
+  .legend{display:flex;flex-wrap:wrap;gap:9px 15px;padding:9px 18px 2px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--dim);}
+  .legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px;}
+  .maploading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:26px;
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--dim);letter-spacing:.06em;line-height:1.8;}
+  .maploading b{color:var(--paper);display:block;margin-bottom:6px;letter-spacing:.1em;}
+  .maploading button{margin-top:12px;}
+  .srcnote{padding:2px 18px 14px;font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:rgba(154,154,184,.75);line-height:1.6;}
+  .srcnote a{color:rgba(232,163,61,.85);}
+
+  .rail-col{display:flex;flex-direction:column;gap:16px;}
+
+  .np{padding:18px;}
+  .np-freq{display:flex;align-items:flex-end;gap:9px;margin-bottom:2px;}
+  .np-freq b{font-family:'Fraunces',serif;font-size:2.4rem;font-weight:700;line-height:.9;letter-spacing:-.02em;}
+  .np-freq em{font-family:'IBM Plex Mono',monospace;font-style:normal;font-size:.66rem;letter-spacing:.12em;color:var(--dim);padding-bottom:5px;}
+  .np-place{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.11em;text-transform:uppercase;color:var(--gold);margin:0 0 14px;line-height:1.5;}
+
+  .screen{position:relative;width:100%;aspect-ratio:16/9;border-radius:9px;overflow:hidden;background:var(--ink-3);}
+  .screen iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+  .screen-veil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:var(--ink-3);
+    font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--dim);letter-spacing:.08em;text-align:center;padding:14px;transition:opacity .4s ease;}
+  .screen-veil.gone{opacity:0;pointer-events:none;}
+  .eq{display:flex;gap:3px;align-items:flex-end;height:20px;margin-bottom:9px;justify-content:center;}
+  .eq i{width:3px;background:var(--gold);border-radius:2px;animation:bob .9s ease-in-out infinite;}
+  .eq i:nth-child(2){animation-delay:.12s} .eq i:nth-child(3){animation-delay:.24s}
+  .eq i:nth-child(4){animation-delay:.36s} .eq i:nth-child(5){animation-delay:.48s}
+  @keyframes bob{0%,100%{height:5px}50%{height:19px}}
+
+  .np-track{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;line-height:1.25;margin:13px 0 3px;}
+  .np-artist{font-size:.85rem;color:var(--paper);opacity:.8;margin:0 0 7px;}
+  .np-why{font-size:.8rem;color:var(--dim);line-height:1.5;margin:0;}
+  .np-idle{text-align:center;padding:10px 4px 4px;}
+  .np-idle p{color:var(--dim);font-size:.87rem;line-height:1.6;margin:0 0 14px;}
+
+  .pad{padding:16px 18px 18px;}
+  .lbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
+  .moods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .mood{background:var(--ink-3);border:1px solid transparent;border-radius:9px;padding:10px 6px;cursor:pointer;color:var(--dim);text-align:center;transition:all .16s ease;}
+  .mood b{display:block;font-size:.76rem;font-weight:600;color:var(--paper);margin-bottom:2px;}
+  .mood i{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.55rem;}
+  .mood:hover{border-color:rgba(242,236,217,.3);}
+  .mood.on{background:var(--paper);border-color:var(--paper);}
+  .mood.on b,.mood.on i{color:var(--ink);}
+
+  .queue{max-height:230px;overflow-y:auto;padding:0 18px 16px;display:flex;flex-direction:column;gap:1px;}
+  .queue::-webkit-scrollbar,.stnlist::-webkit-scrollbar{width:6px;}
+  .queue::-webkit-scrollbar-thumb,.stnlist::-webkit-scrollbar-thumb{background:rgba(242,236,217,.16);border-radius:3px;}
+  .qrow{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:7px;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;color:var(--paper);transition:background .14s ease;}
+  .qrow:hover,.qrow.on{background:var(--ink-3);}
+  .qrow .num{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);width:16px;flex:none;}
+  .qrow .meta{flex:1;min-width:0;}
+  .qrow .tt{display:block;font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .qrow .aa{display:block;font-size:.71rem;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+  .qrow.on .tt{color:var(--gold);font-weight:600;}
+  .qrow .bad{font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--madder);flex:none;}
+
+  .search{margin:0 18px 10px;}
+  .search input{width:100%;background:var(--ink-3);border:1px solid rgba(242,236,217,.14);border-radius:8px;padding:9px 12px;color:var(--paper);font-family:'IBM Plex Sans';font-size:.84rem;outline:none;}
+  .search input:focus{border-color:var(--gold);}
+  .stnlist{max-height:250px;overflow-y:auto;padding:0 18px 16px;display:flex;flex-direction:column;gap:1px;}
+  .srow{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:7px;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;color:var(--paper);}
+  .srow:hover,.srow.on{background:var(--ink-3);}
+  .srow i{width:7px;height:7px;border-radius:50%;flex:none;}
+  .srow .n{font-size:.85rem;flex:1;}
+  .srow .sub{display:block;font-size:.68rem;color:var(--dim);margin-top:1px;}
+  .zonehead{font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:10px 9px 4px;}
+
+  details.settings{padding:0 18px 16px;}
+  details.settings summary{font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);cursor:pointer;padding:6px 0;}
+  details.settings p{font-size:.78rem;color:var(--dim);line-height:1.55;margin:6px 0 9px;}
+  details.settings input{width:100%;background:var(--ink-3);border:1px solid rgba(242,236,217,.14);border-radius:8px;padding:10px 12px;color:var(--paper);font-family:'IBM Plex Mono',monospace;font-size:.76rem;outline:none;}
+  details.settings input:focus{border-color:var(--gold);}
+  details.settings a{color:var(--gold);}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(13,16,36,.94);backdrop-filter:blur(14px);border-top:1px solid rgba(242,236,217,.12);}
+  .prog{height:3px;background:rgba(242,236,217,.1);cursor:pointer;}
+  .prog i{display:block;height:100%;width:0;background:var(--gold);transition:width .25s linear;}
+  .bar-in{max-width:1400px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:14px;}
+  .btn{border:none;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:filter .14s ease,transform .1s ease;}
+  .btn:active{transform:translateY(1px);}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .play{width:46px;height:46px;flex:none;background:var(--gold);color:var(--ink);border-radius:50%;font-size:1.05rem;}
+  .play:hover{filter:brightness(1.09);}
+  .play:disabled{opacity:.4;cursor:not-allowed;}
+  .ghost{background:var(--ink-3);color:var(--paper);padding:11px 13px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;}
+  .ghost:hover{background:#282e58;}
+  .ghost:disabled{opacity:.4;cursor:not-allowed;}
+  .bar-info{flex:1;min-width:0;}
+  .bar-info .t{font-size:.86rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-info .s{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .vol{display:flex;align-items:center;gap:8px;flex:none;}
+  .vol input{width:92px;accent-color:var(--gold);}
+  @media (max-width:760px){
+    .vol{display:none;} .bar-in{padding:10px 16px;gap:10px;}
+    .moods{grid-template-columns:repeat(2,1fr);} .shell{padding:0 16px 120px;}
+  }
+  .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:60;background:var(--paper);color:var(--ink);padding:10px 16px;border-radius:9px;font-size:.83rem;font-weight:500;box-shadow:0 14px 34px -12px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s ease,bottom .25s ease;max-width:90vw;text-align:center;}
+  .toast.show{opacity:1;bottom:100px;}
+
+  /* ================= BACKDROP: one generated landscape per state ========= */
+  .backdrop{position:fixed;inset:0;z-index:-2;overflow:hidden;background:var(--ink);}
+  .bd-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.1s ease;background-size:cover;background-position:center bottom;}
+  .bd-layer.on{opacity:1;}
+  .bd-layer svg{position:absolute;inset:0;width:100%;height:100%;}
+  .bd-scrim{position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:linear-gradient(to bottom, rgba(13,16,36,.86) 0%, rgba(13,16,36,.58) 42%, rgba(13,16,36,.90) 100%);}
+  .bd-grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+    background-image:radial-gradient(rgba(255,255,255,.09) .5px, transparent .5px);background-size:3px 3px;}
+
+  /* ================= VINYL DECK ========================================== */
+  .deck{position:relative;padding:6px 0 2px;display:flex;justify-content:center;}
+  .platter{position:relative;width:min(268px,72vw);aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle at 50% 50%, #2a2f52 0 6%, #14162c 6% 100%);
+    box-shadow:0 22px 44px -18px rgba(0,0,0,.85), inset 0 0 0 1px rgba(242,236,217,.07);
+    display:flex;align-items:center;justify-content:center;}
+  .vinyl{position:absolute;inset:5%;border-radius:50%;
+    background:
+      repeating-radial-gradient(circle at 50% 50%, rgba(242,236,217,.045) 0 1px, transparent 1px 4px),
+      radial-gradient(circle at 50% 50%, #191c33 0 30%, #0f1124 30% 100%);
+    animation:spin 3.4s linear infinite;animation-play-state:paused;}
+  .platter.spinning .vinyl{animation-play-state:running;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .vinyl::after{content:"";position:absolute;inset:0;border-radius:50%;
+    background:conic-gradient(from 210deg, transparent 0 12%, rgba(242,236,217,.11) 18%, transparent 26% 100%);}
+  .vlabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:41%;aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;z-index:3;
+    background:var(--gold);color:#141021;box-shadow:0 3px 14px -4px rgba(0,0,0,.7);padding:6px;}
+  .vlabel b{font-family:'Fraunces',serif;font-size:1.34rem;line-height:1;font-weight:700;}
+  .vlabel i{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.44rem;letter-spacing:.13em;opacity:.75;margin-top:2px;}
+  .vlabel span{font-family:'IBM Plex Mono',monospace;font-size:.46rem;letter-spacing:.07em;
+    margin-top:4px;line-height:1.25;max-width:95%;text-transform:uppercase;font-weight:600;}
+  .spindle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:9px;height:9px;border-radius:50%;background:#0d1024;z-index:4;box-shadow:0 0 0 2px rgba(242,236,217,.18);}
+  .tonearm{position:absolute;top:5%;right:-2%;width:47%;height:6px;z-index:5;
+    transform-origin:calc(100% - 9px) 50%;transform:rotate(-32deg);
+    transition:transform 1.1s cubic-bezier(.4,.1,.3,1);pointer-events:none;}
+  .platter.spinning .tonearm{transform:rotate(-6deg);}
+  .tonearm .arm{position:absolute;left:9%;right:9px;top:2px;height:2.5px;border-radius:2px;
+    background:linear-gradient(90deg,#b9b2a0,#f2ecd9);}
+  .tonearm .pivot{position:absolute;right:0;top:-5px;width:18px;height:18px;border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#4a5079,#1d2140);box-shadow:inset 0 0 0 1px rgba(242,236,217,.2);}
+  .tonearm .head{position:absolute;left:0;top:-4px;width:15px;height:11px;border-radius:2px;
+    background:#e8e2cd;transform:rotate(18deg);box-shadow:0 1px 4px rgba(0,0,0,.5);}
+  .deck-meta{text-align:center;margin-top:12px;}
+  .rpm{display:inline-flex;gap:8px;align-items:center;font-family:'IBM Plex Mono',monospace;
+    font-size:.55rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;}
+  .rpm b{width:5px;height:5px;border-radius:50%;background:#5b6080;}
+  .platter.spinning ~ .deck-meta .rpm b{background:var(--leaf);box-shadow:0 0 7px var(--leaf);}
+
+  .srcstrip{margin-top:12px;border-radius:8px;overflow:hidden;background:var(--ink-3);position:relative;}
+  .srcstrip .caption{font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.13em;
+    color:var(--dim);text-transform:uppercase;padding:6px 9px 0;display:block;}
+  .screen{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--ink-3);}
+
+  /* ================= LANDING ============================================= */
+  .landing{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
+    padding:34px 22px;overflow-y:auto;
+    background:
+      radial-gradient(1000px 560px at 50% 6%, rgba(232,163,61,.13), transparent 64%),
+      radial-gradient(820px 640px at 84% 96%, rgba(148,99,176,.15), transparent 60%),
+      #0b0e20;
+    transition:opacity .9s ease, visibility .9s ease;}
+  .landing.gone{opacity:0;visibility:hidden;}
+  /* A frieze of instruments from every zone, plus broadcast arcs off the knob.
+     It sits under a radial scrim so the three lines stay fully legible. */
+  .land-bg{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+  /* Far layer holds only abstract marks (arcs, waves, tuner plate), so it can be
+     stretched to any viewport without anything looking wrong. */
+  .land-bg .lbg-far{position:absolute;inset:0;width:100%;height:100%;}
+  /* The frieze is anchored to the bottom edge and keeps its aspect, because the
+     earlier full-bleed 'slice' pushed the instruments off-screen entirely on
+     wide, short windows. */
+  .land-bg .lbg-frieze{position:absolute;left:0;right:0;bottom:0;width:100%;
+    height:clamp(210px,38vh,340px);}
+  .land-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(760px 430px at 50% 34%, rgba(11,14,32,.93) 0%, rgba(11,14,32,.66) 56%, rgba(11,14,32,.12) 88%, rgba(11,14,32,0) 100%),
+      linear-gradient(to bottom, rgba(11,14,32,.48) 0%, rgba(11,14,32,0) 30%, rgba(11,14,32,0) 58%, rgba(11,14,32,.34) 100%);}
+  .land-in{position:relative;z-index:2;max-width:660px;text-align:center;}
+  .arcs circle{animation:breathe 7s ease-in-out infinite;}
+  @keyframes breathe{0%,100%{opacity:.30;}50%{opacity:.72;}}
+  /* Three lines, three distinct voices: the kicker is dial-plate lettering, the
+     headline is the statement, the closing line is a spoken aside. */
+  .land-kicker{font-family:'IBM Plex Mono',monospace;
+    font-size:clamp(.78rem,1.9vw,1.02rem);font-weight:500;letter-spacing:.2em;
+    text-transform:uppercase;color:rgba(232,163,61,.94);margin:0 0 30px;line-height:1.75;
+    text-wrap:balance;}
+  .land-in h1{font-family:'Fraunces',serif;font-weight:400;
+    font-size:clamp(2.233rem,7.7vw,4.433rem);line-height:1.0;margin:0 0 22px;
+    letter-spacing:-.022em;text-wrap:balance;}
+  /* 'Map' just carries a capital M now - no extra weight, so the whole line
+     sits in one even voice. */
+  .land-in h1 .cap{font-weight:inherit;font-size:inherit;letter-spacing:inherit;
+    color:inherit;}
+  .land-sub{font-family:'Fraunces',serif;font-style:italic;font-weight:400;
+    font-size:clamp(1.08rem,3vw,1.52rem);color:var(--gold);margin:0 0 58px;
+    letter-spacing:.005em;line-height:1.4;opacity:.95;}
+
+  /* the knob */
+  .knob-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;}
+  .knob{position:relative;width:128px;height:128px;border:none;background:none;padding:0;
+    cursor:pointer;border-radius:50%;-webkit-tap-highlight-color:transparent;}
+  .knob:focus-visible{outline:2px solid var(--gold);outline-offset:9px;}
+  .knob-ticks{position:absolute;inset:-16px;pointer-events:none;}
+  .knob-ticks i{position:absolute;top:0;left:50%;width:1.5px;height:7px;margin-left:-.75px;
+    background:rgba(242,236,217,.30);transform-origin:50% 80px;border-radius:1px;transition:background .3s ease;}
+  .knob-ticks i.lit{background:var(--gold);box-shadow:0 0 6px rgba(232,163,61,.9);}
+  .knob-body{position:absolute;inset:0;border-radius:50%;
+    background:
+      repeating-conic-gradient(from 0deg, rgba(0,0,0,.34) 0 1.5deg, transparent 1.5deg 5deg),
+      radial-gradient(circle at 50% 34%, #4c5480, #232744 62%, #14172c 100%);
+    box-shadow:0 20px 42px -14px rgba(0,0,0,.9), inset 0 1px 0 rgba(242,236,217,.22),
+               inset 0 -8px 18px rgba(0,0,0,.55);
+    display:flex;align-items:center;justify-content:center;
+    transform:rotate(-142deg);transition:transform .9s cubic-bezier(.34,.08,.24,1);}
+  .knob:hover .knob-body{transform:rotate(-124deg);}
+  .knob.turning .knob-body{transform:rotate(158deg);}
+  .knob-face{position:absolute;inset:17%;border-radius:50%;
+    background:radial-gradient(circle at 46% 32%, #2b3055, #10132a);
+    box-shadow:inset 0 0 0 1px rgba(242,236,217,.13);
+    display:flex;align-items:flex-start;justify-content:center;}
+  .knob-notch{width:3.5px;height:26%;margin-top:9%;border-radius:2px;background:var(--gold);
+    box-shadow:0 0 10px rgba(232,163,61,.85);}
+  .knob-cap{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--dim);margin:0;transition:color .3s ease;}
+  .knob:hover ~ .knob-cap{color:var(--paper);}
+  .knob-hint{font-family:'IBM Plex Mono',monospace;font-size:.53rem;letter-spacing:.14em;
+    color:rgba(154,154,184,.6);margin:2px 0 0;text-transform:uppercase;}
+
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;}}
+</style>
+</head>
+<body>
+
+<div class="backdrop"><div class="bd-layer" id="bdA"></div><div class="bd-layer" id="bdB"></div></div>
+<div class="bd-scrim"></div>
+<div class="bd-grain"></div>
+
+<div class="landing" id="landing">
+  <div class="land-bg" id="landBg"></div>
+  <div class="land-scrim"></div>
+  <div class="land-in">
+    <p class="land-kicker">The whole country, arranged by frequency</p>
+    <h1>A <span class="cap">Map</span> you listen to</h1>
+    <p class="land-sub">Somewhere on this dial, home</p>
+
+    <div class="knob-wrap">
+      <button class="knob" id="enterBtn" aria-label="Turn the dial to enter Sur Radio">
+        <span class="knob-ticks" id="knobTicks"></span>
+        <span class="knob-body">
+          <span class="knob-face"><span class="knob-notch"></span></span>
+        </span>
+      </button>
+      <p class="knob-cap">Turn the dial</p>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="16" cy="16" r="14.5" fill="none" stroke="#e8a33d" stroke-width="1.3"/>
+        <circle cx="16" cy="16" r="3.4" fill="#e8a33d"/>
+        <circle cx="16" cy="4.2" r="2.1" fill="#c85043"/>
+        <circle cx="27.8" cy="16" r="2.1" fill="#2f9c8b"/>
+        <circle cx="16" cy="27.8" r="2.1" fill="#9463b0"/>
+        <circle cx="4.2" cy="16" r="2.1" fill="#57a86c"/>
+      </svg>
+      <span class="brand-name">SUR RADIO<small>SHORTWAVE MEMORIES &middot; BROADBAND SPEED</small></span>
+    </div>
+    <p class="tagline">Thirty-six states, thirty-six frequencies. Tap one and the needle drops itself &mdash; change the mood and the whole region retunes around it.</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><h2>The Sur Network</h2><span id="mapHint">TAP ANY STATE TO TUNE IN</span></div>
+      <div class="legend" id="legend"></div>
+      <div class="maphold">
+        <svg id="map" viewBox="0 0 760 800" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of India by state"></svg>
+        <div class="maploading" id="mapLoading">
+          <div>
+            <b>Loading state boundaries</b>
+            Fetching official boundary data&hellip;<br>
+            The station list on the right works either way.
+          </div>
+        </div>
+      </div>
+      <p class="srcnote" id="srcNote">
+        Boundaries: <a href="https://github.com/udit-001/india-maps-data" target="_blank" rel="noopener">india-maps-data</a>,
+        derived from Survey of India / DataMeet sources. Administrative boundaries are shown for navigation only.
+      </p>
+    </div>
+
+    <div class="rail-col">
+      <div class="card np">
+        <div class="np-idle" id="npIdle">
+          <p><b style="color:var(--paper)">Nothing on air yet.</b><br>Tap a state on the map, or start somewhere random.</p>
+          <button class="btn ghost" id="randomBtn" style="width:100%;justify-content:center;">Tune me somewhere</button>
+        </div>
+        <div id="npLive" style="display:none;">
+          <div class="np-freq"><b id="freq">&mdash;</b><em>MHZ</em></div>
+          <p class="np-place" id="place">&mdash;</p>
+          <div class="deck">
+            <div class="platter" id="platter">
+              <div class="vinyl"></div>
+              <div class="vlabel" id="vlabel">
+                <b id="vfreq">&mdash;</b><i>MHZ</i><span id="vstate">SUR RADIO</span>
+              </div>
+              <div class="spindle"></div>
+              <div class="tonearm" id="tonearm">
+                <div class="arm"></div><div class="head"></div><div class="pivot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="deck-meta">
+            <span class="rpm"><b></b><span id="rpmText">Stopped</span></span>
+          </div>
+          <div class="srcstrip">
+            <span class="caption">Source &middot; playing via YouTube</span>
+            <div class="screen">
+              <div id="ytplayer"></div>
+              <div class="screen-veil" id="veil">
+                <div>
+                  <div class="eq"><i></i><i></i><i></i><i></i><i></i></div>
+                  <span id="veilText">Finding the song&hellip;</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h3 class="np-track" id="trackName">&mdash;</h3>
+          <p class="np-artist" id="trackArtist">&mdash;</p>
+          <p class="np-why" id="trackWhy">&mdash;</p>
+        </div>
+      </div>
+
+      <div class="card pad">
+        <span class="lbl">Mood &mdash; re-curates the current state</span>
+        <div class="moods" id="moods"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" style="padding-bottom:12px;"><h2>Up next</h2><span id="qStatus">&mdash;</span></div>
+        <div class="queue" id="queue"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-head" style="padding-bottom:10px;"><h2>All stations</h2><span id="stnCount"></span></div>
+        <div class="search"><input id="stnSearch" type="search" placeholder="Search a state, language or genre..." autocomplete="off"></div>
+        <div class="stnlist" id="stnlist"></div>
+        <details class="settings">
+          <summary>Playback settings</summary>
+          <p>Songs are looked up on YouTube at play time, so nothing here can go out of date. Adding a free
+            <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">YouTube Data API key</a>
+            makes matching faster and more accurate. Leave it blank and Sur Radio falls back to public open-source search mirrors.</p>
+          <input id="ytKey" type="password" placeholder="YouTube Data API key (optional)" autocomplete="off">
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="prog" id="prog" role="progressbar" aria-label="Track progress"><i id="progFill"></i></div>
+  <div class="bar-in">
+    <button class="btn play" id="playBtn" disabled aria-label="Play or pause">&#9654;</button>
+    <div class="bar-info">
+      <div class="t" id="barTitle">Sur Radio &mdash; off air</div>
+      <div class="s" id="barSub">Select a state to begin</div>
+    </div>
+    <button class="btn ghost" id="prevBtn" disabled aria-label="Previous song">Prev</button>
+    <button class="btn ghost" id="nextBtn" disabled aria-label="Next song">Next</button>
+    <div class="vol">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);">VOL</span>
+      <input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume">
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   SUR RADIO v3 - state-wise, with real boundary geometry.
+
+   Two things changed from v2, both because the previous version was wrong:
+
+   1. The map is no longer hand-drawn. v2 used a 41-point polygon I sketched by
+      eye, which is why it looked off. Boundaries now come from real GeoJSON
+      (Survey of India / DataMeet derived) fetched at runtime and projected with
+      a proper Mercator fit. Nothing about the shape is guessed any more.
+
+   2. Coverage is state-wise, not city-wise. 36 stations = 28 states + 8 UTs, so
+      every place in the country falls inside one. Centroids, label positions
+      and dial frequencies are all computed from the boundary data rather than
+      typed in by hand.
+
+   Still true from v2: no YouTube video ID is hardcoded. Songs are stored as
+   title + artist and resolved to a live video at play time.
+   ========================================================================== */
+
+const GEO_URL = 'https://cdn.jsdelivr.net/gh/udit-001/india-maps-data@2884453/geojson/india.geojson';
+
+const ZONES = {
+  north:    {c:'#e8a33d', n:'North'},
+  west:     {c:'#c85043', n:'West'},
+  central:  {c:'#c9a15e', n:'Central'},
+  east:     {c:'#9463b0', n:'East'},
+  northeast:{c:'#57a86c', n:'Northeast'},
+  south:    {c:'#2f9c8b', n:'South'},
+};
+
+const MOODS = {
+  classic:   {n:'Classic',   tag:'legacy',  q:'classic golden era song'},
+  folk:      {n:'Folk',      tag:'roots',   q:'traditional folk song'},
+  devotional:{n:'Devotional',tag:'bhakti',  q:'devotional bhajan'},
+  modern:    {n:'Modern',    tag:'current', q:'recent hit song'},
+  party:     {n:'Party',     tag:'dance',   q:'dance festival song'},
+  chill:     {n:'Chill',     tag:'slow',    q:'soft slow melody'},
+};
+
+/* ---------------------------------------------------------------------------
+   36 stations. `alias` lists spellings that may appear in boundary datasets,
+   since different sources disagree (Odisha/Orissa, Delhi/NCT of Delhi, etc).
+   --------------------------------------------------------------------------- */
+const REGIONS = [
+/* ---------------- NORTH ---------------- */
+{id:'jk',name:'Jammu & Kashmir',zone:'north',alias:['Jammu and Kashmir','Jammu & Kashmir','Jammu Kashmir'],
+ lang:'Kashmiri, Dogri',genres:'Sufiana Kalam, santoor, chakri and Dogri folk',
+ seed:[
+  {t:'Bhumbro',a:'Mission Kashmir',m:['classic','folk','party']},
+  {t:'Roshe Walo Myaani Poshe Madano',a:'Kashmiri folk',m:['folk','chill']},
+  {t:'Harmukh Bartal',a:'Kashmiri folk',m:['folk','devotional']},
+  {t:'Santoor raga recital',a:'Bhajan Sopori',m:['classic','chill','devotional']},
+  {t:'Wanvun Kashmiri wedding song',a:'Kashmiri traditional',m:['folk','party']},
+  {t:'Kashmiri song',a:'Ali Saifudin',m:['modern','chill']},
+  {t:'Dogri folk song',a:'Dogri traditional',m:['folk','classic']}]},
+{id:'ladakh',name:'Ladakh',zone:'north',alias:['Ladakh'],
+ lang:'Ladakhi, Tibetan',genres:'monastic chant, Ladakhi folk and lute songs',
+ seed:[
+  {t:'Ladakhi folk song',a:'Ladakhi traditional',m:['folk','chill']},
+  {t:'Buddhist monastery chanting',a:'Ladakh monastic chant',m:['devotional','chill']},
+  {t:'Ladakhi wedding song',a:'Ladakhi traditional',m:['folk','party']},
+  {t:'Zanskar folk music',a:'Ladakhi',m:['folk','classic']},
+  {t:'Om Mani Padme Hum chant',a:'Tibetan Buddhist mantra',m:['devotional','chill']},
+  {t:'Ladakhi modern song',a:'Ladakh',m:['modern','party']}]},
+{id:'hp',name:'Himachal Pradesh',zone:'north',alias:['Himachal Pradesh'],
+ lang:'Pahari, Hindi',genres:'Nati, Pahari folk and Kinnauri songs',
+ seed:[
+  {t:'Chamba Kitni Door',a:'Himachali Pahari folk',m:['folk','classic','chill']},
+  {t:'Himachali Nati',a:'Himachali folk',m:['folk','party']},
+  {t:'Kunjoo Chanchlo',a:'Himachali folk ballad',m:['folk','classic']},
+  {t:'Kinnauri folk song',a:'Kinnaur traditional',m:['folk','chill']},
+  {t:'Pahari bhajan',a:'Himachali devotional',m:['devotional','chill']},
+  {t:'Pahari song',a:'Mohit Chauhan',m:['modern','chill']},
+  {t:'Himachali dhol nagara',a:'Himachali festival music',m:['party','folk']}]},
+{id:'punjab',name:'Punjab',zone:'north',alias:['Punjab'],
+ lang:'Punjabi',genres:'Bhangra, Punjabi pop, Sufi and Gurbani kirtan',
+ seed:[
+  {t:'Ki Banu Duniya Da',a:'Gurdas Maan',m:['classic','folk']},
+  {t:'Mitran Di Chhatri',a:'Gurdas Maan',m:['classic','party']},
+  {t:'Do You Know',a:'Diljit Dosanjh',m:['modern','chill']},
+  {t:'Laembadgini',a:'Diljit Dosanjh',m:['modern','party']},
+  {t:'Bulla Ki Jaana',a:'Rabbi Shergill',m:['devotional','chill','classic']},
+  {t:'Jugni',a:'Punjabi folk',m:['folk','party']},
+  {t:'Gurbani Shabad Kirtan',a:'Golden Temple kirtan',m:['devotional','chill']}]},
+{id:'haryana',name:'Haryana',zone:'north',alias:['Haryana'],
+ lang:'Haryanvi',genres:'Ragni, saang theatre and Haryanvi pop',
+ seed:[
+  {t:'Haryanvi Ragni',a:'Pandit Lakhmi Chand',m:['folk','classic']},
+  {t:'52 Gaj Ka Daman',a:'Renuka Panwar',m:['party','modern']},
+  {t:'Solid Body',a:'Ajay Hooda',m:['party','modern']},
+  {t:'Haryanvi bhajan',a:'Haryanvi devotional',m:['devotional','folk']},
+  {t:'Haryanvi saang folk',a:'Haryanvi traditional',m:['folk','classic']},
+  {t:'Haryanvi song',a:'Haryanvi',m:['modern','chill']}]},
+{id:'uttarakhand',name:'Uttarakhand',zone:'north',alias:['Uttarakhand','Uttaranchal'],
+ lang:'Garhwali, Kumaoni',genres:'Garhwali and Kumaoni folk, jagar ritual songs',
+ seed:[
+  {t:'Bedu Pako Baro Masa',a:'Kumaoni folk',m:['folk','classic']},
+  {t:'Garhwali song',a:'Narendra Singh Negi',m:['folk','classic','chill']},
+  {t:'Ghughuti',a:'Garhwali folk',m:['folk','chill']},
+  {t:'Jhumelo Garhwali',a:'Garhwali folk',m:['folk','party']},
+  {t:'Nanda Devi Jagar',a:'Uttarakhandi ritual song',m:['devotional','folk']},
+  {t:'Song',a:'Jubin Nautiyal',m:['modern','chill']}]},
+{id:'delhi',name:'Delhi',zone:'north',alias:['Delhi','NCT of Delhi','National Capital Territory of Delhi'],
+ lang:'Hindi, Urdu',genres:'film mainstream, Hindi hip-hop, qawwali and indie',
+ seed:[
+  {t:'Dilli Wali Girlfriend',a:'Yeh Jawaani Hai Deewani',m:['party','modern']},
+  {t:'cold mess',a:'Prateek Kuhad',m:['chill','modern']},
+  {t:'Mere Gully Mein',a:'DIVINE and Naezy',m:['modern','party']},
+  {t:'Nizamuddin Auliya qawwali',a:'Nizami Bandhu',m:['devotional','folk']},
+  {t:'Masakali',a:'Delhi 6 A R Rahman',m:['classic','chill']},
+  {t:'Jind Mahi',a:'Nucleya',m:['party','folk']}]},
+{id:'chandigarh',name:'Chandigarh',zone:'north',alias:['Chandigarh'],
+ lang:'Punjabi, Hindi',genres:'Punjabi pop and the city indie scene',
+ seed:[
+  {t:'Chandigarh song',a:'Punjabi pop',m:['modern','party']},
+  {t:'Punjabi acoustic song',a:'Punjabi indie',m:['chill','modern']},
+  {t:'Bhangra track',a:'Punjabi',m:['party','folk']},
+  {t:'Punjabi folk song',a:'Punjabi traditional',m:['folk','classic']},
+  {t:'Shabad Kirtan',a:'Sikh devotional',m:['devotional','chill']}]},
+/* ---------------- WEST ---------------- */
+{id:'rajasthan',name:'Rajasthan',zone:'west',alias:['Rajasthan'],
+ lang:'Rajasthani, Marwari',genres:'Manganiyar and Langa folk, Maand, desert Sufi',
+ seed:[
+  {t:'Kesariya Balam',a:'Allah Jilai Bai',m:['classic','folk']},
+  {t:'Chaudhary',a:'Mame Khan Amit Trivedi',m:['folk','modern','chill']},
+  {t:'Padharo Mhare Desh',a:'Rajasthani folk',m:['folk','classic']},
+  {t:'Ghoomar',a:'Padmaavat',m:['party','modern']},
+  {t:'Damadam Mast Qalandar',a:'Sufi qawwali',m:['devotional','party','folk']},
+  {t:'Nimbooda Nimbooda',a:'Hum Dil De Chuke Sanam',m:['party','classic']},
+  {t:'Banna Re',a:'Rajasthani folk',m:['folk','party']}]},
+{id:'gujarat',name:'Gujarat',zone:'west',alias:['Gujarat'],
+ lang:'Gujarati, Kutchi',genres:'garba, dandiya raas, bhajan and Kutchi folk',
+ seed:[
+  {t:'Nagada Sang Dhol',a:'Goliyon Ki Raasleela Ram Leela',m:['party','modern']},
+  {t:'Dholida',a:'Gangubai Kathiawadi',m:['party','modern']},
+  {t:'Maadi Taro Kanudo',a:'Falguni Pathak',m:['devotional','folk','classic']},
+  {t:'Odhni Odhu Odhu Ne Udi Jaay',a:'Falguni Pathak',m:['classic','chill','folk']},
+  {t:'Vaishnav Jan To',a:'Narsinh Mehta bhajan',m:['devotional','chill','classic']},
+  {t:'Kesariyo Rang',a:'Gujarati garba',m:['folk','party']},
+  {t:'Gujarati song',a:'Aditya Gadhvi',m:['modern','folk']}]},
+{id:'maharashtra',name:'Maharashtra',zone:'west',alias:['Maharashtra'],
+ lang:'Marathi',genres:'lavani, abhang, khayal classical and film score',
+ seed:[
+  {t:'Zingaat',a:'Sairat Ajay Atul',m:['party','modern']},
+  {t:'Yad Lagla',a:'Sairat Ajay Atul',m:['chill','modern']},
+  {t:'Apsara Aali',a:'Natarang lavani',m:['folk','party','classic']},
+  {t:'Teerth Vitthal Kshetra Vitthal',a:'Bhimsen Joshi abhang',m:['devotional','classic','chill']},
+  {t:'Sukhkarta Dukhharta Ganpati aarti',a:'Marathi aarti',m:['devotional','folk','party']},
+  {t:'Ajeeb Dastan Hai Yeh',a:'Lata Mangeshkar',m:['classic','chill']},
+  {t:'Koligeet',a:'Marathi koli folk',m:['folk','party']}]},
+{id:'goa',name:'Goa',zone:'west',alias:['Goa'],
+ lang:'Konkani',genres:'Konkani folk, mando, dulpod and Goa trance',
+ seed:[
+  {t:'Bebdo',a:'Lorna Cordeiro',m:['classic','folk','party']},
+  {t:'Hanv Sanddun Vetam Gaon',a:'Konkani folk',m:['folk','chill','classic']},
+  {t:'O Meri Munni',a:'Remo Fernandes',m:['classic','party','modern']},
+  {t:'Konkani mando',a:'Goan traditional',m:['classic','chill','folk']},
+  {t:'Goa psytrance set',a:'Goa trance',m:['party','modern']},
+  {t:'Konkani hymn',a:'Goan church choir',m:['devotional','chill']}]},
+{id:'dnhdd',name:'Dadra & Nagar Haveli and Daman & Diu',zone:'west',
+ alias:['Dadra and Nagar Haveli and Daman and Diu','Dadra & Nagar Haveli and Daman & Diu','Daman and Diu','Dadra and Nagar Haveli'],
+ lang:'Gujarati, Konkani, Warli',genres:'Warli tribal folk and Gujarati coastal songs',
+ seed:[
+  {t:'Warli tribal folk song',a:'Warli traditional',m:['folk','party']},
+  {t:'Gujarati garba',a:'Gujarati folk',m:['party','folk']},
+  {t:'Konkani folk song',a:'Konkani traditional',m:['folk','chill']},
+  {t:'Gujarati bhajan',a:'Gujarati devotional',m:['devotional','chill']},
+  {t:'Tarpa tribal music',a:'Warli tarpa',m:['folk','classic']},
+  {t:'Gujarati song',a:'Gujarati pop',m:['modern','party']}]},
+/* ---------------- CENTRAL ---------------- */
+{id:'up',name:'Uttar Pradesh',zone:'central',alias:['Uttar Pradesh'],
+ lang:'Hindi, Awadhi, Bhojpuri, Braj',genres:'thumri, dhrupad, kajri, qawwali and Bhojpuri folk',
+ seed:[
+  {t:'Babul Mora Naihar Chhooto Jaye',a:'thumri',m:['classic','chill']},
+  {t:'Yaad Piya Ki Aaye',a:'Bade Ghulam Ali Khan',m:['classic','chill']},
+  {t:'Bajuband Khul Khul Jaye',a:'Girija Devi',m:['classic','folk']},
+  {t:'Khelein Masane Mein Holi',a:'Chhannulal Mishra',m:['folk','devotional','party']},
+  {t:'Chhap Tilak Sab Cheeni',a:'Amir Khusro qawwali',m:['devotional','classic']},
+  {t:'Mera Bhola Hai Bhandari',a:'Hansraj Raghuwanshi',m:['devotional','modern','party']},
+  {t:'Lollipop Lagelu',a:'Pawan Singh',m:['party','modern']}]},
+{id:'mp',name:'Madhya Pradesh',zone:'central',alias:['Madhya Pradesh'],
+ lang:'Hindi, Malwi, Bundeli',genres:'Malwi folk, nirguni bhajan, Kabir songs and Gond music',
+ seed:[
+  {t:'Kabir Nirguni Bhajan',a:'Kumar Gandharva',m:['classic','devotional','chill']},
+  {t:'Moko Kahan Dhoonde Bandey',a:'Kabir bhajan',m:['devotional','folk','chill']},
+  {t:'Kabir bhajan',a:'Prahlad Singh Tipanya',m:['devotional','folk']},
+  {t:'Teri Deewani',a:'Kailash Kher',m:['devotional','modern','party']},
+  {t:'Bundeli Rai geet',a:'Bundelkhand folk',m:['folk','party']},
+  {t:'Malwi lokgeet',a:'Malwa folk',m:['folk','chill']}]},
+{id:'chhattisgarh',name:'Chhattisgarh',zone:'central',alias:['Chhattisgarh','Chattisgarh'],
+ lang:'Chhattisgarhi',genres:'Pandwani, panthi, sua nach and tribal percussion',
+ seed:[
+  {t:'Pandwani',a:'Teejan Bai',m:['folk','classic','devotional']},
+  {t:'Panthi geet',a:'Chhattisgarhi folk',m:['folk','devotional','party']},
+  {t:'Sua nach geet',a:'Chhattisgarhi folk',m:['folk','party']},
+  {t:'Chhattisgarhi lokgeet',a:'Chhattisgarhi folk',m:['folk','chill']},
+  {t:'Chhattisgarhi song',a:'Chhattisgarhi modern',m:['modern','party']},
+  {t:'Chhattisgarhi bhajan',a:'Chhattisgarhi devotional',m:['devotional','chill']}]},
+/* ---------------- EAST ---------------- */
+{id:'bihar',name:'Bihar',zone:'east',alias:['Bihar'],
+ lang:'Bhojpuri, Maithili, Magahi',genres:'Chhath devotional, Bhojpuri folk and Maithili songs',
+ seed:[
+  {t:'Kaanch Hi Bans Ke Bahangi',a:'Sharda Sinha',m:['devotional','folk']},
+  {t:'Ho Deenanath',a:'Sharda Sinha',m:['devotional','folk','chill']},
+  {t:'Bidesiya',a:'Bhikhari Thakur',m:['folk','classic']},
+  {t:'Vidyapati Maithili padavali',a:'Vidyapati',m:['classic','devotional','chill']},
+  {t:'Lollipop Lagelu',a:'Pawan Singh',m:['party','modern']},
+  {t:'Bhojpuri lokgeet',a:'Bhojpuri folk',m:['folk','party']}]},
+{id:'jharkhand',name:'Jharkhand',zone:'east',alias:['Jharkhand'],
+ lang:'Santhali, Nagpuri, Kurukh',genres:'Santhali folk, Nagpuri jhumar and mandar drumming',
+ seed:[
+  {t:'Nagpuri jhumar geet',a:'Mukund Nayak',m:['folk','party']},
+  {t:'Santhali folk song',a:'Santhali traditional',m:['folk','chill']},
+  {t:'Karma geet',a:'Jharkhand folk',m:['folk','party','devotional']},
+  {t:'Mandar drum tribal music',a:'Jharkhand tribal',m:['folk','party']},
+  {t:'Nagpuri song',a:'Nagpuri',m:['modern','party']},
+  {t:'Santhali classic song',a:'Santhali',m:['classic','folk']}]},
+{id:'wb',name:'West Bengal',zone:'east',alias:['West Bengal'],
+ lang:'Bengali',genres:'Rabindra Sangeet, Baul mystic folk, Bangla rock and adhunik',
+ seed:[
+  {t:'Ekla Chalo Re',a:'Rabindra Sangeet',m:['classic','devotional','chill']},
+  {t:'Ami Chini Go Chini Tomare',a:'Rabindra Sangeet',m:['classic','chill']},
+  {t:'Sob Loke Koy',a:'Lalon Baul geeti',m:['folk','devotional','chill']},
+  {t:'Bela Bose',a:'Anjan Dutt',m:['modern','chill','classic']},
+  {t:'Tomake Chai',a:'Fossils',m:['modern','party']},
+  {t:'Dhaker Taale Komor Dole',a:'Durga Puja dhak song',m:['party','devotional','folk']},
+  {t:'Coffee House er Sei Addata',a:'Manna Dey',m:['classic','chill']}]},
+{id:'odisha',name:'Odisha',zone:'east',alias:['Odisha','Orissa'],
+ lang:'Odia, Sambalpuri',genres:'Odissi classical, Sambalpuri folk and Jagannath bhajan',
+ seed:[
+  {t:'Rangabati',a:'Jitendra Haripal Krishna Patel',m:['folk','party','classic']},
+  {t:'Ahe Neela Saila',a:'Odia bhajan',m:['devotional','classic','chill']},
+  {t:'Dashavatara Odissi',a:'Odissi classical',m:['classic','devotional']},
+  {t:'Sambalpuri folk song',a:'Sambalpuri',m:['folk','party']},
+  {t:'Odia adhunika gita',a:'Odia melody',m:['chill','classic']},
+  {t:'Odia song',a:'Human Sagar',m:['modern','chill']}]},
+/* ---------------- NORTHEAST ---------------- */
+{id:'assam',name:'Assam',zone:'northeast',alias:['Assam'],
+ lang:'Assamese, Bodo',genres:'Bihu folk, Borgeet, Zubeen-era Assamese pop',
+ seed:[
+  {t:'Bistirno Parore',a:'Bhupen Hazarika',m:['classic','folk','chill']},
+  {t:'Manuhe Manuhar Baabe',a:'Bhupen Hazarika',m:['classic','devotional','chill']},
+  {t:'Mayabini Ratir Bukut',a:'Zubeen Garg',m:['chill','modern','classic']},
+  {t:'Bihu geet dhol pepa',a:'Assamese Bihu folk',m:['folk','party']},
+  {t:'Borgeet',a:'Sankardev devotional',m:['devotional','classic']},
+  {t:'Assamese song',a:'Papon',m:['modern','chill']}]},
+{id:'meghalaya',name:'Meghalaya',zone:'northeast',alias:['Meghalaya'],
+ lang:'Khasi, Garo',genres:'Khasi indie rock, gospel choir and Garo folk',
+ seed:[
+  {t:'Set Me Free',a:'Soulmate',m:['modern','party','classic']},
+  {t:'Lou Majaw live',a:'Lou Majaw',m:['classic','chill','folk']},
+  {t:'Khasi folk song',a:'Khasi traditional',m:['folk','chill']},
+  {t:'Shillong Chamber Choir',a:'Shillong Chamber Choir',m:['devotional','classic','chill']},
+  {t:'Garo folk song',a:'Garo traditional',m:['folk','party']},
+  {t:'Summersalt band',a:'Summersalt',m:['modern','chill']}]},
+{id:'manipur',name:'Manipur',zone:'northeast',alias:['Manipur'],
+ lang:'Meiteilon (Manipuri)',genres:'pena ballads, Nat Sankirtana and alt-rock',
+ seed:[
+  {t:'Pena Manipuri folk instrument',a:'Manipuri pena',m:['folk','classic','chill']},
+  {t:'Nat Sankirtana',a:'Manipuri devotional',m:['devotional','classic']},
+  {t:'Lai Haraoba',a:'Manipuri ritual music',m:['folk','devotional']},
+  {t:'Manipuri song',a:'Manipuri modern',m:['modern','chill','party']},
+  {t:'Imphal Talkies',a:'Imphal Talkies',m:['modern','folk']},
+  {t:'Manipuri Raas Leela music',a:'Manipuri classical',m:['classic','devotional']}]},
+{id:'nagaland',name:'Nagaland',zone:'northeast',alias:['Nagaland'],
+ lang:'Nagamese, Ao, Angami',genres:'Naga polyphonic folk, gospel and rock',
+ seed:[
+  {t:'Naga folk song',a:'Tetseo Sisters',m:['folk','chill','classic']},
+  {t:'Naga traditional song',a:'Naga folk',m:['folk','classic']},
+  {t:'Song',a:'Alobo Naga',m:['modern','chill']},
+  {t:'Hornbill Festival music',a:'Naga',m:['folk','party']},
+  {t:'Naga gospel choir',a:'Nagaland gospel',m:['devotional','chill']},
+  {t:'Nagaland rock band',a:'Naga rock',m:['modern','party']}]},
+{id:'mizoram',name:'Mizoram',zone:'northeast',alias:['Mizoram'],
+ lang:'Mizo',genres:'Mizo hla, gospel harmony and chheihlam',
+ seed:[
+  {t:'Mizo hla song',a:'Mizo',m:['folk','chill']},
+  {t:'Mizo gospel song',a:'Mizo choir',m:['devotional','chill']},
+  {t:'Chheihlam',a:'Mizo folk',m:['folk','party']},
+  {t:'Mizo traditional song',a:'Mizo traditional',m:['folk','classic']},
+  {t:'Mizo modern song',a:'Mizoram',m:['modern','party']}]},
+{id:'tripura',name:'Tripura',zone:'northeast',alias:['Tripura'],
+ lang:'Kokborok, Bengali',genres:'Hojagiri songs, Kokborok folk and Bengali music',
+ seed:[
+  {t:'Song',a:'S D Burman',m:['classic','chill']},
+  {t:'Hojagiri dance song',a:'Tripuri folk',m:['folk','party']},
+  {t:'Kokborok folk song',a:'Tripuri traditional',m:['folk','chill']},
+  {t:'Tripura Bengali song',a:'Tripura',m:['modern','chill']},
+  {t:'Tripuri devotional song',a:'Tripura devotional',m:['devotional','folk']}]},
+{id:'arunachal',name:'Arunachal Pradesh',zone:'northeast',alias:['Arunachal Pradesh'],
+ lang:'Nyishi, Adi, Monpa',genres:'tribal folk, Buddhist chant and new indie',
+ seed:[
+  {t:'Song',a:'Taba Chake',m:['modern','chill']},
+  {t:'Nyishi folk song',a:'Nyishi traditional',m:['folk','classic']},
+  {t:'Adi tribal song',a:'Adi folk',m:['folk','party']},
+  {t:'Tawang monastery chant',a:'Monpa Buddhist chant',m:['devotional','chill']},
+  {t:'Arunachal folk music',a:'Arunachali traditional',m:['folk','chill']}]},
+{id:'sikkim',name:'Sikkim',zone:'northeast',alias:['Sikkim'],
+ lang:'Nepali, Bhutia, Lepcha',genres:'Nepali folk, Lepcha songs and monastic chant',
+ seed:[
+  {t:'Nepali folk song',a:'Nepali traditional',m:['folk','chill']},
+  {t:'Maruni dance song',a:'Nepali folk',m:['folk','party']},
+  {t:'Lepcha folk song',a:'Lepcha traditional',m:['folk','classic']},
+  {t:'Sikkim monastery chant',a:'Buddhist chant',m:['devotional','chill']},
+  {t:'Nepali modern song',a:'Nepali',m:['modern','party']}]},
+/* ---------------- SOUTH ---------------- */
+{id:'karnataka',name:'Karnataka',zone:'south',alias:['Karnataka'],
+ lang:'Kannada, Tulu',genres:'Carnatic, Haridasa keerthane, bhavageethe and film music',
+ seed:[
+  {t:'Bhagyada Lakshmi Baramma',a:'Purandara Dasa keerthane',m:['devotional','classic']},
+  {t:'Belageddu',a:'Kirik Party',m:['modern','chill']},
+  {t:'Bombe Helutaite',a:'Rajakumara',m:['modern','party']},
+  {t:'Mysore Se Aayi',a:'Raghu Dixit',m:['folk','party','modern']},
+  {t:'Kannada bhavageethe',a:'C Ashwath',m:['classic','chill','folk']},
+  {t:'Yakshagana music',a:'Yakshagana',m:['folk','classic','devotional']}]},
+{id:'kerala',name:'Kerala',zone:'south',alias:['Kerala'],
+ lang:'Malayalam',genres:'sopana sangeetham, chenda melam, Mappila and film melody',
+ seed:[
+  {t:'Harivarasanam',a:'K J Yesudas',m:['devotional','classic','chill']},
+  {t:'Malare',a:'Premam',m:['chill','modern']},
+  {t:'Jimikki Kammal',a:'Velipadinte Pusthakam',m:['party','modern']},
+  {t:'Pramadavanam Veendum',a:'K J Yesudas',m:['classic','chill']},
+  {t:'Panchari melam chenda',a:'Kerala temple percussion',m:['folk','devotional','party']},
+  {t:'Mappila pattu',a:'Malabar Mappila song',m:['folk','party']}]},
+{id:'tn',name:'Tamil Nadu',zone:'south',alias:['Tamil Nadu'],
+ lang:'Tamil',genres:'Carnatic, nadaswaram, gaana, Kollywood and Thevaram',
+ seed:[
+  {t:'Enjoy Enjaami',a:'Dhee and Arivu',m:['modern','folk','party']},
+  {t:'Rowdy Baby',a:'Maari 2',m:['party','modern']},
+  {t:'Nenjukkul Peidhidum',a:'Vaaranam Aayiram',m:['chill','classic']},
+  {t:'Vatapi Ganapatim Bhaje',a:'Carnatic kriti',m:['devotional','classic']},
+  {t:'Chinna Chinna Aasai',a:'Roja A R Rahman',m:['classic','chill']},
+  {t:'Nadaswaram mallari',a:'temple nadaswaram',m:['devotional','folk']},
+  {t:'Thiruppugazh',a:'Arunagirinathar',m:['devotional','classic']}]},
+{id:'ap',name:'Andhra Pradesh',zone:'south',alias:['Andhra Pradesh'],
+ lang:'Telugu',genres:'Annamacharya keerthana, Kuchipudi, janapadam and Telugu film',
+ seed:[
+  {t:'Annamacharya Keerthana',a:'Annamayya',m:['devotional','classic']},
+  {t:'Ghantasala songs',a:'Ghantasala',m:['classic','chill']},
+  {t:'Telugu janapada geethalu',a:'Andhra folk',m:['folk','party']},
+  {t:'Samajavaragamana',a:'Sid Sriram',m:['chill','modern']},
+  {t:'Butta Bomma',a:'Armaan Malik',m:['modern','party']},
+  {t:'Kuchipudi dance music',a:'Kuchipudi',m:['classic','devotional']}]},
+{id:'telangana',name:'Telangana',zone:'south',alias:['Telangana'],
+ lang:'Telugu, Urdu',genres:'Bathukamma folk, Oggu katha, qawwali and Tollywood',
+ seed:[
+  {t:'Naatu Naatu',a:'RRR M M Keeravani',m:['party','modern']},
+  {t:'Bathukamma folk song',a:'Telangana folk',m:['folk','devotional']},
+  {t:'Telangana folk song',a:'Gaddar',m:['folk','classic']},
+  {t:'Aaj Rang Hai',a:'Amir Khusro qawwali',m:['devotional','classic']},
+  {t:'Inkem Inkem Inkem Kaavaale',a:'Geetha Govindam',m:['chill','modern']},
+  {t:'Oggu katha',a:'Telangana ballad',m:['folk','classic']}]},
+{id:'puducherry',name:'Puducherry',zone:'south',alias:['Puducherry','Pondicherry'],
+ lang:'Tamil, French, Malayalam',genres:'Tamil film music, Carnatic and Bharatanatyam',
+ seed:[
+  {t:'Tamil film song',a:'Tamil cinema',m:['modern','party']},
+  {t:'Carnatic kriti',a:'Carnatic',m:['classic','devotional']},
+  {t:'Bharatanatyam music',a:'Bharatanatyam',m:['classic','devotional']},
+  {t:'Tamil melody song',a:'Tamil',m:['chill','classic']},
+  {t:'Tamil folk song',a:'Tamil folk',m:['folk','party']}]},
+{id:'lakshadweep',name:'Lakshadweep',zone:'south',alias:['Lakshadweep'],
+ lang:'Jeseri (Malayalam), Mahl',genres:'Parichakali, Lava dance and Mappila-linked song',
+ seed:[
+  {t:'Lakshadweep folk song',a:'Lakshadweep traditional',m:['folk','chill']},
+  {t:'Parichakali song',a:'Lakshadweep folk',m:['folk','party']},
+  {t:'Lava dance music',a:'Lakshadweep',m:['folk','party']},
+  {t:'Mappila pattu',a:'Malabar Mappila song',m:['folk','devotional']},
+  {t:'Islamic devotional song Malayalam',a:'Mappila devotional',m:['devotional','chill']},
+  {t:'Mappila classic song',a:'Mappila',m:['classic','folk']},
+  {t:'Malayalam song',a:'Malayalam',m:['modern','chill']}]},
+{id:'andaman',name:'Andaman & Nicobar Islands',zone:'south',
+ alias:['Andaman and Nicobar Islands','Andaman & Nicobar Islands','Andaman and Nicobar'],
+ lang:'Hindi, Bengali, Tamil, Nicobarese',genres:'Nicobarese folk plus the settler mix of Bengali, Tamil and Hindi song',
+ seed:[
+  {t:'Nicobarese folk song',a:'Nicobarese traditional',m:['folk','chill']},
+  {t:'Andaman folk music',a:'Andaman islanders',m:['folk','classic']},
+  {t:'Bengali folk song',a:'Bengali folk',m:['folk','chill']},
+  {t:'Tamil film song',a:'Tamil cinema',m:['modern','party']},
+  {t:'Hindi bhajan',a:'Hindi devotional',m:['devotional','chill']}]},
+];
+
+/* Rail routes: ordered so the dashed line through each zone reads geographically. */
+const ROUTES = [
+  {zone:'north',ids:['ladakh','jk','hp','punjab','chandigarh','haryana','delhi','uttarakhand']},
+  {zone:'west',ids:['rajasthan','gujarat','dnhdd','maharashtra','goa']},
+  {zone:'central',ids:['up','mp','chhattisgarh']},
+  {zone:'east',ids:['bihar','jharkhand','wb','odisha']},
+  {zone:'northeast',ids:['sikkim','assam','arunachal','nagaland','manipur','mizoram','tripura','meghalaya']},
+  {zone:'south',ids:['telangana','ap','karnataka','goa','kerala','lakshadweep','tn','puducherry','andaman']},
+];
+
+const MOOD_KEYS = Object.keys(MOODS);
+const byId = id => REGIONS.find(r => r.id === id);
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s||'').toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
+
+/* name -> region lookup, built from every alias */
+const NAME_INDEX = {};
+REGIONS.forEach(r=>{
+  NAME_INDEX[norm(r.name)] = r;
+  (r.alias||[]).forEach(a => { NAME_INDEX[norm(a)] = r; });
+});
+
+
+/* ===================== PER-STATE VISUAL IDENTITY =========================
+   Real photographs of 36 states are not something this page can ship: any
+   specific photo URL rots or ends up misattributed, and stock APIs need keys.
+   So each state gets a *generated* landscape instead - its own palette plus a
+   terrain motif drawn from what the place actually looks like, with the state's
+   real boundary outline (from the GeoJSON) floated in behind as a watermark.
+   Nothing to license, nothing to break. See PHOTO_HOOK below to swap in real
+   imagery later.
+   ========================================================================= */
+const VISUAL = {
+  jk:        {pal:['#12213d','#3d6b96','#c9d8e6'], terrain:'himalaya'},
+  ladakh:    {pal:['#1b1c33','#6b5f7e','#d8c3a5'], terrain:'coldDesert'},
+  hp:        {pal:['#14263f','#3f7a72','#cfe0d8'], terrain:'himalaya'},
+  punjab:    {pal:['#1d2a18','#6f9b3f','#e4d98a'], terrain:'fields'},
+  haryana:   {pal:['#22240f','#7d8c35','#e6d47e'], terrain:'fields'},
+  uttarakhand:{pal:['#15243a','#417a6b','#d3e2dd'], terrain:'himalaya'},
+  delhi:     {pal:['#2a1b2c','#7c4f6a','#e2b78d'], terrain:'city'},
+  chandigarh:{pal:['#1c2333','#4e6b8a','#d9dfe6'], terrain:'city'},
+  rajasthan: {pal:['#37200f','#b06a2c','#f0c987'], terrain:'desert'},
+  gujarat:   {pal:['#2c1a20','#9a5a52','#efd3a3'], terrain:'saltflat'},
+  maharashtra:{pal:['#1c2418','#5c7a44','#d8cf9a'], terrain:'plateau'},
+  goa:       {pal:['#122a2c','#2f8f80','#f2dfae'], terrain:'coast'},
+  dnhdd:     {pal:['#152724','#3e7f68','#e6d6a8'], terrain:'coast'},
+  up:        {pal:['#241a2b','#7b5a86','#e8cf9c'], terrain:'river'},
+  mp:        {pal:['#1e2416','#5e7a3c','#d5cf94'], terrain:'forest'},
+  chhattisgarh:{pal:['#16220f','#4e7331','#cfd08a'], terrain:'forest'},
+  bihar:     {pal:['#20261a','#6d8244','#e6d79b'], terrain:'river'},
+  jharkhand: {pal:['#1a1f14','#4f6b34','#c9cd8c'], terrain:'forest'},
+  wb:        {pal:['#171f2e','#42707e','#dcd6a6'], terrain:'delta'},
+  odisha:    {pal:['#1a2130','#4a6f84','#e3d2a4'], terrain:'coast'},
+  assam:     {pal:['#132420','#357a5c','#cfe0b8'], terrain:'delta'},
+  meghalaya: {pal:['#122320','#2f6f60','#cfe2d5'], terrain:'hills'},
+  manipur:   {pal:['#141f2b','#3d6f74','#d2e0d6'], terrain:'hills'},
+  nagaland:  {pal:['#161f1a','#3c6b4f','#cbdcc4'], terrain:'hills'},
+  mizoram:   {pal:['#131e1c','#356b5e','#c8dcd0'], terrain:'hills'},
+  tripura:   {pal:['#181f22','#3f6f66','#d3ddc8'], terrain:'hills'},
+  arunachal: {pal:['#101d2c','#356274','#cfe0e4'], terrain:'himalaya'},
+  sikkim:    {pal:['#111f30','#3a6a7c','#d6e4e8'], terrain:'himalaya'},
+  karnataka: {pal:['#1f2317','#63783a','#dccf92'], terrain:'plateau'},
+  kerala:    {pal:['#0f2420','#2f7f63','#ecdca6'], terrain:'backwater'},
+  tn:        {pal:['#2a1d15','#8a5c33','#eccf92'], terrain:'temple'},
+  ap:        {pal:['#251f16','#7a6337','#e8d49c'], terrain:'coast'},
+  telangana: {pal:['#221c1c','#7a5145','#e4c793'], terrain:'plateau'},
+  puducherry:{pal:['#152430','#3d7183','#eeddb2'], terrain:'coast'},
+  lakshadweep:{pal:['#0e2430','#2c8496','#f0e3bd'], terrain:'island'},
+  andaman:   {pal:['#0d2229','#237c85','#eee0b6'], terrain:'island'},
+};
+
+/* PHOTO_HOOK: to use real photos instead, return an image URL here and it takes
+   priority over the generated art. Keep it keyed by state id so nothing is
+   guessed at runtime. e.g. PHOTOS.kerala = '/img/kerala.jpg'  */
+const PHOTOS = {};
+
+
+/* ===================== CULTURAL MOTIFS ===================================
+   The terrain says where a state is; these say what it sounds like. Each is a
+   large, faded silhouette behind the landscape - an instrument, a dancer, a
+   piece of architecture drawn from that state's own musical life. Vector, so
+   nothing is licensed and nothing 404s.
+   ========================================================================= */
+function mStrings(c,long){   /* sitar / veena / santoor family */
+  const neck=long?250:190;
+  return '<g fill="'+c+'">'+
+    '<ellipse cx="0" cy="0" rx="78" ry="66"/>'+
+    '<rect x="-9" y="'+(-neck)+'" width="18" height="'+neck+'" rx="4"/>'+
+    '<ellipse cx="0" cy="'+(-neck-16)+'" rx="21" ry="17"/>'+
+    '<rect x="-30" y="'+(-neck-4)+'" width="60" height="7" rx="3"/>'+
+    '<circle cx="0" cy="-6" r="21" fill="#000" fill-opacity=".35"/>'+
+    '</g>';
+}
+function mBowed(c){          /* pena / ravanhatha - bowed folk lute */
+  return '<g fill="'+c+'">'+
+    '<circle cx="0" cy="46" r="54"/>'+
+    '<rect x="-7" y="-190" width="14" height="240" rx="4"/>'+
+    '<path d="M-7,-190 q-26,-16 -34,4 q22,10 34,4 Z"/>'+
+    '<rect x="-96" y="-140" width="196" height="6" rx="3" transform="rotate(-16)"/>'+
+    '</g>';
+}
+function mDrum(c,wide){      /* dhol / dholak / madal - barrel drum */
+  const w=wide?116:88;
+  return '<g fill="'+c+'">'+
+    '<path d="M'+(-w)+',-62 q'+w+',-30 '+(w*2)+',0 l-14,124 q'+(-(w-14))+',26 '+(-(w*2-28))+',0 Z"/>'+
+    '<ellipse cx="'+(-w+ (w))+'" cy="-62" rx="'+w+'" ry="26" fill="#000" fill-opacity=".28"/>'+
+    '</g>';
+}
+function mTabla(c){          /* tabla + tanpura pair */
+  return '<g fill="'+c+'">'+
+    '<path d="M-120,10 q0,-96 62,-96 q62,0 62,96 q0,42 -62,42 q-62,0 -62,-42 Z"/>'+
+    '<ellipse cx="-58" cy="-86" rx="62" ry="20" fill="#000" fill-opacity=".3"/>'+
+    '<path d="M36,32 q0,-78 54,-78 q54,0 54,78 q0,34 -54,34 q-54,0 -54,-34 Z"/>'+
+    '<ellipse cx="90" cy="-46" rx="54" ry="17" fill="#000" fill-opacity=".3"/>'+
+    '</g>';
+}
+function mHorn(c){           /* nadaswaram / pepa - flared reed horn */
+  return '<g fill="'+c+'">'+
+    '<path d="M-16,-200 l32,0 l26,300 q-42,26 -84,0 Z"/>'+
+    '<path d="M-74,100 q74,40 148,0 l16,54 q-90,44 -180,0 Z"/>'+
+    '<circle cx="0" cy="-208" r="15"/></g>';
+}
+function mFlute(c){          /* bansuri, laid at an angle */
+  let g='<g fill="'+c+'" transform="rotate(-24)">'+
+    '<rect x="-230" y="-13" width="460" height="26" rx="13"/>';
+  for(let i=0;i<7;i++) g+='<circle cx="'+(-96+i*46)+'" cy="0" r="8" fill="#000" fill-opacity=".38"/>';
+  return g+'</g>';
+}
+function mGuitar(c){         /* the northeast's other native instrument */
+  return '<g fill="'+c+'">'+
+    '<path d="M0,-14 q64,0 64,60 q0,54 -64,54 q-64,0 -64,-54 q0,-60 64,-60 Z"/>'+
+    '<path d="M0,-92 q44,0 44,44 q0,34 -44,34 q-44,0 -44,-34 q0,-44 44,-44 Z"/>'+
+    '<rect x="-9" y="-250" width="18" height="160" rx="4"/>'+
+    '<rect x="-26" y="-262" width="52" height="20" rx="5"/>'+
+    '<circle cx="0" cy="46" r="24" fill="#000" fill-opacity=".38"/></g>';
+}
+function mDancer(c,pair){    /* garba / lavani - raised-arm figures */
+  function fig(x,sc,flip){
+    return '<g transform="translate('+x+',0) scale('+(flip?-sc:sc)+','+sc+')" fill="'+c+'">'+
+      '<circle cx="0" cy="-150" r="26"/>'+
+      '<path d="M-14,-124 q14,-10 28,0 l12,66 l-52,0 Z"/>'+
+      '<path d="M-40,-58 q40,-22 80,0 l30,150 q-70,30 -140,0 Z"/>'+
+      '<path d="M-12,-116 q-52,-26 -74,-64 l14,-12 q26,32 66,54 Z"/>'+
+      '<path d="M12,-116 q52,-26 74,-64 l-14,-12 q-26,32 -66,54 Z"/></g>';
+  }
+  return pair?fig(-96,1,false)+fig(96,1,true):fig(0,1.15,false);
+}
+function mGopuram(c){        /* Dravidian temple tower */
+  let g='<g fill="'+c+'">';
+  for(let i=0;i<7;i++){
+    const w=210-i*24, h=32, y=-i*h;
+    g+='<rect x="'+(-w/2)+'" y="'+(y-h)+'" width="'+w+'" height="'+(h-4)+'" rx="3"/>';
+  }
+  g+='<path d="M-34,-232 L0,-278 L34,-232 Z"/>';
+  g+='<rect x="-30" y="0" width="60" height="86"/></g>';
+  return g;
+}
+function mMask(c){           /* kathakali headdress silhouette */
+  return '<g fill="'+c+'">'+
+    '<path d="M0,-186 q120,0 120,110 q0,26 -22,26 l-196,0 q-22,0 -22,-26 q0,-110 120,-110 Z"/>'+
+    '<ellipse cx="0" cy="20" rx="86" ry="104"/>'+
+    '<path d="M-86,20 q86,84 172,0 q-16,96 -86,96 q-70,0 -86,-96 Z" fill="#000" fill-opacity=".26"/>'+
+    '<circle cx="-34" cy="-4" r="13" fill="#000" fill-opacity=".42"/>'+
+    '<circle cx="34" cy="-4" r="13" fill="#000" fill-opacity=".42"/></g>';
+}
+function mDhak(c){           /* Bengal's puja barrel drum, slung upright */
+  return '<g fill="'+c+'">'+
+    '<path d="M-66,-120 l132,0 l16,232 l-164,0 Z"/>'+
+    '<ellipse cx="0" cy="-120" rx="66" ry="22" fill="#000" fill-opacity=".3"/>'+
+    '<path d="M-66,-104 q-58,116 -6,216 l14,-6 q-46,-96 6,-204 Z"/>'+
+    '<path d="M-96,-150 q96,-40 192,0 l-6,16 q-90,-36 -180,0 Z" fill-opacity=".8"/></g>';
+}
+function mStupa(c){          /* monastery stupa + prayer flags */
+  let g='<g fill="'+c+'">'+
+    '<path d="M-84,120 l168,0 l-22,-56 l-124,0 Z"/>'+
+    '<rect x="-58" y="-6" width="116" height="60"/>'+
+    '<path d="M-58,-6 q58,-96 116,0 Z"/>'+
+    '<rect x="-11" y="-96" width="22" height="92"/>'+
+    '<circle cx="0" cy="-112" r="20"/>'+
+    '<path d="M0,-146 l9,26 l-18,0 Z"/>';
+  for(let i=0;i<5;i++){
+    const x=96+i*54, y=-92+i*20;
+    g+='<path d="M'+x+','+y+' l40,10 l-40,26 Z" fill-opacity="'+(0.85-i*0.12).toFixed(2)+'"/>';
+  }
+  return g+'</g>';
+}
+function mMic(c){            /* the broadcast city: a studio mic */
+  return '<g fill="'+c+'">'+
+    '<rect x="-46" y="-210" width="92" height="150" rx="46"/>'+
+    '<rect x="-8" y="-64" width="16" height="120"/>'+
+    '<path d="M-72,56 l144,0 l16,50 l-176,0 Z"/>'+
+    '<rect x="-30" y="-186" width="60" height="14" rx="7" fill="#000" fill-opacity=".3"/>'+
+    '<rect x="-30" y="-158" width="60" height="14" rx="7" fill="#000" fill-opacity=".3"/>'+
+    '</g>';
+}
+function mReeds(c){          /* tribal flute + reed cluster */
+  let g='<g fill="'+c+'">';
+  for(let i=0;i<5;i++){
+    const x=-88+i*44, h=150+((i*53)%90);
+    g+='<rect x="'+x+'" y="'+(-h)+'" width="15" height="'+h+'" rx="7"/>';
+    g+='<path d="M'+x+','+(-h)+' q7,-24 15,0 Z"/>';
+  }
+  return g+'</g>';
+}
+
+const MOTIF = {
+  jk:['strings',1],       ladakh:['stupa',1],      hp:['drum',0],        punjab:['drum',1],
+  haryana:['drum',0],     uttarakhand:['flute',0], delhi:['mic',0],      chandigarh:['mic',0],
+  rajasthan:['bowed',0],  gujarat:['dancer',1],    maharashtra:['dancer',0], goa:['guitar',0],
+  dnhdd:['reeds',0],      up:['tabla',0],          mp:['strings',0],     chhattisgarh:['reeds',0],
+  bihar:['tabla',0],      jharkhand:['drum',0],    wb:['dhak',0],        odisha:['dancer',0],
+  assam:['horn',0],       meghalaya:['guitar',0],  manipur:['bowed',0],  nagaland:['guitar',0],
+  mizoram:['guitar',0],   tripura:['flute',0],     arunachal:['stupa',0], sikkim:['stupa',0],
+  karnataka:['strings',1],kerala:['mask',0],       tn:['gopuram',0],     ap:['strings',1],
+  telangana:['tabla',0],  puducherry:['horn',0],   lakshadweep:['drum',0], andaman:['reeds',0],
+};
+
+function motifSVG(id,col){
+  const m=MOTIF[id]||['strings',0];
+  const k=m[0], v=m[1];
+  if(k==='strings') return mStrings(col,!!v);
+  if(k==='bowed')   return mBowed(col);
+  if(k==='drum')    return mDrum(col,!!v);
+  if(k==='tabla')   return mTabla(col);
+  if(k==='horn')    return mHorn(col);
+  if(k==='flute')   return mFlute(col);
+  if(k==='guitar')  return mGuitar(col);
+  if(k==='dancer')  return mDancer(col,!!v);
+  if(k==='gopuram') return mGopuram(col);
+  if(k==='mask')    return mMask(col);
+  if(k==='dhak')    return mDhak(col);
+  if(k==='stupa')   return mStupa(col);
+  if(k==='reeds')   return mReeds(col);
+  return mStrings(col,false);
+}
+
+/* deterministic per-state randomness, so a state looks the same every visit */
+function seedOf(str){ let h=2166136261; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);} return h>>>0; }
+function rngOf(seed){ let a=seed||1; return function(){ a^=a<<13;a>>>=0;a^=a>>17;a^=a<<5;a>>>=0; return a/4294967296; }; }
+
+const BW=1200, BH=620;
+function ridgePath(baseY,amp,steps,R,jag){
+  let d='M0,'+BH+' L0,'+baseY;
+  for(let i=0;i<=steps;i++){
+    const x=(i/steps)*BW;
+    const t=i/steps;
+    const wob=Math.sin(t*Math.PI*2.2+R()*0.6)*amp*0.4;
+    const spike=jag?(R()-0.5)*amp*1.5:(R()-0.5)*amp*0.5;
+    const y=baseY+wob+spike;
+    d+=' L'+x.toFixed(0)+','+y.toFixed(0);
+  }
+  return d+' L'+BW+','+BH+' Z';
+}
+function dunePath(baseY,amp,R){
+  let d='M0,'+BH+' L0,'+baseY;
+  let x=0;
+  while(x<BW){
+    const w=120+R()*220, h=amp*(0.5+R());
+    d+=' q'+(w/2).toFixed(0)+',-'+h.toFixed(0)+' '+w.toFixed(0)+',0';
+    x+=w;
+  }
+  return d+' L'+BW+','+BH+' Z';
+}
+function palm(x,y,sc,col){
+  let g='<g transform="translate('+x+','+y+') scale('+sc+')" fill="'+col+'">';
+  g+='<path d="M-2,0 C-3,-30 -1,-56 3,-84 L7,-84 C4,-56 3,-30 4,0 Z"/>';
+  for(let i=0;i<6;i++){
+    const a=-160+i*32, r=(a*Math.PI)/180;
+    const ex=Math.cos(r)*46, ey=-84+Math.sin(r)*30;
+    g+='<path d="M4,-84 Q'+(ex*0.55).toFixed(0)+','+(ey-16).toFixed(0)+' '+ex.toFixed(0)+','+ey.toFixed(0)+
+       ' Q'+(ex*0.5).toFixed(0)+','+(ey+7).toFixed(0)+' 4,-80 Z"/>';
+  }
+  return g+'</g>';
+}
+function tree(x,y,sc,col){
+  return '<g transform="translate('+x+','+y+') scale('+sc+')" fill="'+col+'">'+
+    '<rect x="-2" y="-30" width="4" height="30"/>'+
+    '<ellipse cx="0" cy="-42" rx="22" ry="19"/><ellipse cx="-15" cy="-32" rx="14" ry="12"/>'+
+    '<ellipse cx="15" cy="-33" rx="13" ry="11"/></g>';
+}
+function gopuram(x,y,sc,col){
+  let g='<g transform="translate('+x+','+y+') scale('+sc+')" fill="'+col+'">';
+  for(let i=0;i<6;i++){
+    const w=86-i*12, h=15, yy=-i*h;
+    g+='<rect x="'+(-w/2)+'" y="'+(yy-h)+'" width="'+w+'" height="'+h+'"/>';
+  }
+  g+='<path d="M-14,-90 L0,-108 L14,-90 Z"/></g>';
+  return g;
+}
+function waves(y,col,R){
+  let g='';
+  for(let i=0;i<7;i++){
+    const yy=y+i*17, w=40+R()*90, x0=R()*160;
+    g+='<path d="M'+x0.toFixed(0)+','+yy.toFixed(0)+' q'+(w/2).toFixed(0)+',-6 '+w.toFixed(0)+',0" '+
+       'stroke="'+col+'" stroke-width="2" fill="none" opacity="'+(0.5-i*0.05).toFixed(2)+'"/>';
+    g+='<path d="M'+(x0+300).toFixed(0)+','+(yy+7).toFixed(0)+' q'+(w/2).toFixed(0)+',-6 '+w.toFixed(0)+',0" '+
+       'stroke="'+col+'" stroke-width="2" fill="none" opacity="'+(0.42-i*0.05).toFixed(2)+'"/>';
+    g+='<path d="M'+(x0+700).toFixed(0)+','+(yy+3).toFixed(0)+' q'+(w/2).toFixed(0)+',-6 '+w.toFixed(0)+',0" '+
+       'stroke="'+col+'" stroke-width="2" fill="none" opacity="'+(0.38-i*0.04).toFixed(2)+'"/>';
+  }
+  return g;
+}
+function shade(hex,f){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.max(0,Math.min(255,Math.round(r*f)));
+  g=Math.max(0,Math.min(255,Math.round(g*f)));
+  b=Math.max(0,Math.min(255,Math.round(b*f)));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+
+/* Builds the SVG landscape for one state. */
+function landscapeSVG(region){
+  const v=VISUAL[region.id]||{pal:['#1b2036','#455080','#d9d2ab'],terrain:'plains'};
+  const [deep,mid,light]=v.pal;
+  const R=rngOf(seedOf(region.id));
+  const k=v.terrain;
+  let sky='<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0%" stop-color="'+shade(deep,0.75)+'"/>'+
+    '<stop offset="52%" stop-color="'+mid+'" stop-opacity=".55"/>'+
+    '<stop offset="100%" stop-color="'+light+'" stop-opacity=".28"/></linearGradient></defs>'+
+    '<rect width="'+BW+'" height="'+BH+'" fill="url(#sky)"/>';
+
+  /* sun or moon, placed deterministically */
+  const sunX=180+R()*840, sunY=90+R()*90;
+  sky+='<circle cx="'+sunX.toFixed(0)+'" cy="'+sunY.toFixed(0)+'" r="'+(34+R()*22).toFixed(0)+
+       '" fill="'+light+'" opacity=".30"/>';
+
+  /* the state's own boundary, floated in as a watermark */
+  let outline='';
+  if(region.pathD){
+    outline='<g opacity=".13" transform="translate('+(BW*0.5).toFixed(0)+','+(BH*0.46).toFixed(0)+')">'+
+      '<g transform="scale('+(region.bdScale||1).toFixed(3)+') translate('+(-(region.bdCx||0)).toFixed(0)+','+(-(region.bdCy||0)).toFixed(0)+')">'+
+      '<path d="'+region.pathD+'" fill="none" stroke="'+light+'" stroke-width="'+(2/(region.bdScale||1)).toFixed(2)+'"/></g></g>';
+  }
+
+  let art='';
+  if(k==='himalaya'){
+    art+='<path d="'+ridgePath(400,120,16,R,true)+'" fill="'+shade(mid,0.55)+'" opacity=".85"/>';
+    art+='<path d="'+ridgePath(470,95,14,R,true)+'" fill="'+shade(deep,1.5)+'" opacity=".9"/>';
+    art+='<path d="'+ridgePath(540,60,12,R,true)+'" fill="'+deep+'"/>';
+    for(let i=0;i<5;i++){
+      const x=(100+i*230+R()*60).toFixed(0);
+      art+='<path d="M'+x+',392 l30,-46 l30,46 Z" fill="'+light+'" opacity=".5"/>';
+    }
+  } else if(k==='coldDesert'){
+    art+='<path d="'+ridgePath(410,105,14,R,true)+'" fill="'+shade(mid,0.6)+'" opacity=".8"/>';
+    art+='<path d="'+dunePath(520,44,R)+'" fill="'+shade(light,0.62)+'" opacity=".55"/>';
+    art+='<path d="'+ridgePath(560,40,10,R,false)+'" fill="'+deep+'"/>';
+  } else if(k==='desert'){
+    art+='<path d="'+dunePath(430,76,R)+'" fill="'+shade(mid,0.85)+'" opacity=".7"/>';
+    art+='<path d="'+dunePath(500,64,R)+'" fill="'+shade(light,0.7)+'" opacity=".55"/>';
+    art+='<path d="'+dunePath(566,52,R)+'" fill="'+deep+'"/>';
+    for(let i=0;i<3;i++) art+=palm(160+i*430+R()*70, 566, 0.8, shade(deep,0.7));
+  } else if(k==='saltflat'){
+    art+='<rect x="0" y="470" width="'+BW+'" height="'+(BH-470)+'" fill="'+shade(light,0.55)+'" opacity=".4"/>';
+    art+='<path d="'+ridgePath(455,30,10,R,false)+'" fill="'+shade(mid,0.7)+'" opacity=".7"/>';
+    for(let i=0;i<10;i++){
+      const y=486+i*13;
+      art+='<line x1="0" y1="'+y+'" x2="'+BW+'" y2="'+y+'" stroke="'+light+'" stroke-width="1" opacity=".14"/>';
+    }
+  } else if(k==='coast'||k==='island'){
+    art+='<path d="'+ridgePath(430,k==='island'?46:64,12,R,false)+'" fill="'+shade(mid,0.62)+'" opacity=".75"/>';
+    art+='<rect x="0" y="474" width="'+BW+'" height="'+(BH-474)+'" fill="'+shade(deep,1.25)+'" opacity=".85"/>';
+    art+=waves(492,light,R);
+    const n=k==='island'?4:3;
+    for(let i=0;i<n;i++) art+=palm(120+i*(BW/n)+R()*90, 486, 0.92, shade(deep,0.55));
+  } else if(k==='backwater'){
+    art+='<path d="'+ridgePath(420,44,12,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".7"/>';
+    art+='<rect x="0" y="466" width="'+BW+'" height="'+(BH-466)+'" fill="'+shade(deep,1.3)+'" opacity=".88"/>';
+    art+=waves(484,light,R);
+    for(let i=0;i<5;i++) art+=palm(90+i*250+R()*60, 478, 1.0, shade(deep,0.5));
+    art+='<path d="M470,556 q60,-20 130,0 q-16,20 -65,20 q-49,0 -65,-20 Z" fill="'+shade(deep,0.6)+'" opacity=".9"/>';
+    art+='<line x1="536" y1="556" x2="536" y2="504" stroke="'+shade(deep,0.6)+'" stroke-width="3"/>';
+  } else if(k==='delta'||k==='river'){
+    art+='<path d="'+ridgePath(430,40,12,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".7"/>';
+    for(let i=0;i<3;i++){
+      const y=478+i*36;
+      art+='<path d="M0,'+y+' Q300,'+(y-26)+' 600,'+y+' T'+BW+','+(y+8)+'" stroke="'+shade(light,0.9)+
+           '" stroke-width="'+(16-i*4)+'" fill="none" opacity=".32"/>';
+    }
+    for(let i=0;i<26;i++){
+      const x=R()*BW, y=534+R()*60;
+      art+='<line x1="'+x.toFixed(0)+'" y1="'+y.toFixed(0)+'" x2="'+(x+4).toFixed(0)+'" y2="'+(y-24).toFixed(0)+
+           '" stroke="'+shade(deep,0.8)+'" stroke-width="2" opacity=".7"/>';
+    }
+  } else if(k==='forest'){
+    art+='<path d="'+ridgePath(420,58,12,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".75"/>';
+    art+='<path d="'+ridgePath(500,36,10,R,false)+'" fill="'+deep+'"/>';
+    for(let i=0;i<13;i++) art+=tree(50+i*95+R()*40, 520+R()*46, 0.8+R()*0.7, shade(deep,0.75));
+  } else if(k==='hills'){
+    art+='<path d="'+ridgePath(392,80,10,R,false)+'" fill="'+shade(mid,0.5)+'" opacity=".7"/>';
+    art+='<path d="'+ridgePath(462,66,9,R,false)+'" fill="'+shade(mid,0.36)+'" opacity=".85"/>';
+    art+='<path d="'+ridgePath(530,48,8,R,false)+'" fill="'+deep+'"/>';
+    for(let i=0;i<9;i++) art+=tree(80+i*140+R()*50, 556+R()*36, 0.7+R()*0.5, shade(deep,0.7));
+  } else if(k==='plateau'){
+    art+='<path d="'+ridgePath(440,34,9,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".7"/>';
+    for(let i=0;i<4;i++){
+      const x=90+i*300+R()*60, w=150+R()*90, h=54+R()*44;
+      art+='<path d="M'+x+','+(500)+' L'+x+','+(500-h)+' L'+(x+w)+','+(500-h+8)+' L'+(x+w)+','+500+' Z" fill="'+shade(deep,1.35)+'" opacity=".9"/>';
+    }
+    art+='<rect x="0" y="500" width="'+BW+'" height="'+(BH-500)+'" fill="'+deep+'"/>';
+    for(let i=0;i<6;i++) art+=tree(120+i*195+R()*40, 556, 0.7, shade(deep,0.7));
+  } else if(k==='temple'){
+    art+='<path d="'+ridgePath(452,32,9,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".65"/>';
+    art+='<rect x="0" y="520" width="'+BW+'" height="'+(BH-520)+'" fill="'+deep+'"/>';
+    art+=gopuram(300,520,1.5,shade(deep,1.5));
+    art+=gopuram(880,520,1.1,shade(deep,1.35));
+    for(let i=0;i<4;i++) art+=palm(120+i*300+R()*60, 520, 0.7, shade(deep,0.72));
+  } else if(k==='city'){
+    art+='<rect x="0" y="520" width="'+BW+'" height="'+(BH-520)+'" fill="'+deep+'"/>';
+    let x=20;
+    while(x<BW){
+      const w=48+R()*76, h=70+R()*180;
+      art+='<rect x="'+x.toFixed(0)+'" y="'+(520-h).toFixed(0)+'" width="'+w.toFixed(0)+'" height="'+h.toFixed(0)+
+           '" fill="'+shade(deep,1.4)+'" opacity=".92"/>';
+      for(let wy=520-h+14; wy<512; wy+=22){
+        for(let wx=x+8; wx<x+w-8; wx+=18){
+          if(R()>0.55) art+='<rect x="'+wx.toFixed(0)+'" y="'+wy.toFixed(0)+'" width="5" height="7" fill="'+light+'" opacity=".5"/>';
+        }
+      }
+      x+=w+12;
+    }
+  } else { /* fields / plains */
+    art+='<path d="'+ridgePath(452,26,9,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".65"/>';
+    art+='<rect x="0" y="492" width="'+BW+'" height="'+(BH-492)+'" fill="'+shade(mid,0.45)+'" opacity=".8"/>';
+    for(let i=0;i<9;i++){
+      const y=500+i*15;
+      art+='<path d="M0,'+y+' Q600,'+(y-9)+' '+BW+','+y+'" stroke="'+light+'" stroke-width="2" fill="none" opacity=".17"/>';
+    }
+    art+=tree(950,556,1.5,shade(deep,0.8));
+  }
+
+  /* the cultural motif sits between sky and terrain, so the landscape overlaps
+     its base and it reads as part of the scene rather than a pasted logo */
+  const mx=(BW*0.5).toFixed(0), my=(BH*0.60).toFixed(0);
+  const motif='<g opacity=".17" transform="translate('+mx+','+my+') scale(1.35)">'+
+              motifSVG(region.id, light)+'</g>';
+
+  return '<svg viewBox="0 0 '+BW+' '+BH+'" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">'+
+         sky+motif+art+outline+'</svg>';
+}
+
+let bdFlip=false;
+function paintBackdrop(region){
+  const a=document.getElementById('bdA'), b=document.getElementById('bdB');
+  if(!a||!b) return;
+  const incoming=bdFlip?a:b, outgoing=bdFlip?b:a;
+  bdFlip=!bdFlip;
+  const photo=PHOTOS[region.id];
+  if(photo){
+    incoming.innerHTML='';
+    incoming.style.backgroundImage='url("'+photo+'")';
+  }else{
+    incoming.style.backgroundImage='none';
+    incoming.innerHTML=landscapeSVG(region);
+  }
+  incoming.classList.add('on');
+  outgoing.classList.remove('on');
+}
+
+/* ============================ STATE ====================================== */
+let player=null, ytReady=false, playing=false;
+let current=null, moodKey='modern', queue=[], qi=-1, seq=0, progTimer=null, pendingVid=null;
+let geoReady=false, trains=[], ring=null, tempoFactor=1, ringPulse=0;
+
+/* ========================= DIAGNOSTICS =================================== */
+const FILE_ORIGIN = location.protocol === 'file:';
+window.addEventListener('unhandledrejection', function(ev){
+  const msg=(ev.reason&&(ev.reason.message||ev.reason))+'';
+  console.warn('[Sur Radio] unhandled rejection:',ev.reason);
+  if(/Failed to fetch|NetworkError|CORS|Load failed/i.test(msg)){
+    toast(FILE_ORIGIN?'Blocked because the page is opened as a file. Serve it over http instead.'
+                     :'A network request was blocked. Playback will retry on the next song.');
+  } else toast('Something failed: '+msg.slice(0,90));
+  ev.preventDefault();
+});
+window.addEventListener('error',function(ev){
+  if(ev.message&&/postMessage/i.test(ev.message)){
+    console.warn('[Sur Radio] YouTube handshake blocked - serve over http, not file://');
+    ev.preventDefault();
+  }
+});
+function fire(p,label){ if(p&&p.catch) p.catch(e=>console.warn('[Sur Radio] '+label+' failed:',e)); }
+
+/* ============================ MAP ======================================== */
+const NS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('map');
+const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!==undefined)e.setAttribute(k,a[k]);return e;};
+
+const VB_W=760, VB_H=800, PAD=18;
+
+/* Web Mercator on the y axis. India spans 8N-37N, where a plain lat/lon plot
+   noticeably squashes the north; Mercator keeps the familiar shape.
+   The 180/PI factor is essential, not cosmetic: the raw log() result is in
+   radian-scale units (~0.1 to 0.7) while x stays in degrees (~29 wide). Sharing
+   one scale across mismatched units collapses the map into a flat strip, so y
+   is converted to degree-equivalent units here. */
+const mercY = lat => (180/Math.PI) * Math.log(Math.tan(Math.PI/4 + (lat*Math.PI/180)/2));
+
+/* Boundary datasets disagree on the state-name property, so probe rather than
+   assume. Whichever key yields a name we recognise wins. */
+const NAME_KEYS = ['st_nm','ST_NM','state','STATE','State','NAME_1','name','NAME',
+                   'State_Name','state_name','stname','ST_NAME','shapeName'];
+function featureRegion(props){
+  if(!props) return null;
+  for(let i=0;i<NAME_KEYS.length;i++){
+    const v=props[NAME_KEYS[i]];
+    if(v&&NAME_INDEX[norm(v)]) return {region:NAME_INDEX[norm(v)], raw:v};
+  }
+  /* Fall back to scanning every string property before giving up. */
+  for(const k in props){
+    const v=props[k];
+    if(typeof v==='string'&&NAME_INDEX[norm(v)]) return {region:NAME_INDEX[norm(v)], raw:v};
+  }
+  for(let i=0;i<NAME_KEYS.length;i++) if(props[NAME_KEYS[i]]) return {region:null, raw:props[NAME_KEYS[i]]};
+  return null;
+}
+
+function ringsOf(geom){
+  if(!geom) return [];
+  if(geom.type==='Polygon') return geom.coordinates;
+  if(geom.type==='MultiPolygon'){ let out=[]; geom.coordinates.forEach(p=>{out=out.concat(p);}); return out; }
+  return [];
+}
+
+async function loadMap(){
+  const loading=document.getElementById('mapLoading');
+  let gj;
+  try{
+    const r=await fetch(GEO_URL,{mode:'cors'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    gj=await r.json();
+  }catch(e){
+    console.warn('[Sur Radio] boundary fetch failed:',e);
+    loading.innerHTML='<div><b>Could not load boundaries</b>'+
+      (FILE_ORIGIN?'The page is running from a file, which blocks the request.<br>Serve it over http and reload.'
+                  :'The boundary CDN is unreachable from this network.')+
+      '<br>Everything still works from the station list.<br>'+
+      '<button class="btn ghost" id="retryMap">Retry</button></div>';
+    const rb=document.getElementById('retryMap');
+    if(rb) rb.addEventListener('click',()=>{loading.innerHTML='<div><b>Loading state boundaries</b>Retrying&hellip;</div>';fire(loadMap(),'map retry');});
+    return;
+  }
+
+  const feats=(gj.features||[]).filter(f=>f&&f.geometry);
+  if(!feats.length){ loading.textContent='Boundary file had no shapes.'; return; }
+
+  /* pass 1: bounding box over every coordinate, for an automatic fit */
+  let minLon=1e9,maxLon=-1e9,minY=1e9,maxY=-1e9;
+  feats.forEach(f=>ringsOf(f.geometry).forEach(ring=>ring.forEach(pt=>{
+    const lon=pt[0], y=mercY(pt[1]);
+    if(lon<minLon)minLon=lon; if(lon>maxLon)maxLon=lon;
+    if(y<minY)minY=y; if(y>maxY)maxY=y;
+  })));
+  const sx=(VB_W-PAD*2)/(maxLon-minLon), sy=(VB_H-PAD*2)/(maxY-minY);
+  const s=Math.min(sx,sy);
+  const offX=PAD+((VB_W-PAD*2)-(maxLon-minLon)*s)/2;
+  const offY=PAD+((VB_H-PAD*2)-(maxY-minY)*s)/2;
+  const PXf=lon=>offX+(lon-minLon)*s;
+  const PYf=lat=>offY+(maxY-mercY(lat))*s;
+
+  /* pass 2: build one path per feature, plus centroid and area */
+  const drawn=[]; const unmatched=[];
+  feats.forEach(f=>{
+    const hit=featureRegion(f.properties);
+    const region=hit&&hit.region;
+    if(!region&&hit&&hit.raw) unmatched.push(hit.raw);
+
+    const rings=ringsOf(f.geometry);
+    if(!rings.length) return;
+    let d='', best=null, bestArea=0;
+    rings.forEach(ring=>{
+      if(ring.length<3) return;
+      let seg='', a=0, cx=0, cy=0;
+      for(let i=0;i<ring.length;i++){
+        const x=PXf(ring[i][0]), y=PYf(ring[i][1]);
+        seg += (i?' L':'M')+x.toFixed(1)+','+y.toFixed(1);
+        const j=(i+1)%ring.length;
+        const x2=PXf(ring[j][0]), y2=PYf(ring[j][1]);
+        const cross=x*y2-x2*y;
+        a+=cross; cx+=(x+x2)*cross; cy+=(y+y2)*cross;
+      }
+      d+=seg+'Z';
+      const area=Math.abs(a/2);
+      if(area>bestArea){
+        bestArea=area;
+        best = a!==0 ? {x:cx/(3*a), y:cy/(3*a)} : null;
+      }
+    });
+    if(!d) return;
+
+    const zone=region?region.zone:null;
+    const path=mk('path',{d:d,class:'state'+(region?'':' nodata'),
+      fill: zone?ZONES[zone].c:'#2a2f52'});
+    if(region){
+      path.dataset.id=region.id;
+      path.setAttribute('tabindex','0');
+      path.setAttribute('role','button');
+      const ti=mk('title',{}); ti.textContent=region.name+' - '+region.genres; path.appendChild(ti);
+      path.addEventListener('click',()=>fire(tune(region.id),'tune'));
+      path.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fire(tune(region.id),'tune');}});
+      region.cx=best?best.x:null; region.cy=best?best.y:null; region.area=bestArea;
+      /* dial frequency comes from the real centroid longitude */
+      if(best) region.freq=(minLon+(best.x-offX)/s).toFixed(1);
+      /* keep the shape so the backdrop can float the state's real outline behind
+         the art, scaled to a consistent size whatever the state's actual area */
+      region.pathD=d;
+      if(best){
+        const span=Math.sqrt(bestArea)||1;
+        region.bdScale=Math.max(0.6,Math.min(6,300/span));
+        region.bdCx=best.x; region.bdCy=best.y;
+      }
+    }
+    svg.appendChild(path);
+    drawn.push(path);
+  });
+
+  if(unmatched.length) console.warn('[Sur Radio] boundary names with no station:',unmatched);
+
+  /* zone rail lines through real centroids, drawn under the labels */
+  ROUTES.forEach(rt=>{
+    const pts=rt.ids.map(byId).filter(r=>r&&r.cx!=null);
+    if(pts.length<2) return;
+    const d='M'+pts.map(r=>r.cx.toFixed(1)+','+r.cy.toFixed(1)).join(' L');
+    const el=mk('path',{d:d,class:'rail',stroke:ZONES[rt.zone].c});
+    svg.appendChild(el);
+    trains.push({dot:svg.appendChild(mk('circle',{r:2.6,class:'train'})),path:el,len:el.getTotalLength(),t:Math.random()});
+  });
+
+  ring=svg.appendChild(mk('circle',{class:'pulse-ring',r:9,stroke:'#e8a33d',opacity:0}));
+
+  /* Label only the roomiest states. 36 labels at this scale collide badly, and
+     the searchable list already covers naming, so the map stays legible. */
+  const labelled=REGIONS.filter(r=>r.cx!=null).sort((a,b)=>b.area-a.area);
+  labelled.forEach((r,i)=>{
+    const big=i<12;
+    if(i>=22){ /* tiny UTs: a dot instead of a name */
+      svg.appendChild(mk('circle',{cx:r.cx,cy:r.cy,r:2.6,class:'hub',fill:ZONES[r.zone].c}));
+      return;
+    }
+    const t=mk('text',{x:r.cx.toFixed(1),y:(r.cy+3).toFixed(1),class:'slabel'+(big?' big':'')});
+    t.textContent = big ? r.name.toUpperCase() : r.name;
+    svg.appendChild(t);
+  });
+
+  document.getElementById('mapLoading').style.display='none';
+  geoReady=true;
+  const withGeo=REGIONS.filter(r=>r.cx!=null).length;
+  document.getElementById('srcNote').innerHTML +=
+    ' &middot; '+withGeo+' of '+REGIONS.length+' stations matched to a boundary.';
+  if(current) markLive(current.id);
+  runTrains();
+}
+
+function runTrains(){
+  (function loop(){
+    trains.forEach(tr=>{
+      tr.t+=0.00030*tempoFactor; if(tr.t>1) tr.t=0;
+      const pt=tr.path.getPointAtLength(tr.t*tr.len);
+      tr.dot.setAttribute('cx',pt.x); tr.dot.setAttribute('cy',pt.y);
+    });
+    if(current&&ring&&current.cx!=null){
+      ringPulse+=playing?0.055:0.012;
+      const amp=playing?1:0.35;
+      ring.setAttribute('r',9+Math.abs(Math.sin(ringPulse))*7*amp);
+      ring.setAttribute('opacity',(playing?0.30:0.14)+Math.abs(Math.sin(ringPulse))*0.35*amp);
+    }
+    requestAnimationFrame(loop);
+  })();
+}
+
+function markLive(id){
+  svg.querySelectorAll('.state').forEach(p=>p.classList.toggle('live',p.dataset.id===id));
+  const r=byId(id);
+  if(ring&&r&&r.cx!=null){
+    ring.setAttribute('cx',r.cx); ring.setAttribute('cy',r.cy);
+    ring.setAttribute('stroke',ZONES[r.zone].c);
+  }
+}
+
+/* legend + station list */
+const legendEl=document.getElementById('legend');
+Object.keys(ZONES).forEach(k=>{
+  const sp=document.createElement('span');
+  sp.innerHTML='<i style="background:'+ZONES[k].c+'"></i>'+ZONES[k].n+
+    ' ('+REGIONS.filter(r=>r.zone===k).length+')';
+  legendEl.appendChild(sp);
+});
+
+const listEl=document.getElementById('stnlist');
+document.getElementById('stnCount').textContent=REGIONS.length+' ON AIR';
+function renderList(filter){
+  const f=norm(filter||'');
+  listEl.innerHTML='';
+  Object.keys(ZONES).forEach(z=>{
+    const rows=REGIONS.filter(r=>r.zone===z).filter(r=>
+      !f || norm(r.name).indexOf(f)>-1 || norm(r.lang).indexOf(f)>-1 || norm(r.genres).indexOf(f)>-1);
+    if(!rows.length) return;
+    const h=document.createElement('div');
+    h.className='zonehead'; h.textContent=ZONES[z].n;
+    listEl.appendChild(h);
+    rows.sort((a,b)=>a.name.localeCompare(b.name)).forEach(r=>{
+      const b=document.createElement('button');
+      b.className='srow'+(current&&current.id===r.id?' on':''); b.dataset.id=r.id;
+      b.innerHTML='<i style="background:'+ZONES[r.zone].c+'"></i>'+
+        '<span class="n">'+esc(r.name)+'<span class="sub">'+esc(r.lang)+'</span></span>';
+      b.addEventListener('click',()=>fire(tune(r.id),'tune'));
+      listEl.appendChild(b);
+    });
+  });
+  if(!listEl.children.length){
+    const e=document.createElement('div');
+    e.className='zonehead'; e.textContent='No state matches that search';
+    listEl.appendChild(e);
+  }
+}
+renderList('');
+document.getElementById('stnSearch').addEventListener('input',e=>renderList(e.target.value));
+
+/* ====================== YOUTUBE RESOLUTION =============================== */
+const resolveCache=new Map();
+const MIRRORS=['https://pipedapi.kavin.rocks','https://pipedapi.adminforge.de','https://api.piped.private.coffee'];
+const INVIDIOUS=['https://inv.nadeko.net','https://invidious.nerdvpn.de'];
+function ytKey(){const el=document.getElementById('ytKey');return el?(el.value||'').trim():'';}
+
+async function jget(url,ms){
+  ms=ms||4500;
+  const c=new AbortController(); const t=setTimeout(()=>c.abort(),ms);
+  try{ const r=await fetch(url,{signal:c.signal}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }
+  finally{ clearTimeout(t); }
+}
+function anyOf(promises,deadline){
+  return new Promise(function(res,rej){
+    let pending=promises.length, settled=false;
+    if(!pending) return rej(new Error('no sources'));
+    const timer=setTimeout(()=>{if(!settled){settled=true;rej(new Error('all sources timed out'));}},deadline||5000);
+    promises.forEach(p=>Promise.resolve(p).then(v=>{
+      if(!settled&&v){settled=true;clearTimeout(timer);res(v);}
+      else if(--pending===0&&!settled){settled=true;clearTimeout(timer);rej(new Error('no results'));}
+    },()=>{ if(--pending===0&&!settled){settled=true;clearTimeout(timer);rej(new Error('all sources failed'));} }));
+  });
+}
+async function resolve(query){
+  if(resolveCache.has(query)) return resolveCache.get(query);
+
+  /* If this page is deployed with the serverless functions (see /api on Vercel),
+     the server resolves and caches lookups for everyone, so no visitor needs a
+     key of their own. When the route is absent - running the file locally or in
+     a sandbox - this fails fast and the browser-side path below takes over. */
+  try{
+    const j=await jget('/api/resolve?q='+encodeURIComponent(query),5000);
+    if(j&&j.id&&/^[A-Za-z0-9_-]{11}$/.test(j.id)){
+      resolveCache.set(query,j.id);
+      return j.id;
+    }
+    if(j&&j.none){ resolveCache.set(query,null); return null; }
+  }catch(e){ /* no server route here; carry on client-side */ }
+
+  const key=ytKey();
+  if(key){
+    try{
+      const j=await jget('https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&maxResults=3&q='+encodeURIComponent(query)+'&key='+encodeURIComponent(key),5000);
+      const items=j.items||[];
+      for(let i=0;i<items.length;i++) if(items[i].id&&items[i].id.videoId){
+        resolveCache.set(query,items[i].id.videoId); return items[i].id.videoId;
+      }
+    }catch(e){ console.warn('[Sur Radio] API key lookup failed, using mirrors:',e.message); }
+  }
+  const attempts=MIRRORS.map(b=>jget(b+'/search?q='+encodeURIComponent(query)+'&filter=music_songs',4500)
+      .then(j=>{
+        const arr=j.items||(Array.isArray(j)?j:[]);
+        for(let k=0;k<arr.length;k++){
+          const u=arr[k]&&arr[k].url;
+          if(u&&u.indexOf('watch?v=')>-1) return u.split('watch?v=')[1].split('&')[0];
+        }
+        throw new Error('no match');
+      }))
+    .concat(INVIDIOUS.map(b=>jget(b+'/api/v1/search?type=video&q='+encodeURIComponent(query),4500)
+      .then(j=>{
+        const arr=Array.isArray(j)?j:[];
+        for(let k=0;k<arr.length;k++) if(arr[k]&&arr[k].videoId) return arr[k].videoId;
+        throw new Error('no match');
+      })));
+  let id=null;
+  try{ id=await anyOf(attempts); if(!/^[A-Za-z0-9_-]{11}$/.test(id)) id=null; }catch(e){ id=null; }
+  resolveCache.set(query,id);
+  return id;
+}
+function searchPhrase(track,region){
+  if(track.generic) return track.t+' '+region.name;
+  return track.t+' '+track.a+' '+region.lang.split(',')[0]+' song';
+}
+
+/* ========================== AI CURATION ================================== */
+async function curate(region,mKey){
+  const mood=MOODS[mKey];
+  const sys='You curate a regional Indian radio station. Reply with ONLY raw JSON, no markdown fences, matching this shape:\n'+
+    '{"tracks":[{"t":"song title","a":"artist or film","w":"why it belongs, max 12 words"}]}\n'+
+    'Give 12 tracks. Rules: only REAL released songs that plausibly exist on YouTube. Prefer well-known recordings with official uploads. Never invent titles. Match the state\'s actual languages and musical traditions. Order them like a radio set, not a ranked chart.';
+  const usr='Indian state or union territory: '+region.name+'\nLanguages: '+region.lang+
+    '\nMusical traditions there: '+region.genres+'\nRequested mood: '+mood.n+' - '+mood.q+'\nReturn the JSON now.';
+  /* Server route first. The Anthropic key lives only in Vercel's environment -
+     putting it in this file would expose it to every visitor. */
+  try{
+    const sr=await fetch('/api/curate',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name:region.name,lang:region.lang,genres:region.genres,
+                           mood:mood.n,moodQ:mood.q})
+    });
+    if(sr.ok){
+      const sj=await sr.json();
+      if(sj&&sj.tracks&&sj.tracks.length) return sj.tracks.filter(t=>t&&t.t&&t.a).slice(0,12);
+    }
+  }catch(e){ /* not deployed with functions; fall through */ }
+
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:usr}]})
+  });
+  const d=await r.json();
+  const txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').replace(/```json|```/g,'').trim();
+  const parsed=JSON.parse(txt);
+  if(!parsed.tracks||!parsed.tracks.length) throw new Error('empty curation');
+  return parsed.tracks.filter(t=>t&&t.t&&t.a).slice(0,12);
+}
+function shuffled(a){ return a.slice().sort(()=>Math.random()-0.5); }
+function seedFor(region,mKey){
+  const hit=region.seed.filter(s=>s.m.indexOf(mKey)>-1);
+  const rest=region.seed.filter(s=>s.m.indexOf(mKey)===-1);
+  const list=shuffled(hit).concat(shuffled(rest)).map(s=>({t:s.t,a:s.a,w:''}));
+  if(!hit.length){
+    list.unshift({t:region.lang.split(',')[0]+' '+MOODS[mKey].q,a:region.name+' selection',
+      w:'Picked live for '+MOODS[mKey].n.toLowerCase()+' in '+region.name,generic:true});
+  }
+  return list;
+}
+
+/* ============================= PLAYER ==================================== */
+window.onYouTubeIframeAPIReady=function(){
+  player=new YT.Player('ytplayer',{
+    height:'100%',width:'100%',
+    playerVars:{autoplay:0,controls:0,disablekb:1,modestbranding:1,rel:0,playsinline:1,iv_load_policy:3},
+    events:{
+      onReady:function(){
+        ytReady=true; setVol(document.getElementById('vol').value);
+        if(pendingVid){const v=pendingVid;pendingVid=null;player.loadVideoById(v);}
+      },
+      onStateChange:function(e){
+        if(e.data===YT.PlayerState.PLAYING){playing=true;syncPlayBtn();veil(false);startProg();}
+        else if(e.data===YT.PlayerState.PAUSED){playing=false;syncPlayBtn();stopProg();}
+        else if(e.data===YT.PlayerState.ENDED){playing=false;stopProg();next();}
+      },
+      onError:function(){ markBad(qi); fire(playAt(qi+1),'skip after player error'); }
+    }
+  });
+};
+(function loadYT(){
+  const s=document.createElement('script');
+  s.src='https://www.youtube.com/iframe_api';
+  s.onerror=function(){ veil(true,'Could not load the player'); toast('YouTube player script blocked. Check your network or ad blocker.'); };
+  document.head.appendChild(s);
+})();
+if(FILE_ORIGIN) setTimeout(()=>toast('Open this over http (e.g. "python3 -m http.server"), not by double-clicking the file.'),900);
+
+function loadVideo(id){ if(ytReady&&player&&player.loadVideoById) player.loadVideoById(id); else pendingVid=id; }
+function veil(show,msg){
+  const v=document.getElementById('veil');
+  if(msg) document.getElementById('veilText').textContent=msg;
+  v.classList.toggle('gone',!show);
+}
+function syncPlayBtn(){
+  document.getElementById('playBtn').innerHTML=playing?'&#10074;&#10074;':'&#9654;';
+  /* The record spins only while audio really is playing, so the deck never lies
+     about what you are hearing. */
+  const pl=document.getElementById('platter');
+  if(pl) pl.classList.toggle('spinning',playing);
+  const rt=document.getElementById('rpmText');
+  if(rt) rt.textContent=playing?'33\u2153 rpm \u00b7 on air':'Stopped';
+}
+function setVol(v){ if(player&&player.setVolume) player.setVolume(Number(v)); }
+function startProg(){
+  stopProg();
+  progTimer=setInterval(function(){
+    if(!player||!player.getDuration) return;
+    const d=player.getDuration(),t=player.getCurrentTime();
+    if(d>0) document.getElementById('progFill').style.width=(t/d*100)+'%';
+  },500);
+}
+function stopProg(){ if(progTimer) clearInterval(progTimer); progTimer=null; }
+function toast(m){
+  const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3200);
+}
+function setBar(t,s){ document.getElementById('barTitle').textContent=t; document.getElementById('barSub').textContent=s; }
+function setQStatus(s){ document.getElementById('qStatus').textContent=String(s).toUpperCase(); }
+function markBad(i){ if(queue[i]) queue[i].bad=true; renderQueue(); }
+
+async function tune(id){
+  const region=byId(id); if(!region) return;
+  const mySeq=++seq;
+  current=region;
+
+  markLive(id);
+  document.querySelectorAll('.srow').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  document.getElementById('mapHint').textContent='NOW ON AIR: '+region.name.toUpperCase();
+  document.getElementById('npIdle').style.display='none';
+  document.getElementById('npLive').style.display='block';
+  document.getElementById('freq').textContent=region.freq||'--';
+  document.getElementById('place').textContent=region.name+' \u00b7 '+region.lang;
+  document.getElementById('vfreq').textContent=region.freq||'--';
+  document.getElementById('vstate').textContent=region.name;
+  const vl=document.getElementById('vlabel');
+  if(vl) vl.style.background=ZONES[region.zone].c;
+  paintBackdrop(region);
+  document.getElementById('playBtn').disabled=false;
+  document.getElementById('nextBtn').disabled=false;
+  document.getElementById('prevBtn').disabled=false;
+  document.getElementById('progFill').style.width='0%';
+  tempoFactor=1.7;
+
+  queue=seedFor(region,moodKey); qi=-1;
+  renderQueue(); setQStatus('Built-in list \u00b7 curating');
+  veil(true,'Finding the song...');
+  setBar('Tuning in...',region.name);
+  fire(playAt(0),'first track');
+
+  try{
+    const tracks=await curate(region,moodKey);
+    if(mySeq!==seq) return;
+    const played=qi>=0?queue.slice(0,qi+1):[];
+    queue=played.concat(tracks);
+    renderQueue(); setQStatus('AI curated \u00b7 '+MOODS[moodKey].n);
+  }catch(e){
+    if(mySeq!==seq) return;
+    console.warn('[Sur Radio] AI curation unavailable:',e);
+    setQStatus('Built-in list \u00b7 '+MOODS[moodKey].n);
+  }
+}
+
+async function playAt(i){
+  if(!queue.length||!current) return;
+  if(i<0) i=0;
+  if(i>=queue.length){ toast('End of the set - re-curating this state.'); fire(tune(current.id),'re-curate'); return; }
+  const mySeq=seq; qi=i;
+  const track=queue[i];
+  renderQueue(); paintTrack(track,true); veil(true,'Finding the song...');
+  const id=await resolve(searchPhrase(track,current));
+  if(mySeq!==seq) return;
+  if(!id){
+    markBad(i);
+    if(queue.filter(t=>t.bad).length>=4 && !ytKey()){
+      veil(true,'Search unavailable');
+      setBar('Cannot reach song search','Add a YouTube API key in Playback settings');
+      toast('Public search mirrors are unreachable. Add a YouTube API key in Playback settings.');
+      return;
+    }
+    return await playAt(i+1);
+  }
+  track.vid=id; loadVideo(id); paintTrack(track,false);
+}
+
+function paintTrack(track,searching){
+  document.getElementById('trackName').textContent=track.t;
+  document.getElementById('trackArtist').textContent=track.a;
+  document.getElementById('trackWhy').textContent=track.w||current.genres;
+  setBar(searching?'Finding "'+track.t+'"...':track.t,
+    track.a+' \u00b7 '+current.name+' \u00b7 '+MOODS[moodKey].n);
+}
+function renderQueue(){
+  const el=document.getElementById('queue'); el.innerHTML='';
+  queue.forEach(function(t,i){
+    const b=document.createElement('button');
+    b.className='qrow'+(i===qi?' on':'');
+    b.innerHTML='<span class="num">'+String(i+1).padStart(2,'0')+'</span>'+
+      '<span class="meta"><span class="tt">'+esc(t.t)+'</span><span class="aa">'+esc(t.a)+'</span></span>'+
+      (t.bad?'<span class="bad">NOT FOUND</span>':'');
+    b.addEventListener('click',()=>fire(playAt(i),'queue click'));
+    el.appendChild(b);
+  });
+  const live=el.querySelector('.qrow.on');
+  if(live&&live.scrollIntoView) live.scrollIntoView({block:'nearest'});
+}
+function next(){ fire(playAt(qi+1),'next'); }
+function prev(){ fire(playAt(Math.max(0,qi-1)),'prev'); }
+
+/* ============================ CONTROLS =================================== */
+const moodsEl=document.getElementById('moods');
+MOOD_KEYS.forEach(function(k){
+  const m=MOODS[k];
+  const b=document.createElement('button');
+  b.className='mood'+(k===moodKey?' on':''); b.dataset.k=k;
+  b.innerHTML='<b>'+m.n+'</b><i>'+m.tag+'</i>';
+  b.addEventListener('click',function(){
+    moodKey=k;
+    document.querySelectorAll('.mood').forEach(x=>x.classList.toggle('on',x.dataset.k===k));
+    if(current){ toast(current.name+' re-curating - '+m.n); fire(tune(current.id),'re-curate'); }
+    else toast(m.n+' selected. Now pick a state.');
+  });
+  moodsEl.appendChild(b);
+});
+document.getElementById('playBtn').addEventListener('click',function(){
+  if(!current){ fire(tune(pick(REGIONS).id),'tune'); return; }
+  if(!player||!player.playVideo) return;
+  if(playing) player.pauseVideo(); else player.playVideo();
+});
+document.getElementById('nextBtn').addEventListener('click',next);
+document.getElementById('prevBtn').addEventListener('click',prev);
+document.getElementById('randomBtn').addEventListener('click',()=>fire(tune(pick(REGIONS).id),'tune'));
+document.getElementById('vol').addEventListener('input',e=>setVol(e.target.value));
+document.getElementById('prog').addEventListener('click',function(e){
+  if(!player||!player.getDuration) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  const d=player.getDuration();
+  if(d>0) player.seekTo(d*((e.clientX-r.left)/r.width),true);
+});
+document.getElementById('ytKey').addEventListener('change',function(){
+  resolveCache.clear();
+  try{ localStorage.setItem('surradio_key',ytKey()); }catch(e){}
+  toast(ytKey()?'Key saved - matching will be sharper.':'Key cleared.');
+});
+try{ const k=localStorage.getItem('surradio_key'); if(k) document.getElementById('ytKey').value=k; }catch(e){}
+document.addEventListener('keydown',function(e){
+  if(e.target&&e.target.matches&&e.target.matches('input,textarea,button')) return;
+  if(e.code==='Space'){ e.preventDefault(); document.getElementById('playBtn').click(); }
+  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowLeft') prev();
+});
+
+
+/* ============================ LANDING =================================== */
+/* ================== LANDING BACKDROP =====================================
+   The state backdrops show one region each; this one has to stand for all of
+   them. So: a frieze of instruments drawn from every zone of the country, a
+   tuner scale across the top, and broadcast arcs rising off the knob. Built
+   from the same motif functions, so it stays vector and license-free.
+   ========================================================================= */
+/* ==================== LANDING BACKDROP ===================================
+   India's musical culture as one wide scene: a lit tuner plate, broadcast arcs
+   off the knob, drifting waves, and a frieze of instruments drawn from every
+   zone of the country. Built from the same motif vectors the state backdrops
+   use, so it stays consistent and needs no imagery.
+   ========================================================================= */
+const GOLD='#e8a33d', PAPERC='#f2ecd9';
+
+/* Abstract marks only - safe to stretch to any viewport. */
+function landingFarSVG(){
+  const W=1600,H=900;
+  let g='<svg class="lbg-far" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">';
+
+  /* tuner plate across the top, like the lit scale on a valve set */
+  g+='<g opacity=".42">';
+  g+='<line x1="120" y1="150" x2="1480" y2="150" stroke="'+PAPERC+'" stroke-width="1.2" opacity=".8"/>';
+  for(let i=0;i<=68;i++){
+    const x=120+i*20, major=i%5===0;
+    g+='<line x1="'+x+'" y1="150" x2="'+x+'" y2="'+(150+(major?15:8))+'" stroke="'+PAPERC+
+       '" stroke-width="'+(major?1.4:0.9)+'" opacity="'+(major?0.95:0.55)+'"/>';
+  }
+  const marks=['68','74','80','86','92','97'];
+  for(let i=0;i<marks.length;i++){
+    g+='<text x="'+(150+i*266)+'" y="192" fill="'+PAPERC+'" font-family="monospace" '+
+       'font-size="17" letter-spacing="2" opacity=".85">'+marks[i]+'</text>';
+  }
+  /* the needle, parked where the knob is pointing */
+  g+='<line x1="640" y1="132" x2="640" y2="176" stroke="'+GOLD+'" stroke-width="2.5" opacity=".95"/>';
+  g+='</g>';
+
+  /* long raga-ish waves through the middle distance */
+  g+='<g fill="none" stroke="'+PAPERC+'" opacity=".17">';
+  for(let r=0;r<3;r++){
+    let d='M0,'+(430+r*78);
+    for(let x=0;x<=W;x+=40){
+      const y=430+r*78+Math.sin((x/W)*Math.PI*(3+r)+r)*(30+r*9);
+      d+=' L'+x+','+y.toFixed(0);
+    }
+    g+='<path d="'+d+'" stroke-width="'+(2.4-r*0.5).toFixed(1)+'"/>';
+  }
+  g+='</g>';
+
+  /* broadcast arcs rising off the knob */
+  g+='<g class="arcs" fill="none" stroke="'+GOLD+'">';
+  for(let i=0;i<7;i++){
+    g+='<circle cx="800" cy="820" r="'+(170+i*125)+'" stroke-width="1.3" '+
+       'opacity="'+(0.42-i*0.045).toFixed(3)+'" style="animation-delay:'+(i*0.45).toFixed(2)+'s"/>';
+  }
+  g+='</g>';
+  return g+'</svg>';
+}
+
+/* Instruments, anchored to the bottom edge so they are always on screen. */
+function landingFriezeSVG(){
+  const W=1600,H=340,base=H-24;
+  let g='<svg class="lbg-frieze" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">';
+
+  /* back row, smaller and fainter, to give the row some depth */
+  const back=[
+    ['stupa',   60,0.40,.13],['flute',  325,0.40,.11],['reeds',  610,0.38,.12],
+    ['bowed',   880,0.38,.11],['drum',  1160,0.40,.12],['strings',1450,0.40,.13]
+  ];
+  /* front row: one instrument per zone of the country */
+  const front=[
+    ['strings', 150,0.62,.26],  /* sitar - the north            */
+    ['drum',    330,0.56,.23],  /* Punjab dhol                  */
+    ['dancer',  510,0.52,.20],  /* Gujarat garba                */
+    ['tabla',   700,0.62,.25],  /* Hindustani heartland         */
+    ['dhak',    900,0.58,.24],  /* Bengal puja                  */
+    ['horn',   1060,0.52,.21],  /* Assam pepa                   */
+    ['guitar', 1200,0.54,.22],  /* Shillong                     */
+    ['gopuram',1360,0.60,.26],  /* Tamil Nadu                   */
+    ['mask',   1510,0.52,.22]   /* Kerala kathakali             */
+  ];
+  function row(list,dy){
+    list.forEach(function(f){
+      const id=Object.keys(MOTIF).find(k=>MOTIF[k][0]===f[0]) || 'up';
+      g+='<g opacity="'+f[3]+'" transform="translate('+f[1]+','+(base+dy)+') scale('+f[2]+')">'+
+         motifSVG(id,PAPERC)+'</g>';
+    });
+  }
+  row(back,-42);
+  row(front,0);
+
+  /* ground line so the frieze reads as standing on something */
+  g+='<rect x="0" y="'+base+'" width="'+W+'" height="'+(H-base)+'" fill="#0b0e20" opacity=".5"/>';
+  g+='<line x1="0" y1="'+base+'" x2="'+W+'" y2="'+base+'" stroke="'+PAPERC+'" stroke-width="1" opacity=".2"/>';
+  return g+'</svg>';
+}
+
+function landingBackdropSVG(){ return landingFarSVG()+landingFriezeSVG(); }
+
+(function paintLandingBackdrop(){
+  const el=document.getElementById('landBg');
+  if(el) el.innerHTML=landingBackdropSVG();
+})();
+
+(function buildTicks(){
+  const el=document.getElementById('knobTicks');
+  if(!el) return;
+  /* a ring of dial ticks, so the knob reads as a tuner and not a volume dial */
+  let h='';
+  for(let i=0;i<32;i++) h+='<i style="transform:rotate('+(i*11.25)+'deg)"></i>';
+  el.innerHTML=h;
+})();
+
+/* lock immediately, before the user can scroll the page behind the dial */
+document.documentElement.classList.add('locked');
+document.body.classList.add('locked');
+
+let entered=false;
+function enterStation(){
+  if(entered) return;
+  entered=true;
+  const knob=document.getElementById('enterBtn');
+  const ticks=document.getElementById('knobTicks');
+  if(knob) knob.classList.add('turning');
+  /* light the ticks in sequence, like a needle sweeping the band */
+  if(ticks){
+    const arr=ticks.querySelectorAll('i');
+    arr.forEach((t,i)=>setTimeout(()=>t.classList.add('lit'), i*22));
+  }
+  const l=document.getElementById('landing');
+  setTimeout(()=>{
+    if(l){ l.classList.add('gone'); setTimeout(()=>{l.style.display='none';},1000); }
+    /* release the page and pin it to the top, so every entry looks identical
+       and the map is the first thing in view */
+    document.documentElement.classList.remove('locked');
+    document.body.classList.remove('locked');
+    window.scrollTo(0,0);
+  },620);
+  /* This click is the browser's required audio gesture, so it is the right
+     moment to actually start playing something. */
+  setTimeout(()=>fire(tune(pick(REGIONS).id),'tune from landing'),520);
+}
+document.getElementById('enterBtn').addEventListener('click',enterStation);
+document.getElementById('landing').addEventListener('keydown',function(e){
+  if(e.key==='Enter'||e.code==='Space'){ e.preventDefault(); enterStation(); }
+});
+setTimeout(()=>{const b=document.getElementById('enterBtn');if(b)b.focus();},300);
+
+fire(loadMap(),'map load');
+</script>
+</body>
+</html>

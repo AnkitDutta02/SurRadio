@@ -1,0 +1,7 @@
+{
+  "name": "sur-radio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Regional Indian radio, one dial per state.",
+  "engines": { "node": ">=18" }
+}
