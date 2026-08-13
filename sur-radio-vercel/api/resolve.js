@@ -54,9 +54,9 @@ module.exports = async (req, res) => {
   // 2. Public open-source mirrors, raced so one slow host cannot stall the page.
   if (!id) {
     const mirrors = [
-      'https://pipedapi.kavin.rocks/search?filter=music_songs&q=',
-      'https://pipedapi.adminforge.de/search?filter=music_songs&q=',
-      'https://api.piped.private.coffee/search?filter=music_songs&q=',
+      'https://pipedapi.kavin.rocks/search?filter=videos&q=',
+      'https://pipedapi.adminforge.de/search?filter=videos&q=',
+      'https://api.piped.private.coffee/search?filter=videos&q=',
     ];
     const invidious = [
       'https://inv.nadeko.net/api/v1/search?type=video&q=',
@@ -67,7 +67,9 @@ module.exports = async (req, res) => {
         const arr = (j && j.items) || (Array.isArray(j) ? j : []);
         for (const it of arr) {
           const u = it && it.url;
-          if (u && u.includes('watch?v=')) {
+          const dur = it && typeof it.duration === 'number' ? it.duration : null;
+        if (dur !== null && (dur < 45 || dur > 1500)) continue;   // skip clips and full-album rips
+        if (u && u.includes('watch?v=')) {
             const cand = u.split('watch?v=')[1].split('&')[0];
             if (valid(cand)) return cand;
           }
