@@ -75,12 +75,14 @@
      roughly double the old values, which rendered at about 4 CSS pixels on a phone. */
   /* Desktop keeps the quiet, small-caps feel of the original. The outline stays so
      names hold up over any state colour, but thin enough not to look bolded. */
-  .slabel{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:500;
-    fill:rgba(242,236,217,.82);pointer-events:none;text-anchor:middle;
-    paint-order:stroke;stroke:rgba(9,11,26,.6);stroke-width:2px;stroke-linejoin:round;}
-  .slabel.big{font-size:11.5px;font-weight:600;fill:rgba(255,255,255,.94);letter-spacing:.3px;stroke-width:2.4px;}
-  .slabel.mid{font-size:10px;}
-  .slabel.tiny{font-size:8.8px;fill:rgba(242,236,217,.66);}
+  /* One size, one weight, one colour for every state. Tiered sizes made the map
+     look uneven; a single quiet treatment reads as a map rather than a poster. */
+  .slabel{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;
+    letter-spacing:.02em;fill:rgba(242,236,217,.88);pointer-events:none;text-anchor:middle;
+    paint-order:stroke;stroke:rgba(9,11,26,.66);stroke-width:2.2px;stroke-linejoin:round;}
+  .slabel.big,.slabel.mid,.slabel.tiny{font-size:10.5px;font-weight:500;
+    fill:rgba(242,236,217,.88);letter-spacing:.02em;stroke-width:2.2px;}
+  .slabel.tiny{fill:rgba(242,236,217,.78);}
   .isle{cursor:pointer;}
   .isle .isledot{stroke:var(--ink);stroke-width:1.6;transition:r .16s ease;}
   .isle:hover .isledot{r:6.4;}
@@ -178,6 +180,9 @@
   .qrow.on .tt{color:var(--gold);font-weight:600;}
   .qrow .bad{font-family:'IBM Plex Mono',monospace;font-size:.56rem;color:var(--madder);flex:none;}
   .qempty{padding:12px 9px;font-size:.8rem;color:var(--dim);}
+  .qrow.dead{opacity:.42;cursor:default;}
+  .qrow.dead:hover{background:transparent;transform:none;}
+  .qrow.dead .tt{text-decoration:line-through;text-decoration-thickness:1px;}
 
   .search{margin:0 18px 10px;}
   .search input{width:100%;background:var(--ink-3);border:1px solid rgba(242,236,217,.14);border-radius:8px;padding:9px 12px;color:var(--paper);font-family:'IBM Plex Sans';font-size:.84rem;outline:none;}
@@ -272,6 +277,25 @@
     .play{width:48px;height:48px;}
     .ghost{width:40px;height:40px;}
   }
+  /* Only ever visible on a file:// origin, where playback cannot work at all. */
+  .filewarn{display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+    z-index:60;max-width:min(520px,92vw);background:var(--ink-2);color:var(--paper);
+    border:1px solid rgba(232,163,61,.55);border-radius:16px;padding:22px 24px;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.95);font-size:.9rem;line-height:1.6;}
+  .filewarn.show{display:block;}
+  .filewarn strong{display:block;font-family:'Fraunces',serif;font-size:1.12rem;
+    font-weight:600;color:var(--gold);margin-bottom:9px;}
+  .filewarn span{display:block;color:var(--dim);font-size:.84rem;margin-bottom:10px;}
+  .filewarn ol{margin:0 0 16px;padding-left:20px;}
+  .filewarn li{margin-bottom:8px;font-size:.84rem;}
+  .filewarn code{font-family:'IBM Plex Mono',monospace;font-size:.78rem;
+    background:rgba(242,236,217,.1);padding:2px 6px;border-radius:4px;}
+  .fwclose{border:none;border-radius:999px;background:var(--gold);color:var(--ink);
+    font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.1em;
+    text-transform:uppercase;font-weight:600;padding:9px 18px;cursor:pointer;}
+  .fwclose:hover{filter:brightness(1.08);}
+  @media (max-width:560px){.filewarn{padding:18px 17px;font-size:.85rem;}}
+
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:60;background:var(--paper);color:var(--ink);padding:10px 16px;border-radius:9px;font-size:.83rem;font-weight:500;box-shadow:0 14px 34px -12px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s ease,bottom .25s ease;max-width:90vw;text-align:center;}
   .toast.show{opacity:1;bottom:100px;}
 
@@ -548,8 +572,6 @@
   .knob-cap{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.26em;
     text-transform:uppercase;color:var(--dim);margin:0;transition:color .3s ease;}
   .knob:hover ~ .knob-cap{color:var(--paper);}
-  .knob-hint{font-family:'IBM Plex Mono',monospace;font-size:.53rem;letter-spacing:.14em;
-    color:rgba(154,154,184,.6);margin:2px 0 0;text-transform:uppercase;}
 
 
 
@@ -649,9 +671,8 @@
     .maphold{padding:2px 4px 8px;min-height:0;}
     svg#map{max-height:44vh;margin:0 auto;}
     /* the map is physically smaller here, so the type has to be proportionally larger */
-    .slabel{font-size:19px;stroke-width:4px;}
-    .slabel.big{font-size:24px;stroke-width:4.6px;}
-    .slabel.mid{font-size:19px;}
+    /* Same uniform size, scaled for the smaller rendered map. */
+    .slabel,.slabel.big,.slabel.mid{font-size:19px;stroke-width:3.8px;}
     .slabel.tiny{display:none;}          /* dots only; tap to see the name */
     .state{stroke-width:1.6;fill-opacity:.55;}
     .hub{r:4.6;}
@@ -690,7 +711,7 @@
     .brand-name{font-size:1.02rem;}
     /* On the narrowest screens only the largest states stay labelled - anything
        smaller would render under 8px, which is not worth showing. Tap for the name. */
-    .slabel.big{font-size:27px;stroke-width:5px;}
+    .slabel,.slabel.big{font-size:22px;stroke-width:4.2px;}
     .slabel.mid{display:none;}
     .state{stroke-width:1.8;fill-opacity:.6;}
   }
@@ -720,7 +741,6 @@
         </span>
       </button>
       <p class="knob-cap">Turn the dial</p>
-      <p class="knob-hint">drag it, or just tap</p>
     </div>
   </div>
 </div>
@@ -871,6 +891,18 @@
   </div>
 </div>
 <div class="toast" id="toast"></div>
+
+<!-- Shown only when the page is opened straight from disk. YouTube refuses to embed
+     into a file:// origin, so no song can play and the listener needs to know why. -->
+<div class="filewarn" id="fileWarn">
+  <strong>This page is open as a file, so YouTube will not play anything.</strong>
+  <span>Embedded players are blocked on <code>file://</code> pages. Two ways to fix it:</span>
+  <ol>
+    <li>Open your deployed link (for example <code>sur-radio.vercel.app</code>) &mdash; songs play normally there.</li>
+    <li>Or serve this folder locally: run <code>python3 -m http.server</code> in it, then visit <code>http://localhost:8000</code></li>
+  </ol>
+  <button class="fwclose" id="fwClose">Got it</button>
+</div>
 
 <script>
 /* ============================================================================
@@ -4169,7 +4201,9 @@ let geoReady=false, trains=[], ring=null, tempoFactor=1, ringPulse=0;
 let cseq=0;   /* curation generation, deliberately separate from playback seq */
 
 /* ========================= DIAGNOSTICS =================================== */
-const FILE_ORIGIN = location.protocol === 'file:';
+/* read live rather than captured once, so it is correct however the page was opened */
+const FILE_ORIGIN_AT_LOAD = location.protocol === 'file:';
+Object.defineProperty(globalThis,'FILE_ORIGIN',{get:()=>location.protocol==='file:'||FILE_ORIGIN_AT_LOAD});
 window.addEventListener('unhandledrejection', function(ev){
   const msg=(ev.reason&&(ev.reason.message||ev.reason))+'';
   console.warn('[Sur Radio] unhandled rejection:',ev.reason);
@@ -4472,7 +4506,9 @@ async function loadMap(){
     'West Bengal':'W. Bengal','Tamil Nadu':'Tamil Nadu','Uttarakhand':'U.K.',
     'Chhattisgarh':'Chhattisgarh','Maharashtra':'Maharashtra',
     'Dadra & Nagar Haveli and Daman & Diu':'DNH & DD',
-    'Andaman & Nicobar Islands':'Andaman','Jammu & Kashmir':'J&K'};
+    'Andaman & Nicobar Islands':'Andaman','Jammu & Kashmir':'J&K',
+    'Arunachal Pradesh':'Arunachal','Himachal Pradesh':'H.P.','Uttarakhand':'U.K.',
+    'Chhattisgarh':'Chhattisgarh','Puducherry':'Puducherry','Lakshadweep':'Lakshadweep'};
   /* Preset bands get a centroid assigned by the mast code above, so they must be
      excluded here or every band ends up labelled twice. */
   const labelled=REGIONS.filter(r=>r.cx!=null&&!ISLANDS[r.id]&&r.zone!=='national')
@@ -4487,7 +4523,7 @@ async function loadMap(){
       return;
     }
     const t=mk('text',{x:r.cx.toFixed(1),y:(r.cy+4).toFixed(1),class:'slabel '+tier});
-    t.textContent = tier==='big' ? (SHORT[r.name]||r.name).toUpperCase() : (SHORT[r.name]||r.name);
+    t.textContent = SHORT[r.name]||r.name;      /* one treatment for every state */
     svg.appendChild(t);
   });
 
@@ -4623,6 +4659,8 @@ document.getElementById('stnSearch').addEventListener('input',e=>renderList(e.ta
 const resolveCache=new Map();
 const playedVids=new Set();   /* so two different queries cannot replay one video */
 let dupSkips=0;               /* consecutive duplicate skips, capped below */
+let lastTopUpAt=-1;           /* stops one position asking for a top-up repeatedly */
+let playErrors=0, lastErrIdx=-1;   /* consecutive embed failures, capped in onError */
 const MIRRORS=['https://pipedapi.kavin.rocks','https://pipedapi.adminforge.de','https://api.piped.private.coffee'];
 const INVIDIOUS=['https://inv.nadeko.net','https://invidious.nerdvpn.de'];
 /* The server route holds the key for everyone now, so there is no key field in
@@ -4662,9 +4700,10 @@ function cleanYtTitle(raw){
    many catalogue rows written as a description rather than a song name. */
 async function resolveFull(query){
   const list=await searchYouTube(query);
-  if(list&&list.length) return {id:list[0].id,title:cleanYtTitle(list[0].title),author:list[0].author||''};
+  if(list&&list.length) return {id:list[0].id,title:cleanYtTitle(list[0].title),
+    author:list[0].author||'', alts:list.map(r=>r.id)};
   const id=await resolve(query);
-  return id?{id:id,title:'',author:''}:null;
+  return id?{id:id,title:'',author:'',alts:[id]}:null;
 }
 
 async function resolve(query){
@@ -4835,25 +4874,20 @@ function seedFor(region,mKey){
      queue, not filtering it. */
   const hit=region.seed.filter(s=>s.m.indexOf(mKey)>-1);
   const list=shuffled(hit).map(s=>({t:s.t,a:s.a,w:''}));
-  /* Strict filtering can leave a short list, so top it out with live on-mood
-     searches for this region. Better a real party song found on demand than a
-     ballad borrowed from another mood. */
-  if(list.length<6){
-    const lang=region.lang.split(',')[0], q=MOODS[mKey].q;
-    const probes=[
-      lang+' '+q,
-      region.name+' '+q,
-      lang+' '+q+' songs',
-      'best '+lang+' '+q,
-      lang+' '+MOODS[mKey].n.toLowerCase()+' music'
-    ];
-    probes.slice(0, 6-list.length).forEach(pq=>{
-      list.push({t:pq,a:region.name+' \u00b7 '+MOODS[mKey].n,
-        w:'Found live for '+MOODS[mKey].n.toLowerCase()+' in '+region.name,generic:true});
-    });
+  /* Strict filtering can leave a short list, and the old padding filled it with
+     five near-identical invented rows - "Konkani classical raga recital", "Goa
+     classical raga recital", "...recital songs". One honest live-search row is
+     better than five fake ones, and borrowing from a neighbouring mood is not an
+     option: mixing devotional songs into Classical is exactly the impurity this
+     station list is supposed to prevent. */
+  if(!list.length || list.length<3){
+    const lang=region.lang.split(',')[0];
+    list.push({t:lang+' '+MOODS[mKey].q,a:region.name+' \u00b7 '+MOODS[mKey].n,
+      w:'Searched live \u2014 the built-in list for this mood is thin here',generic:true});
   }
   return list;
 }
+
 
 /* ============================= PLAYER ==================================== */
 const ICON_PLAY='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg>';
@@ -4870,11 +4904,40 @@ window.onYouTubeIframeAPIReady=function(){
         if(pendingVid){const v=pendingVid;pendingVid=null;player.loadVideoById(v);}
       },
       onStateChange:function(e){
-        if(e.data===YT.PlayerState.PLAYING){playing=true;syncPlayBtn();veil(false);startProg();}
+        if(e.data===YT.PlayerState.PLAYING){
+          playing=true;syncPlayBtn();veil(false);startProg();
+          playErrors=0; lastErrIdx=-1;        /* a good play clears the error streak */
+        }
         else if(e.data===YT.PlayerState.PAUSED){playing=false;syncPlayBtn();stopProg();}
         else if(e.data===YT.PlayerState.ENDED){playing=false;stopProg();next();}
       },
-      onError:function(){ markBad(qi); fire(playAt(qi+1),'skip after player error'); }
+      /* Plenty of YouTube videos are blocked from embedding, and each block fires
+         this. It used to call playAt with a fresh depth of zero, so the skip chain
+         was unbounded: it walked the queue, hit the end, pulled in a newly shuffled
+         batch and kept going - which is what made the list churn on its own.
+         The streak is now counted, passed in as depth, and capped. */
+      onError:function(){
+        const t=queue[qi];
+        /* Another upload of the same song may well be embeddable, so try those
+           before writing the song off. */
+        if(t&&t.alts&&t.altI!=null&&t.altI+1<t.alts.length&&t.altI<3){
+          t.altI++;
+          t.vid=t.alts[t.altI];
+          loadVideo(t.vid);
+          return;
+        }
+        if(lastErrIdx===qi) return;           /* one error per row, not per event */
+        lastErrIdx=qi;
+        playErrors++;
+        markBad(qi);
+        if(playErrors>=6){
+          veil(true,'Several songs could not be played');
+          setBar('These videos are blocked from embedding','Try another station or mood');
+          setQStatus('Paused \u00b7 too many blocked videos');
+          return;
+        }
+        fire(playAt(qi+1,playErrors),'skip after player error');
+      }
     }
   });
 };
@@ -4884,7 +4947,19 @@ window.onYouTubeIframeAPIReady=function(){
   s.onerror=function(){ veil(true,'Could not load the player'); toast('YouTube player script blocked. Check your network or ad blocker.'); };
   document.head.appendChild(s);
 })();
-if(FILE_ORIGIN) setTimeout(()=>toast('Open this over http (e.g. "python3 -m http.server"), not by double-clicking the file.'),900);
+/* YouTube refuses to embed into a page whose origin is "file://", so every single
+   video fails with an embed error. That is not something the page can work around,
+   so say it plainly and up front rather than letting the listener watch song after
+   song fail. */
+if(FILE_ORIGIN){
+  setTimeout(function(){
+    const b=document.getElementById('fileWarn');
+    if(b) b.classList.add('show');
+    veil(true,'Playback needs a web address');
+    setBar('Opened as a file, so YouTube blocks playback','Use the hosted link, or serve this folder over http');
+    setQStatus('Playback blocked \u00b7 file:// origin');
+  },600);
+}
 
 function loadVideo(id){ if(ytReady&&player&&player.loadVideoById) player.loadVideoById(id); else pendingVid=id; }
 function veil(show,msg){
@@ -4926,13 +5001,15 @@ function toast(m){
 }
 function setBar(t,s){ document.getElementById('barTitle').textContent=t; document.getElementById('barSub').textContent=s; }
 function setQStatus(s){ document.getElementById('qStatus').textContent=String(s).toUpperCase(); }
-function markBad(i){ if(queue[i]) queue[i].bad=true; renderQueue(); }
+/* No render here: whoever handles the failure paints the list right after, and
+   rendering twice per skip doubles the visible churn. */
+function markBad(i){ if(queue[i]) queue[i].bad=true; }
 
 async function tune(id,opts){
   const region=byId(id); if(!region) return;
   opts=opts||{};
   const mySeq=++seq; cseq++;   /* invalidate any in-flight re-curation */
-  playedVids.clear();
+  playedVids.clear(); lastTopUpAt=-1; dupSkips=0; playErrors=0; lastErrIdx=-1;
   current=region;
 
   dismissHint();
@@ -4962,7 +5039,9 @@ async function tune(id,opts){
     queue=[opts.first].concat(mergeNew(queue,[opts.first]));
   }
   qi=-1;
-  renderQueue(); setQStatus(opts.first?'Requested \u00b7 then '+region.name:'Built-in list \u00b7 curating');
+  /* playAt renders immediately below, so painting the list here as well would
+     show it twice in quick succession. Just set the status. */
+  setQStatus(opts.first?'Requested \u00b7 then '+region.name:MOODS[moodKey].n+' \u00b7 '+queue.length+' songs');
   veil(true,'Finding the song...');
   setBar('Tuning in...',region.name);
   fire(playAt(0),'first track');
@@ -4970,9 +5049,12 @@ async function tune(id,opts){
   try{
     const tracks=await curate(region,moodKey);
     if(mySeq!==seq) return;
-    const played=qi>=0?queue.slice(0,qi+1):[];
-    queue=played.concat(mergeNew(tracks,played));
-    renderQueue(); setQStatus('AI curated \u00b7 '+queue.length+' songs');
+    /* Append, never replace. Replacing meant the listener watched a built-in list
+       appear and then get swapped wholesale for a different one a second later,
+       which is what looked like the songs reshuffling on their own. Appending only
+       ever adds rows below what is already on screen. */
+    queue=queue.concat(mergeNew(tracks,queue));
+    renderQueue(); setQStatus(MOODS[moodKey].n+' \u00b7 '+queue.length+' songs');
   }catch(e){
     if(mySeq!==seq) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
@@ -4999,12 +5081,28 @@ async function topUp(){
     try{ fresh=mergeNew(await curate(region,mk,queue.map(t=>t.t)),queue); }
     catch(e){ console.warn('[Sur Radio] top-up curation failed:',e); }
     if(!fresh.length) fresh=mergeNew(seedFor(region,mk),queue);   /* built-ins as backstop */
+
+    /* Pool exhausted. Recycle it rather than re-tuning the station: a re-tune
+       rebuilds the queue from scratch and reshuffles everything the listener can
+       see, which reads as the list randomly resetting. Recycling only ever
+       appends, so nothing already on screen moves. */
+    if(!fresh.length){
+      /* Recycling the pool is how a station keeps going, and a song heard a while
+         back may fairly come round again. What must never happen is the same title
+         appearing twice in the list the listener is looking at, so we dedupe
+         against everything still upcoming rather than against all history. */
+      const upcoming={};
+      queue.slice(Math.max(qi,0)).forEach(t=>{ upcoming[titleKey(t)]=1; });
+      fresh=shuffled(seedFor(region,mk)).filter(t=>!upcoming[titleKey(t)]);
+      playedVids.clear();          /* a full pass is done, repeats are fine now */
+      dupSkips=0;
+    }
     if(my!==cseq||current!==region) return;
     if(fresh.length){
       queue=queue.concat(fresh);
       if(queue.length>90){ const drop=queue.length-90; queue=queue.slice(drop); qi-=drop; }
       renderQueue();
-      setQStatus('Queue extended \u00b7 '+queue.length+' songs');
+      setQStatus(MOODS[mk]?MOODS[mk].n+' \u00b7 '+queue.length+' songs':queue.length+' songs');
     }
   } finally { topping=false; }
 }
@@ -5028,8 +5126,9 @@ async function recurate(){
   try{
     const tracks=await curate(region,mk);
     if(my!==cseq||current!==region) return;
-    queue=mergeNew(tracks,[]); qi=-1;
-    renderQueue(); setQStatus('AI curated \u00b7 '+MOODS[mk].n+' \u00b7 '+queue.length+' songs');
+    /* the mood list is already on screen; the AI batch joins the end of it */
+    queue=queue.concat(mergeNew(tracks,queue));
+    renderQueue(); setQStatus(MOODS[mk].n+' \u00b7 '+queue.length+' songs');
   }catch(e){
     if(my!==cseq||current!==region) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
@@ -5049,33 +5148,62 @@ async function playPicked(i){
   return await playAt(at);
 }
 
-async function playAt(i){
+async function playAt(i,depth){
   if(!queue.length||!current) return;
+  depth=depth||0;
   if(i<0) i=0;
+
+  /* A run of tracks that will not resolve used to walk off the end, top the queue
+     up, wrap back to zero and start again - an endless loop that appended a newly
+     shuffled pool every lap, which is what made the list churn continuously.
+     The chain is now bounded and never wraps. */
+  if(depth>=10){
+    veil(true,'No playable songs found');
+    setBar('Could not find a playable song','Try another state or mood');
+    return;
+  }
   if(i>=queue.length){
-    await topUp();                                  /* try to extend before giving up */
-    if(i>=queue.length){ toast('End of the set - re-curating this state.'); fire(tune(current.id),'re-curate'); return; }
+    if(depth>0) return;                             /* a failure cascade, not the end of a set */
+    await topUp();                                  /* extend, never rebuild */
+    if(i>=queue.length) return;                     /* nothing to add - stop, do not wrap */
   }
   const mySeq=seq; qi=i;
   const track=queue[i];
-  renderQueue(); paintTrack(track,true); veil(true,'Finding the song...');
+  renderQueue();
+
+  /* No point starting: a file:// page cannot embed YouTube at all, and attempting
+     it just walks the queue marking songs unavailable. */
+  if(FILE_ORIGIN){
+    paintTrack(track,false);
+    veil(true,'Playback needs a web address');
+    setBar('Opened as a file, so YouTube blocks playback','Use the hosted link, or serve this folder over http');
+    setQStatus('Playback blocked \u00b7 file:// origin');
+    const w=document.getElementById('fileWarn');
+    if(w) w.classList.add('show');
+    return;
+  }
+
+  paintTrack(track,true); veil(true,'Finding the song...');
   /* A track chosen from YouTube search already knows its video. Placeholder rows
      go through resolveFull so the listener sees the actual song name instead of
      "Bhojpuri song". Real titles keep the name we wrote. */
   let id=track.vid||null;
   if(!id){
-    if(track.g||track.generic){
-      const found=await resolveFull(searchPhrase(track,current));
-      if(mySeq!==seq) return;
-      if(found){
-        id=found.id;
+    /* Every track keeps the other search results as alternates. When YouTube blocks
+       the first video from embedding we can try the next upload of the same song
+       instead of giving up on the song entirely. */
+    const found=await resolveFull(searchPhrase(track,current));
+    if(mySeq!==seq) return;
+    if(found){
+      id=found.id;
+      track.alts=found.alts||[id];
+      track.altI=0;
+      if(track.g||track.generic){
         if(found.title){
           track.realT=found.title;
           if(found.author) track.realA=found.author;
         }
       }
-    } else {
-      id=await resolve(searchPhrase(track,current));
     }
   }
   if(mySeq!==seq) return;
@@ -5087,7 +5215,7 @@ async function playAt(i){
       toast('Public search mirrors are unreachable. Add a YouTube API key in Playback settings.');
       return;
     }
-    return await playAt(i+1);
+    return await playAt(i+1,depth+1);
   }
   /* Two generic probes can land on the same video, so skip rather than repeat.
      Capped: if several in a row resolve to the same thing we stop skipping and
@@ -5096,7 +5224,7 @@ async function playAt(i){
   if(playedVids.has(id) && i+1<queue.length && dupSkips<3){
     dupSkips++;
     track.bad=true; renderQueue();
-    return await playAt(i+1);
+    return await playAt(i+1,depth+1);
   }
   dupSkips=0;
   playedVids.add(id);
@@ -5104,8 +5232,12 @@ async function playAt(i){
 
   track.vid=id; loadVideo(id); paintTrack(track,false);
 
-  /* fetch more while this one plays, so the join is seamless */
-  if(qi >= queue.length-3) fire(topUp(),'top up queue');
+  /* Fetch more while this one plays, so the join is seamless. Guarded so the same
+     position cannot request a top-up over and over. */
+  if(qi >= queue.length-3 && lastTopUpAt!==qi){
+    lastTopUpAt=qi;
+    fire(topUp(),'top up queue');
+  }
 }
 
 /* ===================== LOCK SCREEN / MEDIA SESSION =======================
@@ -5162,18 +5294,21 @@ function renderQueue(){
   const el=document.getElementById('queue'); el.innerHTML='';
   /* Up next means what is coming, so the song currently playing and anything
      already heard are not listed. The bottom bar owns the current track. */
+  /* A song that could not be played stays exactly where it is, greyed out and
+     labelled. Removing those rows made the list appear to reshuffle every time
+     something failed, because the rows below all shifted up to fill the gap. */
   let shown=0;
   queue.forEach(function(t,i){
     if(i<=qi) return;
-    if(t.bad) return;                       /* nothing that failed to resolve */
     shown++;
     const n=shown;
     const b=document.createElement('button');
-    b.className='qrow';
+    b.className='qrow'+(t.bad?' dead':'');
     b.innerHTML='<span class="num">'+String(n).padStart(2,'0')+'</span>'+
       '<span class="meta"><span class="tt">'+esc(t.realT||t.t)+'</span>'+
-      '<span class="aa">'+esc(t.realA||t.a)+'</span></span>';
-    b.addEventListener('click',()=>{buzz(PICK);fire(playPicked(i),'queue click');});
+      '<span class="aa">'+esc(t.realA||t.a)+'</span></span>'+
+      (t.bad?'<span class="bad">UNAVAILABLE</span>':'');
+    if(!t.bad) b.addEventListener('click',()=>{buzz(PICK);fire(playPicked(i),'queue click');});
     el.appendChild(b);
   });
   if(!shown){
@@ -5694,6 +5829,14 @@ function enterStation(){
      moment to actually start playing something. */
   setTimeout(()=>fire(tune(pick(REGIONS).id),'tune from landing'),520);
 }
+(function(){
+  const c=document.getElementById('fwClose');
+  if(c) c.addEventListener('click',function(){
+    const b=document.getElementById('fileWarn');
+    if(b) b.classList.remove('show');
+  });
+})();
+
 /* ---- turning the dial -------------------------------------------------------
    A knob you can only click is a button wearing a costume. This tracks the angle
    of the pointer around the knob's centre, turns it with the finger, and enters
