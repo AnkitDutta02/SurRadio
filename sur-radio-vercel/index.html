@@ -63,8 +63,32 @@
   .slabel{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:rgba(242,236,217,.72);pointer-events:none;text-anchor:middle;}
   .slabel.big{font-size:10px;fill:var(--paper);}
   .pulse-ring{fill:none;stroke-width:2;pointer-events:none;}
+  /* offshore national bands */
+  .natstn{cursor:pointer;}
+  .natstn .natmast{fill:rgba(242,236,217,.55);transition:fill .18s ease;}
+  .natstn .natbase{stroke:rgba(242,236,217,.5);stroke-width:1.6;}
+  .natstn .natdot{fill:var(--gold);}
+  .natstn .natarc{fill:none;stroke:var(--gold);stroke-width:1;opacity:.34;
+    animation:natpulse 3.2s ease-out infinite;}
+  @keyframes natpulse{0%{opacity:.5;}70%{opacity:0;}100%{opacity:0;}}
+  .natstn .natlabel{font-family:'IBM Plex Mono',monospace;font-size:9px;fill:var(--paper);
+    letter-spacing:.06em;pointer-events:none;font-weight:600;}
+  .natstn .natfreq{font-family:'IBM Plex Mono',monospace;font-size:7.5px;
+    fill:rgba(242,236,217,.6);letter-spacing:.08em;pointer-events:none;}
+  .natstn:hover .natmast{fill:var(--gold);}
+  .natstn:hover .natlabel{fill:var(--gold);}
+  .natstn.live .natmast{fill:var(--gold);}
+  .natstn.live .natlabel{fill:var(--gold);}
   .legend{display:flex;flex-wrap:wrap;gap:9px 15px;padding:9px 18px 2px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--dim);}
   .legend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:6px;vertical-align:-1px;}
+  .natchip{margin-left:auto;display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+    background:rgba(242,236,217,.10);border:1px solid rgba(242,236,217,.28);border-radius:999px;
+    padding:6px 13px;color:var(--paper);font-family:'IBM Plex Mono',monospace;
+    font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;transition:all .16s ease;}
+  .natchip:hover{background:var(--paper);color:var(--ink);border-color:var(--paper);}
+  .natchip .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none;}
+  .natchip:hover .dot{background:var(--madder);}
+  @media (max-width:760px){.natchip{margin-left:0;}}
   .maploading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:26px;
     font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--dim);letter-spacing:.06em;line-height:1.8;}
   .maploading b{color:var(--paper);display:block;margin-bottom:6px;letter-spacing:.1em;}
@@ -99,7 +123,7 @@
 
   .pad{padding:16px 18px 18px;}
   .lbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--dim);margin-bottom:10px;}
-  .moods{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .moods{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
   .mood{background:var(--ink-3);border:1px solid transparent;border-radius:9px;padding:10px 6px;cursor:pointer;color:var(--dim);text-align:center;transition:all .16s ease;}
   .mood b{display:block;font-size:.76rem;font-weight:600;color:var(--paper);margin-bottom:2px;}
   .mood i{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.55rem;}
@@ -144,6 +168,10 @@
   .btn{border:none;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:filter .14s ease,transform .1s ease;}
   .btn:active{transform:translateY(1px);}
   .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .btn .ic{width:21px;height:21px;display:block;flex:none;}
+  .play .ic{width:20px;height:20px;margin-left:1px;}   /* optical centring for the triangle */
+  .ghost .ic{width:17px;height:17px;}
+  .sask .ic.sm{width:15px;height:15px;color:var(--gold);flex:none;}
   .play{width:46px;height:46px;flex:none;background:var(--gold);color:var(--ink);border-radius:50%;font-size:1.05rem;}
   .play:hover{filter:brightness(1.09);}
   .play:disabled{opacity:.4;cursor:not-allowed;}
@@ -185,6 +213,65 @@
   }
   .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:60;background:var(--paper);color:var(--ink);padding:10px 16px;border-radius:9px;font-size:.83rem;font-weight:500;box-shadow:0 14px 34px -12px rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .25s ease,bottom .25s ease;max-width:90vw;text-align:center;}
   .toast.show{opacity:1;bottom:100px;}
+
+
+  /* ===================== SEARCH ========================================== */
+  .searchcard{padding:13px 14px;}
+  /* An inset tuner-style field: darker than the card so it reads as something
+     you type into, with the dial gold reserved for focus and matches. */
+  .searchbox{display:flex;align-items:center;gap:10px;
+    background:linear-gradient(180deg, rgba(9,11,26,.9), rgba(16,19,42,.9));
+    border:1px solid rgba(242,236,217,.13);border-radius:11px;padding:0 12px;
+    box-shadow:inset 0 2px 7px rgba(0,0,0,.45);
+    transition:border-color .18s ease, box-shadow .18s ease;}
+  .searchbox:focus-within{border-color:rgba(232,163,61,.75);
+    box-shadow:inset 0 2px 7px rgba(0,0,0,.45), 0 0 0 3px rgba(232,163,61,.13);}
+  .searchbox .sicon{width:16px;height:16px;flex:none;color:var(--dim);transition:color .18s ease;}
+  .searchbox:focus-within .sicon{color:var(--gold);}
+  /* native search inputs bring their own chrome on webkit, so strip it all */
+  .searchbox input{flex:1;min-width:0;-webkit-appearance:none;appearance:none;
+    background:transparent;border:none;outline:none;box-shadow:none;
+    color:var(--paper);caret-color:var(--gold);
+    font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;letter-spacing:.01em;
+    padding:12px 0;}
+  .searchbox input::placeholder{color:rgba(242,236,217,.38);}
+  .searchbox input::-webkit-search-cancel-button,
+  .searchbox input::-webkit-search-decoration,
+  .searchbox input::-webkit-search-results-button{-webkit-appearance:none;display:none;}
+  .sclear{display:none;flex:none;width:22px;height:22px;border:none;border-radius:50%;
+    background:rgba(242,236,217,.12);color:var(--dim);font-size:.9rem;line-height:1;
+    cursor:pointer;align-items:center;justify-content:center;padding:0;transition:all .15s ease;}
+  .sclear.on{display:flex;}
+  .sclear:hover{background:var(--paper);color:var(--ink);}
+
+  .sresults{max-height:0;overflow:hidden;transition:max-height .28s ease;}
+  .sresults.open{max-height:334px;overflow-y:auto;margin-top:9px;}
+  .sresults::-webkit-scrollbar{width:6px;}
+  .sresults::-webkit-scrollbar-thumb{background:rgba(242,236,217,.16);border-radius:3px;}
+  .shead{font-family:'IBM Plex Mono',monospace;font-size:.54rem;letter-spacing:.15em;
+    text-transform:uppercase;color:rgba(154,154,184,.8);padding:10px 4px 6px;
+    display:flex;align-items:center;gap:8px;}
+  .shead::after{content:"";flex:1;height:1px;background:rgba(242,236,217,.09);}
+  .sres{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:none;
+    background:transparent;color:var(--paper);padding:8px 9px;border-radius:8px;cursor:pointer;
+    transition:background .13s ease;}
+  .sres:hover,.sres.sel{background:rgba(242,236,217,.07);}
+  .sres i{width:6px;height:6px;border-radius:50%;flex:none;}
+  .sres .meta{flex:1;min-width:0;}
+  .sres .tt{display:block;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .sres .aa{display:block;font-size:.68rem;color:var(--dim);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;margin-top:2px;}
+  .sres .rg{font-family:'IBM Plex Mono',monospace;font-size:.53rem;color:rgba(154,154,184,.85);
+    flex:none;text-align:right;max-width:84px;line-height:1.35;letter-spacing:.04em;
+    text-transform:uppercase;}
+  .sres mark{background:none;color:var(--gold);font-weight:600;}
+  .snone{padding:11px 6px 4px;font-size:.81rem;color:var(--dim);line-height:1.6;}
+  .sask{display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+    border:1px solid rgba(232,163,61,.32);background:rgba(232,163,61,.09);
+    color:var(--paper);padding:10px 11px;border-radius:9px;cursor:pointer;
+    margin:8px 0 2px;font-size:.82rem;transition:all .15s ease;}
+  .sask:hover,.sask.sel{background:rgba(232,163,61,.2);border-color:rgba(232,163,61,.6);}
+  .sask b{color:var(--gold);font-weight:600;}
 
   /* ================= BACKDROP: one generated landscape per state ========= */
   .backdrop{position:fixed;inset:0;z-index:-2;overflow:hidden;background:var(--ink);}
@@ -397,7 +484,7 @@
     <div class="rail-col">
       <div class="card searchcard">
         <div class="searchbox">
-          <span class="sicon">&#9906;</span>
+          <svg class="sicon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12.6" y1="12.6" x2="17.5" y2="17.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           <input id="songSearch" type="search" autocomplete="off" spellcheck="false"
                  placeholder="Search a song, artist or state...">
           <button class="sclear" id="searchClear" aria-label="Clear search">&times;</button>
@@ -463,13 +550,13 @@
 <div class="bar">
   <div class="prog" id="prog" role="progressbar" aria-label="Track progress"><i id="progFill"></i></div>
   <div class="bar-in">
-    <button class="btn play" id="playBtn" disabled aria-label="Play or pause">&#9654;</button>
+    <button class="btn play" id="playBtn" disabled aria-label="Play or pause"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg></button>
     <div class="bar-info">
       <div class="t" id="barTitle">Sur Radio &mdash; off air</div>
       <div class="s" id="barSub">Select a state to begin</div>
     </div>
-    <button class="btn ghost" id="prevBtn" disabled aria-label="Previous song"><span class="ico">&#10094;&#10094;</span><span class="txt">Prev</span></button>
-    <button class="btn ghost" id="nextBtn" disabled aria-label="Next song"><span class="txt">Next</span><span class="ico">&#10095;&#10095;</span></button>
+    <button class="btn ghost" id="prevBtn" disabled aria-label="Previous song"><span class="ico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.5 5.6 L10.4 12 L18.5 18.4 Z" fill="currentColor"/><rect x="5.8" y="5.6" width="2.5" height="12.8" rx="1.1" fill="currentColor"/></svg></span><span class="txt">Prev</span></button>
+    <button class="btn ghost" id="nextBtn" disabled aria-label="Next song"><span class="txt">Next</span><span class="ico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5.6 L13.6 12 L5.5 18.4 Z" fill="currentColor"/><rect x="15.7" y="5.6" width="2.5" height="12.8" rx="1.1" fill="currentColor"/></svg></span></button>
     <div class="vol">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);">VOL</span>
       <input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume">
@@ -501,6 +588,9 @@
 const GEO_URL = 'https://cdn.jsdelivr.net/gh/udit-001/india-maps-data@2884453/geojson/india.geojson';
 
 const ZONES = {
+  /* Hindi film music belongs to no single state, so it gets a national band
+     rather than being buried inside Maharashtra. */
+  national: {c:'#f2ecd9', n:'National'},
   north:    {c:'#e8a33d', n:'North'},
   west:     {c:'#c85043', n:'West'},
   central:  {c:'#c9a15e', n:'Central'},
@@ -509,13 +599,18 @@ const ZONES = {
   south:    {c:'#2f9c8b', n:'South'},
 };
 
+/* 'Classic' used to mean both raga music and old film songs, which is exactly
+   why the two kept bleeding into each other. They are now separate moods, and
+   each `q` is the phrasing used when searching for the track, so a party pick
+   resolves to an actual dance number rather than a bhajan. */
 const MOODS = {
-  classic:   {n:'Classic',   tag:'legacy',  q:'classic golden era song'},
+  classical: {n:'Classical', tag:'raga',    q:'classical raga recital'},
+  retro:     {n:'Retro',     tag:'golden',  q:'old classic hit song'},
   folk:      {n:'Folk',      tag:'roots',   q:'traditional folk song'},
   devotional:{n:'Devotional',tag:'bhakti',  q:'devotional bhajan'},
-  modern:    {n:'Modern',    tag:'current', q:'recent hit song'},
-  party:     {n:'Party',     tag:'dance',   q:'dance festival song'},
-  chill:     {n:'Chill',     tag:'slow',    q:'soft slow melody'},
+  modern:    {n:'Modern',    tag:'current', q:'latest hit song'},
+  party:     {n:'Party',     tag:'dance',   q:'dance number full song'},
+  chill:     {n:'Chill',     tag:'slow',    q:'soft romantic melody'},
 };
 
 /* ---------------------------------------------------------------------------
@@ -527,21 +622,21 @@ const REGIONS = [
 {id:'jk',name:'Jammu & Kashmir',zone:'north',alias:['Jammu and Kashmir','Jammu & Kashmir','Jammu Kashmir'],
  lang:'Kashmiri, Dogri',genres:'Sufiana Kalam, santoor, chakri and Dogri folk',
  seed:[
-  {t:'Bhumbro',a:'Mission Kashmir',m:['classic','folk','party']},
+  {t:'Bhumbro',a:'Mission Kashmir',m:['retro','folk','party']},
   {t:'Roshe Walo Myaani Poshe Madano',a:'Kashmiri folk',m:['folk','chill']},
   {t:'Harmukh Bartal',a:'Kashmiri folk',m:['folk','devotional']},
-  {t:'Santoor raga recital',a:'Bhajan Sopori',m:['classic','chill','devotional']},
+  {t:'Santoor raga recital',a:'Bhajan Sopori',m:['classical','chill','devotional']},
   {t:'Wanvun Kashmiri wedding song',a:'Kashmiri traditional',m:['folk','party']},
   {t:'Kashmiri song',a:'Ali Saifudin',m:['modern','chill']},
-  {t:'Dogri folk song',a:'Dogri traditional',m:['folk','classic']},
-  {t:'Katyu Chhuk Nundbane',a:'Kashmiri folk',m:['folk','classic']},
+  {t:'Dogri folk song',a:'Dogri traditional',m:['folk','retro']},
+  {t:'Katyu Chhuk Nundbane',a:'Kashmiri folk',m:['folk','retro']},
   {t:'Madano Wale Madano',a:'Kashmiri folk',m:['folk','chill']},
-  {t:'Rind Poshmal',a:'Kashmiri folk',m:['folk','classic']},
-  {t:'Sufiana Kalam',a:'Kashmiri Sufi',m:['devotional','classic','chill']},
+  {t:'Rind Poshmal',a:'Kashmiri folk',m:['folk','retro']},
+  {t:'Sufiana Kalam',a:'Kashmiri Sufi',m:['devotional','retro','chill']},
   {t:'Rouf song',a:'Kashmiri folk',m:['folk','party']},
-  {t:'Habba Khatoon songs',a:'Kashmiri',m:['classic','folk','chill']},
-  {t:'Ladishah',a:'Kashmiri satire folk',m:['folk','classic']},
-  {t:'Santoor Raga Bhairavi',a:'Bhajan Sopori',m:['classic','chill']},
+  {t:'Habba Khatoon songs',a:'Kashmiri',m:['retro','folk','chill']},
+  {t:'Ladishah',a:'Kashmiri satire folk',m:['folk','retro']},
+  {t:'Santoor Raga Bhairavi',a:'Bhajan Sopori',m:['classical','chill']},
   {t:'Dogri Kud dance song',a:'Dogri folk',m:['folk','party']},
   {t:'Kashmiri Chakri',a:'Kashmiri folk',m:['folk','devotional']}]},
 {id:'ladakh',name:'Ladakh',zone:'north',alias:['Ladakh'],
@@ -550,12 +645,12 @@ const REGIONS = [
   {t:'Ladakhi folk song',a:'Ladakhi traditional',m:['folk','chill']},
   {t:'Buddhist monastery chanting',a:'Ladakh monastic chant',m:['devotional','chill']},
   {t:'Ladakhi wedding song',a:'Ladakhi traditional',m:['folk','party']},
-  {t:'Zanskar folk music',a:'Ladakhi',m:['folk','classic']},
+  {t:'Zanskar folk music',a:'Ladakhi',m:['folk','retro']},
   {t:'Om Mani Padme Hum chant',a:'Tibetan Buddhist mantra',m:['devotional','chill']},
   {t:'Ladakhi Losar song',a:'Ladakhi folk',m:['folk','party']},
   {t:'Shondol dance music',a:'Ladakhi royal dance',m:['folk','party']},
-  {t:'Zhung Lu court song',a:'Ladakhi',m:['folk','classic']},
-  {t:'Damian lute music',a:'Ladakhi',m:['folk','classic','chill']},
+  {t:'Zhung Lu court song',a:'Ladakhi',m:['folk','retro']},
+  {t:'Damian lute music',a:'Ladakhi',m:['folk','retro','chill']},
   {t:'Om Tare Tuttare mantra',a:'Buddhist chant',m:['devotional','chill']},
   {t:'Cham dance music',a:'Ladakh monastic',m:['devotional','folk']},
   {t:'Ladakhi modern song',a:'Ladakh',m:['modern','party']},
@@ -563,9 +658,9 @@ const REGIONS = [
 {id:'hp',name:'Himachal Pradesh',zone:'north',alias:['Himachal Pradesh'],
  lang:'Pahari, Hindi',genres:'Nati, Pahari folk and Kinnauri songs',
  seed:[
-  {t:'Chamba Kitni Door',a:'Himachali Pahari folk',m:['folk','classic','chill']},
+  {t:'Chamba Kitni Door',a:'Himachali Pahari folk',m:['folk','retro','chill']},
   {t:'Himachali Nati',a:'Himachali folk',m:['folk','party']},
-  {t:'Kunjoo Chanchlo',a:'Himachali folk ballad',m:['folk','classic']},
+  {t:'Kunjoo Chanchlo',a:'Himachali folk ballad',m:['folk','retro']},
   {t:'Kinnauri folk song',a:'Kinnaur traditional',m:['folk','chill']},
   {t:'Pahari bhajan',a:'Himachali devotional',m:['devotional','chill']},
   {t:'Pahari song',a:'Mohit Chauhan',m:['modern','chill']},
@@ -573,65 +668,75 @@ const REGIONS = [
   {t:'Baba Ji Ki Booti',a:'Hansraj Raghuwanshi',m:['devotional','modern','party']},
   {t:'Kullu Nati',a:'Himachali folk',m:['folk','party']},
   {t:'Kangra Nati',a:'Himachali folk',m:['folk','party']},
-  {t:'Sirmauri folk song',a:'Himachali',m:['folk','classic']},
+  {t:'Sirmauri folk song',a:'Himachali',m:['folk','retro']},
   {t:'Lahauli folk song',a:'Himachali',m:['folk','chill']},
   {t:'Jhanjhar Himachali',a:'Himachali folk',m:['folk','party']},
   {t:'Tum Se Hi',a:'Mohit Chauhan',m:['modern','chill']},
   {t:'Pahari Shiv bhajan',a:'Himachali devotional',m:['devotional','chill']},
-  {t:'Gaddi folk song',a:'Himachali',m:['folk','classic']},
+  {t:'Gaddi folk song',a:'Himachali',m:['folk','retro']},
   {t:'Himachali Jhoori',a:'Pahari folk',m:['folk','chill']}]},
 {id:'punjab',name:'Punjab',zone:'north',alias:['Punjab'],
  lang:'Punjabi',genres:'Bhangra, Punjabi pop, Sufi and Gurbani kirtan',
  seed:[
-  {t:'Ki Banu Duniya Da',a:'Gurdas Maan',m:['classic','folk']},
-  {t:'Mitran Di Chhatri',a:'Gurdas Maan',m:['classic','party']},
+  {t:'Ki Banu Duniya Da',a:'Gurdas Maan',m:['retro','folk']},
+  {t:'Mitran Di Chhatri',a:'Gurdas Maan',m:['retro','party']},
   {t:'Do You Know',a:'Diljit Dosanjh',m:['modern','chill']},
   {t:'Laembadgini',a:'Diljit Dosanjh',m:['modern','party']},
-  {t:'Bulla Ki Jaana',a:'Rabbi Shergill',m:['devotional','chill','classic']},
+  {t:'Bulla Ki Jaana',a:'Rabbi Shergill',m:['devotional','chill','retro']},
   {t:'Jugni',a:'Punjabi folk',m:['folk','party']},
   {t:'Gurbani Shabad Kirtan',a:'Golden Temple kirtan',m:['devotional','chill']},
-  {t:'Tunak Tunak Tun',a:'Daler Mehndi',m:['party','modern','classic']},
-  {t:'Bolo Ta Ra Ra',a:'Daler Mehndi',m:['party','classic']},
+  {t:'Tunak Tunak Tun',a:'Daler Mehndi',m:['party','modern','retro']},
+  {t:'Bolo Ta Ra Ra',a:'Daler Mehndi',m:['party','retro']},
   {t:'Mundian To Bach Ke',a:'Panjabi MC',m:['party','modern']},
-  {t:'Nit Khair Manga',a:'Nusrat Fateh Ali Khan',m:['devotional','chill','classic']},
-  {t:'Allah Hoo',a:'Nusrat Fateh Ali Khan',m:['devotional','classic']},
+  {t:'Nit Khair Manga',a:'Nusrat Fateh Ali Khan',m:['devotional','chill','retro']},
+  {t:'Allah Hoo',a:'Nusrat Fateh Ali Khan',m:['devotional','retro']},
   {t:'Chitta Kukkad',a:'Punjabi folk',m:['folk','party']},
-  {t:'Latthe Di Chadar',a:'Punjabi folk',m:['folk','classic']},
+  {t:'Latthe Di Chadar',a:'Punjabi folk',m:['folk','retro']},
   {t:'Kala Doriya',a:'Punjabi folk',m:['folk','party']},
   {t:'295',a:'Sidhu Moose Wala',m:['modern','chill']},
   {t:'Brown Munde',a:'AP Dhillon',m:['modern','party']},
   {t:'Excuses',a:'AP Dhillon',m:['modern','chill']},
-  {t:'Boliyan',a:'Punjabi folk',m:['folk','party']}]},
+  {t:'Boliyan',a:'Punjabi folk',m:['folk','party']},
+  {t:'Patiala gharana khayal',a:'Punjabi classical',m:['classical','chill']},
+  {t:'Raga based Gurbani Kirtan',a:'Sikh devotional',m:['classical','devotional']},
+  {t:'Afreen Afreen',a:'Nusrat Fateh Ali Khan',m:['devotional','chill']},
+  {t:'Mera Piya Ghar Aaya',a:'Nusrat Fateh Ali Khan',m:['devotional','party']},
+  {t:'Sanu Ek Pal Chain',a:'Nusrat Fateh Ali Khan',m:['devotional','chill']},
+  {t:'Tere Bin',a:'Rabbi Shergill',m:['chill','modern']},
+  {t:'Akhian Udeek Diyan',a:'Kanwar Grewal',m:['folk','chill','devotional']},
+  {t:'Udaarian',a:'Satinder Sartaaj',m:['chill','modern']},
+  {t:'Laung Laachi',a:'Mannat Noor',m:['modern','party']},
+  {t:'Gidha folk dance song',a:'Punjabi folk',m:['folk','party']}]},
 {id:'haryana',name:'Haryana',zone:'north',alias:['Haryana'],
  lang:'Haryanvi',genres:'Ragni, saang theatre and Haryanvi pop',
  seed:[
-  {t:'Haryanvi Ragni',a:'Pandit Lakhmi Chand',m:['folk','classic']},
+  {t:'Haryanvi Ragni',a:'Pandit Lakhmi Chand',m:['folk','retro']},
   {t:'52 Gaj Ka Daman',a:'Renuka Panwar',m:['party','modern']},
   {t:'Solid Body',a:'Ajay Hooda',m:['party','modern']},
   {t:'Haryanvi bhajan',a:'Haryanvi devotional',m:['devotional','folk']},
-  {t:'Haryanvi saang folk',a:'Haryanvi traditional',m:['folk','classic']},
+  {t:'Haryanvi saang folk',a:'Haryanvi traditional',m:['folk','retro']},
   {t:'Haryanvi song',a:'Haryanvi',m:['modern','chill']},
   {t:'Chatak Matak',a:'Renuka Panwar',m:['party','modern']},
   {t:'Yaar Tera Chetak Pe Chale',a:'Sapna Choudhary',m:['party','modern']},
   {t:'Desi Desi Na Bolya Kar',a:'Raju Punjabi',m:['party','modern']},
   {t:'Teri Aakhya Ka Yo Kajal',a:'Haryanvi',m:['party','modern']},
-  {t:'Ragni Puran Bhagat',a:'Haryanvi folk',m:['folk','classic']},
+  {t:'Ragni Puran Bhagat',a:'Haryanvi folk',m:['folk','retro']},
   {t:'Baba Mohan Ram bhajan',a:'Haryanvi devotional',m:['devotional','folk']},
   {t:'Haryanvi Phag geet',a:'Haryanvi folk',m:['folk','party']},
   {t:'Haryanvi Sohar geet',a:'Haryanvi folk',m:['folk','devotional']},
-  {t:'Ragni Baje Bansi',a:'Haryanvi folk',m:['folk','classic']}]},
+  {t:'Ragni Baje Bansi',a:'Haryanvi folk',m:['folk','retro']}]},
 {id:'uttarakhand',name:'Uttarakhand',zone:'north',alias:['Uttarakhand','Uttaranchal'],
  lang:'Garhwali, Kumaoni',genres:'Garhwali and Kumaoni folk, jagar ritual songs',
  seed:[
-  {t:'Bedu Pako Baro Masa',a:'Kumaoni folk',m:['folk','classic']},
-  {t:'Garhwali song',a:'Narendra Singh Negi',m:['folk','classic','chill']},
+  {t:'Bedu Pako Baro Masa',a:'Kumaoni folk',m:['folk','retro']},
+  {t:'Garhwali song',a:'Narendra Singh Negi',m:['folk','retro','chill']},
   {t:'Ghughuti',a:'Garhwali folk',m:['folk','chill']},
   {t:'Jhumelo Garhwali',a:'Garhwali folk',m:['folk','party']},
   {t:'Nanda Devi Jagar',a:'Uttarakhandi ritual song',m:['devotional','folk']},
   {t:'Meri Aashiqui',a:'Jubin Nautiyal',m:['modern','chill']},
-  {t:'Nauchami Narayana',a:'Narendra Singh Negi',m:['folk','classic']},
+  {t:'Nauchami Narayana',a:'Narendra Singh Negi',m:['folk','retro']},
   {t:'Kumaoni Holi geet',a:'Kumaoni folk',m:['folk','party','devotional']},
-  {t:'Chhopati Garhwali',a:'Garhwali folk',m:['folk','classic']},
+  {t:'Chhopati Garhwali',a:'Garhwali folk',m:['folk','retro']},
   {t:'Raataan Lambiyan',a:'Jubin Nautiyal',m:['modern','chill']},
   {t:'Tum Hi Aana',a:'Jubin Nautiyal',m:['modern','chill']},
   {t:'Chhaliya dance music',a:'Kumaoni folk',m:['folk','party']},
@@ -646,106 +751,126 @@ const REGIONS = [
   {t:'cold mess',a:'Prateek Kuhad',m:['chill','modern']},
   {t:'Mere Gully Mein',a:'DIVINE and Naezy',m:['modern','party']},
   {t:'Nizamuddin Auliya qawwali',a:'Nizami Bandhu',m:['devotional','folk']},
-  {t:'Masakali',a:'Delhi 6 A R Rahman',m:['classic','chill']},
+  {t:'Masakali',a:'Delhi 6 A R Rahman',m:['retro','chill']},
   {t:'Jind Mahi',a:'Nucleya',m:['party','folk']},
   {t:'Kar Gayi Chull',a:'Kapoor and Sons',m:['party','modern']},
   {t:'Sadi Gali',a:'Tanu Weds Manu',m:['party','modern']},
   {t:'Kun Faya Kun',a:'Rockstar A R Rahman',m:['devotional','chill']},
-  {t:'Hoshwalon Ko Khabar Kya',a:'Jagjit Singh',m:['classic','chill']},
-  {t:'Begum Akhtar ghazal',a:'Begum Akhtar',m:['classic','chill']},
+  {t:'Hoshwalon Ko Khabar Kya',a:'Jagjit Singh',m:['retro','chill']},
+  {t:'Begum Akhtar ghazal',a:'Begum Akhtar',m:['retro','chill']},
   {t:'Udd Gaye',a:'Ritviz',m:['modern','party']},
   {t:'Liggi',a:'Ritviz',m:['modern','party']},
   {t:'Nanchaku',a:'Seedhe Maut',m:['modern','party']},
   {t:'Tum Ho Toh',a:'Prateek Kuhad',m:['chill','modern']},
-  {t:'Farak',a:'DIVINE',m:['modern','party']}]},
+  {t:'Farak',a:'DIVINE',m:['modern','party']},
+  {t:'Delhi gharana khayal',a:'Hindustani classical',m:['classical','chill']},
+  {t:'Rehna Tu',a:'Delhi 6 A R Rahman',m:['chill','modern']},
+  {t:'101',a:'Seedhe Maut',m:['modern','party']},
+  {t:'Class Sikh',a:'Prabh Deep',m:['modern','chill']}]},
 {id:'chandigarh',name:'Chandigarh',zone:'north',alias:['Chandigarh'],
  lang:'Punjabi, Hindi',genres:'Punjabi pop and the city indie scene',
  seed:[
   {t:'Chandigarh song',a:'Punjabi pop',m:['modern','party']},
   {t:'Punjabi acoustic song',a:'Punjabi indie',m:['chill','modern']},
   {t:'Bhangra track',a:'Punjabi',m:['party','folk']},
-  {t:'Punjabi folk song',a:'Punjabi traditional',m:['folk','classic']},
+  {t:'Punjabi folk song',a:'Punjabi traditional',m:['folk','retro']},
   {t:'Shabad Kirtan',a:'Sikh devotional',m:['devotional','chill']},
   {t:'Tunak Tunak Tun',a:'Daler Mehndi',m:['party','modern']},
   {t:'Boliyan',a:'Punjabi folk',m:['folk','party']},
   {t:'Nit Khair Manga',a:'Nusrat Fateh Ali Khan',m:['devotional','chill']},
   {t:'Brown Munde',a:'AP Dhillon',m:['modern','party']},
-  {t:'Punjabi ghazal',a:'Punjabi',m:['chill','classic']},
+  {t:'Punjabi ghazal',a:'Punjabi',m:['chill','retro']},
   {t:'Jugni',a:'Punjabi folk',m:['folk','party']},
   {t:'Excuses',a:'AP Dhillon',m:['modern','chill']}]},
 /* ---------------- WEST ---------------- */
 {id:'rajasthan',name:'Rajasthan',zone:'west',alias:['Rajasthan'],
  lang:'Rajasthani, Marwari',genres:'Manganiyar and Langa folk, Maand, desert Sufi',
  seed:[
-  {t:'Kesariya Balam',a:'Allah Jilai Bai',m:['classic','folk']},
+  {t:'Kesariya Balam',a:'Allah Jilai Bai',m:['retro','folk']},
   {t:'Chaudhary',a:'Mame Khan Amit Trivedi',m:['folk','modern','chill']},
-  {t:'Padharo Mhare Desh',a:'Rajasthani folk',m:['folk','classic']},
+  {t:'Padharo Mhare Desh',a:'Rajasthani folk',m:['folk','retro']},
   {t:'Ghoomar',a:'Padmaavat',m:['party','modern']},
   {t:'Damadam Mast Qalandar',a:'Sufi qawwali',m:['devotional','party','folk']},
-  {t:'Nimbooda Nimbooda',a:'Hum Dil De Chuke Sanam',m:['party','classic']},
+  {t:'Nimbooda Nimbooda',a:'Hum Dil De Chuke Sanam',m:['party','retro']},
   {t:'Banna Re',a:'Rajasthani folk',m:['folk','party']},
   {t:'Gorband Nakhralo',a:'Rajasthani folk',m:['folk','party']},
   {t:'Chirmi',a:'Rajasthani folk',m:['folk','chill']},
   {t:'Mharo Helo Suno Ji Ram',a:'Meera bhajan',m:['devotional','chill']},
-  {t:'Payoji Maine Ram Ratan Dhan Payo',a:'Meera bhajan',m:['devotional','classic']},
+  {t:'Payoji Maine Ram Ratan Dhan Payo',a:'Meera bhajan',m:['devotional','retro']},
   {t:'Kalbeliya dance song',a:'Rajasthani folk',m:['folk','party']},
   {t:'Ghoomar Rajasthani folk',a:'Rajasthani',m:['folk','party']},
   {t:'Rajasthani Holi Fag',a:'Rajasthani folk',m:['folk','party']},
   {t:'Banna Banni geet',a:'Rajasthani folk',m:['folk','party']},
   {t:'Hichki',a:'Rajasthani folk',m:['folk','chill']},
-  {t:'Rajasthani bhajan',a:'Rajasthani devotional',m:['devotional','folk']}]},
+  {t:'Rajasthani bhajan',a:'Rajasthani devotional',m:['devotional','folk']},
+  {t:'Mand raga recital',a:'Rajasthani classical',m:['classical','chill']},
+  {t:'Terah Taali music',a:'Rajasthani folk',m:['folk','devotional']},
+  {t:'Pabuji ki Phad ballad',a:'Bhopa folk',m:['folk','classical']},
+  {t:'Holi Dhamal Rajasthani',a:'Rajasthani folk',m:['folk','party']},
+  {t:'Kesariya Hariyalo Banna',a:'Rajasthani folk',m:['folk','party']}]},
 {id:'gujarat',name:'Gujarat',zone:'west',alias:['Gujarat'],
  lang:'Gujarati, Kutchi',genres:'garba, dandiya raas, bhajan and Kutchi folk',
  seed:[
   {t:'Nagada Sang Dhol',a:'Goliyon Ki Raasleela Ram Leela',m:['party','modern']},
   {t:'Dholida',a:'Gangubai Kathiawadi',m:['party','modern']},
-  {t:'Maadi Taro Kanudo',a:'Falguni Pathak',m:['devotional','folk','classic']},
-  {t:'Odhni Odhu Odhu Ne Udi Jaay',a:'Falguni Pathak',m:['classic','chill','folk']},
-  {t:'Vaishnav Jan To',a:'Narsinh Mehta bhajan',m:['devotional','chill','classic']},
+  {t:'Maadi Taro Kanudo',a:'Falguni Pathak',m:['devotional','folk','retro']},
+  {t:'Odhni Odhu Odhu Ne Udi Jaay',a:'Falguni Pathak',m:['retro','chill','folk']},
+  {t:'Vaishnav Jan To',a:'Narsinh Mehta bhajan',m:['devotional','chill','retro']},
   {t:'Kesariyo Rang',a:'Gujarati garba',m:['folk','party']},
   {t:'Gujarati song',a:'Aditya Gadhvi',m:['modern','folk']},
   {t:'Sanedo',a:'Gujarati garba',m:['party','folk']},
   {t:'Tara Vina Shyam',a:'Gujarati garba',m:['devotional','party']},
   {t:'Pankhida O Pankhida',a:'Gujarati folk',m:['folk','party']},
   {t:'Hun To Gai Ti Mela Ma',a:'Gujarati folk',m:['folk','party']},
-  {t:'Mor Bani Thanghat Kare',a:'Gujarati',m:['classic','folk','chill']},
+  {t:'Mor Bani Thanghat Kare',a:'Gujarati',m:['retro','folk','chill']},
   {t:'Jalkamal Chhandi Jane Bala',a:'Narsinh Mehta bhajan',m:['devotional','chill']},
   {t:'Dholi Taro Dhol Baaje',a:'Hum Dil De Chuke Sanam',m:['party','modern']},
   {t:'Ambe Maa aarti',a:'Kirtidan Gadhvi',m:['devotional','folk']},
   {t:'Kutchi folk song',a:'Kutchi',m:['folk','chill']},
-  {t:'Aavo To Ramie',a:'Gujarati garba',m:['party','folk']}]},
+  {t:'Aavo To Ramie',a:'Gujarati garba',m:['party','folk']},
+  {t:'Chudi Jo Khanke',a:'Falguni Pathak',m:['retro','party']},
+  {t:'Hemant Chauhan bhajan',a:'Gujarati devotional',m:['devotional','folk']},
+  {t:'Gujarati Santvani',a:'Gujarati devotional',m:['devotional','folk']},
+  {t:'Bhavai folk theatre music',a:'Gujarati folk',m:['folk','retro']},
+  {t:'Gujarati classical bhajan',a:'Gujarati',m:['classical','devotional']}]},
 {id:'maharashtra',name:'Maharashtra',zone:'west',alias:['Maharashtra'],
  lang:'Marathi',genres:'lavani, abhang, khayal classical and film score',
  seed:[
   {t:'Zingaat',a:'Sairat Ajay Atul',m:['party','modern']},
   {t:'Yad Lagla',a:'Sairat Ajay Atul',m:['chill','modern']},
-  {t:'Apsara Aali',a:'Natarang lavani',m:['folk','party','classic']},
-  {t:'Teerth Vitthal Kshetra Vitthal',a:'Bhimsen Joshi abhang',m:['devotional','classic','chill']},
-  {t:'Sukhkarta Dukhharta Ganpati aarti',a:'Marathi aarti',m:['devotional','folk','party']},
-  {t:'Ajeeb Dastan Hai Yeh',a:'Lata Mangeshkar',m:['classic','chill']},
+  {t:'Apsara Aali',a:'Natarang lavani',m:['folk','party','retro']},
+  {t:'Teerth Vitthal Kshetra Vitthal',a:'Bhimsen Joshi abhang',m:['devotional','classical','chill']},
+  {t:'Sukhkarta Dukhharta Ganpati aarti',a:'Marathi aarti',m:['devotional','folk']},
+  {t:'Ajeeb Dastan Hai Yeh',a:'Lata Mangeshkar',m:['retro','chill']},
   {t:'Koligeet',a:'Marathi koli folk',m:['folk','party']},
   {t:'Zaala Ji',a:'Sairat Ajay Atul',m:['chill','modern']},
-  {t:'Mala Ved Lagale Premache',a:'Jogwa',m:['chill','classic']},
-  {t:'Vitthal Vitthal Jai Hari Vitthal',a:'Marathi abhang',m:['devotional','folk']},
+  {t:'Mala Ved Lagale Premache',a:'Jogwa',m:['chill','retro']},
+  {t:'Vitthal Vitthal Jai Hari Vitthal',a:'Marathi abhang',m:['devotional','folk','classical']},
   {t:'Mauli Mauli',a:'Lai Bhaari',m:['devotional','party']},
   {t:'Deva Shree Ganesha',a:'Agneepath Ajay Atul',m:['devotional','party','modern']},
   {t:'Pinga',a:'Bajirao Mastani',m:['party','folk']},
-  {t:'Sundar Te Dhyan',a:'Marathi abhang',m:['devotional','chill']},
+  {t:'Sundar Te Dhyan',a:'Marathi abhang',m:['devotional','chill','classical']},
   {t:'Mi Dolkar',a:'Marathi koli geet',m:['folk','party']},
   {t:'Morya Morya',a:'Ajay Atul',m:['devotional','party']},
-  {t:'Natrang Ubha',a:'Natarang',m:['folk','classic']}]},
+  {t:'Natrang Ubha',a:'Natarang',m:['folk','retro']},
+  {t:'Kishori Amonkar Raga Bhoop',a:'Kishori Amonkar',m:['classical','chill']},
+  {t:'Priye Pahi natya sangeet',a:'Marathi natya sangeet',m:['classical','retro']},
+  {t:'Powada ballad',a:'Marathi folk',m:['folk','retro']},
+  {t:'Ovi Marathi folk song',a:'Marathi folk',m:['folk','devotional']},
+  {t:'Jai Jai Ram Krishna Hari',a:'Marathi abhang',m:['devotional','folk']},
+  {t:'Mi Hai Koli',a:'Marathi koli geet',m:['folk','party']}]},
 {id:'goa',name:'Goa',zone:'west',alias:['Goa'],
  lang:'Konkani',genres:'Konkani folk, mando, dulpod and Goa trance',
  seed:[
-  {t:'Bebdo',a:'Lorna Cordeiro',m:['classic','folk','party']},
-  {t:'Hanv Sanddun Vetam Gaon',a:'Konkani folk',m:['folk','chill','classic']},
-  {t:'O Meri Munni',a:'Remo Fernandes',m:['classic','party','modern']},
-  {t:'Konkani mando',a:'Goan traditional',m:['classic','chill','folk']},
+  {t:'Bebdo',a:'Lorna Cordeiro',m:['retro','folk','party']},
+  {t:'Hanv Sanddun Vetam Gaon',a:'Konkani folk',m:['folk','chill','retro']},
+  {t:'O Meri Munni',a:'Remo Fernandes',m:['retro','party','modern']},
+  {t:'Konkani mando',a:'Goan traditional',m:['retro','chill','folk']},
   {t:'Goa psytrance set',a:'Goa trance',m:['party','modern']},
   {t:'Konkani hymn',a:'Goan church choir',m:['devotional','chill']},
-  {t:'Konkani Deknni',a:'Goan traditional',m:['folk','classic']},
-  {t:'Adeus Korchea Vellar',a:'Goan mando',m:['classic','chill']},
-  {t:'Konkani tiatr song',a:'Goan',m:['folk','classic']},
+  {t:'Konkani Deknni',a:'Goan traditional',m:['folk','retro']},
+  {t:'Adeus Korchea Vellar',a:'Goan mando',m:['retro','chill']},
+  {t:'Konkani tiatr song',a:'Goan',m:['folk','retro']},
   {t:'Konkani church hymn',a:'Goan',m:['devotional','chill']},
   {t:'Kunbi folk song',a:'Goan',m:['folk','party']},
   {t:'Goa Gil psytrance set',a:'Goa trance',m:['party','modern']},
@@ -758,48 +883,56 @@ const REGIONS = [
   {t:'Gujarati garba',a:'Gujarati folk',m:['party','folk']},
   {t:'Konkani folk song',a:'Konkani traditional',m:['folk','chill']},
   {t:'Gujarati bhajan',a:'Gujarati devotional',m:['devotional','chill']},
-  {t:'Tarpa tribal music',a:'Warli tarpa',m:['folk','classic']},
+  {t:'Tarpa tribal music',a:'Warli tarpa',m:['folk','retro']},
   {t:'Gujarati song',a:'Gujarati pop',m:['modern','party']},
   {t:'Tarpa dance music',a:'Warli folk',m:['folk','party']},
   {t:'Sanedo',a:'Gujarati garba',m:['party','folk']},
-  {t:'Silvassa tribal song',a:'Warli',m:['folk','classic']},
+  {t:'Silvassa tribal song',a:'Warli',m:['folk','retro']},
   {t:'Konkani folk song',a:'Konkani',m:['folk','chill']}]},
 /* ---------------- CENTRAL ---------------- */
 {id:'up',name:'Uttar Pradesh',zone:'central',alias:['Uttar Pradesh'],
  lang:'Hindi, Awadhi, Bhojpuri, Braj',genres:'thumri, dhrupad, kajri, qawwali and Bhojpuri folk',
  seed:[
-  {t:'Babul Mora Naihar Chhooto Jaye',a:'thumri',m:['classic','chill']},
-  {t:'Yaad Piya Ki Aaye',a:'Bade Ghulam Ali Khan',m:['classic','chill']},
-  {t:'Bajuband Khul Khul Jaye',a:'Girija Devi',m:['classic','folk']},
+  {t:'Babul Mora Naihar Chhooto Jaye',a:'thumri',m:['classical','chill']},
+  {t:'Yaad Piya Ki Aaye',a:'Bade Ghulam Ali Khan',m:['classical','chill']},
+  {t:'Bajuband Khul Khul Jaye',a:'Girija Devi',m:['classical','folk']},
   {t:'Khelein Masane Mein Holi',a:'Chhannulal Mishra',m:['folk','devotional','party']},
-  {t:'Chhap Tilak Sab Cheeni',a:'Amir Khusro qawwali',m:['devotional','classic']},
+  {t:'Chhap Tilak Sab Cheeni',a:'Amir Khusro qawwali',m:['devotional','retro']},
   {t:'Mera Bhola Hai Bhandari',a:'Hansraj Raghuwanshi',m:['devotional','modern','party']},
   {t:'Lollipop Lagelu',a:'Pawan Singh',m:['party','modern']},
-  {t:'Ras Ke Bhare Tore Nain',a:'thumri',m:['classic','chill']},
+  {t:'Ras Ke Bhare Tore Nain',a:'thumri',m:['classical','chill']},
   {t:'Barsan Lagi Kajri',a:'kajri',m:['folk','chill']},
-  {t:'Ganga Kinare Mora Gaon',a:'Bhojpuri',m:['classic','folk','chill']},
+  {t:'Ganga Kinare Mora Gaon',a:'Bhojpuri',m:['retro','folk','chill']},
   {t:'Braj Holi Rasiya',a:'Braj folk',m:['folk','party','devotional']},
   {t:'Radhe Radhe Vrindavan bhajan',a:'Braj devotional',m:['devotional','chill']},
-  {t:'Shehnai recital',a:'Bismillah Khan',m:['classic','devotional']},
+  {t:'Shehnai recital',a:'Bismillah Khan',m:['classical','devotional']},
   {t:'Aisi Lagi Lagan',a:'Anup Jalota',m:['devotional','chill']},
-  {t:'Birha',a:'Bhojpuri folk',m:['folk','classic']},
+  {t:'Birha',a:'Bhojpuri folk',m:['folk','retro']},
   {t:'Sohar geet',a:'Bhojpuri folk',m:['folk','devotional']},
-  {t:'Bhojpuri song',a:'Khesari Lal Yadav',m:['party','modern']}]},
+  {t:'Bhojpuri song',a:'Khesari Lal Yadav',m:['party','modern']},
+  {t:'Raga Yaman khayal',a:'Hindustani classical',m:['classical','chill']},
+  {t:'Raga Malkauns',a:'Ustad Amir Khan',m:['classical','chill']},
+  {t:'Sitar raga recital',a:'Ravi Shankar',m:['classical','chill']},
+  {t:'Kathak tabla lehra',a:'Kathak classical',m:['classical','party']},
+  {t:'Chupke Chupke Raat Din',a:'Ghulam Ali ghazal',m:['retro','chill']},
+  {t:'Hungama Hai Kyon Barpa',a:'Ghulam Ali ghazal',m:['retro','chill']},
+  {t:'Kajra Mohabbat Wala',a:'Asha Bhosle Shamshad Begum',m:['retro','party']},
+  {t:'Bhojpuri song',a:'Nirahua Dinesh Lal Yadav',m:['party','modern']}]},
 {id:'mp',name:'Madhya Pradesh',zone:'central',alias:['Madhya Pradesh'],
  lang:'Hindi, Malwi, Bundeli',genres:'Malwi folk, nirguni bhajan, Kabir songs and Gond music',
  seed:[
-  {t:'Kabir Nirguni Bhajan',a:'Kumar Gandharva',m:['classic','devotional','chill']},
+  {t:'Kabir Nirguni Bhajan',a:'Kumar Gandharva',m:['classical','devotional','chill']},
   {t:'Moko Kahan Dhoonde Bandey',a:'Kabir bhajan',m:['devotional','folk','chill']},
   {t:'Kabir bhajan',a:'Prahlad Singh Tipanya',m:['devotional','folk']},
   {t:'Teri Deewani',a:'Kailash Kher',m:['devotional','modern','party']},
   {t:'Bundeli Rai geet',a:'Bundelkhand folk',m:['folk','party']},
   {t:'Malwi lokgeet',a:'Malwa folk',m:['folk','chill']},
-  {t:'Ud Jayega Hans Akela',a:'Kumar Gandharva',m:['classic','devotional','chill']},
-  {t:'Nirbhay Nirgun Gun Re Gaunga',a:'Kumar Gandharva',m:['classic','devotional']},
+  {t:'Ud Jayega Hans Akela',a:'Kumar Gandharva',m:['classical','devotional','chill']},
+  {t:'Nirbhay Nirgun Gun Re Gaunga',a:'Kumar Gandharva',m:['classical','devotional']},
   {t:'Sunta Hai Guru Gyani',a:'Prahlad Singh Tipanya',m:['devotional','folk']},
   {t:'Bundeli Diwari geet',a:'Bundelkhand folk',m:['folk','party']},
   {t:'Rai nritya music',a:'Bundelkhand folk',m:['folk','party']},
-  {t:'Gond tribal song',a:'Gondi',m:['folk','classic']},
+  {t:'Gond tribal song',a:'Gondi',m:['folk','retro']},
   {t:'Baiga tribal music',a:'Baiga',m:['folk','party']},
   {t:'Nimadi folk song',a:'Nimadi',m:['folk','chill']},
   {t:'Narmada aarti',a:'Madhya Pradesh devotional',m:['devotional','chill']},
@@ -807,7 +940,7 @@ const REGIONS = [
 {id:'chhattisgarh',name:'Chhattisgarh',zone:'central',alias:['Chhattisgarh','Chattisgarh'],
  lang:'Chhattisgarhi',genres:'Pandwani, panthi, sua nach and tribal percussion',
  seed:[
-  {t:'Pandwani',a:'Teejan Bai',m:['folk','classic','devotional']},
+  {t:'Pandwani',a:'Teejan Bai',m:['folk','classical','devotional']},
   {t:'Panthi geet',a:'Chhattisgarhi folk',m:['folk','devotional','party']},
   {t:'Sua nach geet',a:'Chhattisgarhi folk',m:['folk','party']},
   {t:'Chhattisgarhi lokgeet',a:'Chhattisgarhi folk',m:['folk','chill']},
@@ -820,15 +953,15 @@ const REGIONS = [
   {t:'Gaura Gauri geet',a:'Chhattisgarhi',m:['devotional','folk']},
   {t:'Nacha folk theatre music',a:'Chhattisgarhi',m:['folk','party']},
   {t:'Chhattisgarhi film song',a:'Chhattisgarhi',m:['modern','party']},
-  {t:'Karma tribal song',a:'Chhattisgarhi',m:['folk','classic']}]},
+  {t:'Karma tribal song',a:'Chhattisgarhi',m:['folk','retro']}]},
 /* ---------------- EAST ---------------- */
 {id:'bihar',name:'Bihar',zone:'east',alias:['Bihar'],
  lang:'Bhojpuri, Maithili, Magahi',genres:'Chhath devotional, Bhojpuri folk and Maithili songs',
  seed:[
   {t:'Kaanch Hi Bans Ke Bahangi',a:'Sharda Sinha',m:['devotional','folk']},
   {t:'Ho Deenanath',a:'Sharda Sinha',m:['devotional','folk','chill']},
-  {t:'Bidesiya',a:'Bhikhari Thakur',m:['folk','classic']},
-  {t:'Vidyapati Maithili padavali',a:'Vidyapati',m:['classic','devotional','chill']},
+  {t:'Bidesiya',a:'Bhikhari Thakur',m:['folk','retro']},
+  {t:'Vidyapati Maithili padavali',a:'Vidyapati',m:['classical','devotional','chill']},
   {t:'Lollipop Lagelu',a:'Pawan Singh',m:['party','modern']},
   {t:'Bhojpuri lokgeet',a:'Bhojpuri folk',m:['folk','party']},
   {t:'Marbo Re Sugga',a:'Sharda Sinha',m:['devotional','folk']},
@@ -839,7 +972,11 @@ const REGIONS = [
   {t:'Nirgun bhajan',a:'Bihar folk',m:['devotional','chill']},
   {t:'Magahi geet',a:'Magahi folk',m:['folk','chill']},
   {t:'Bihar Holi Faag',a:'Bhojpuri folk',m:['folk','party']},
-  {t:'Sohar geet',a:'Sharda Sinha',m:['devotional','folk']}]},
+  {t:'Sohar geet',a:'Sharda Sinha',m:['devotional','folk']},
+  {t:'Kelwa Ke Paat Par',a:'Sharda Sinha',m:['devotional','folk']},
+  {t:'Maithili Vidyapati Ugna',a:'Vidyapati',m:['classical','devotional']},
+  {t:'Jat Jatin dance song',a:'Bihar folk',m:['folk','party']},
+  {t:'Bhojpuri vivah geet',a:'Sharda Sinha',m:['folk','devotional']}]},
 {id:'jharkhand',name:'Jharkhand',zone:'east',alias:['Jharkhand'],
  lang:'Santhali, Nagpuri, Kurukh',genres:'Santhali folk, Nagpuri jhumar and mandar drumming',
  seed:[
@@ -848,7 +985,7 @@ const REGIONS = [
   {t:'Karma geet',a:'Jharkhand folk',m:['folk','party','devotional']},
   {t:'Mandar drum tribal music',a:'Jharkhand tribal',m:['folk','party']},
   {t:'Nagpuri song',a:'Nagpuri',m:['modern','party']},
-  {t:'Santhali classic song',a:'Santhali',m:['classic','folk']},
+  {t:'Santhali classic song',a:'Santhali',m:['retro','folk']},
   {t:'Domkach geet',a:'Nagpuri folk',m:['folk','party']},
   {t:'Tusu geet',a:'Jharkhand folk',m:['folk','party']},
   {t:'Sarhul song',a:'Jharkhand tribal',m:['folk','devotional']},
@@ -856,103 +993,122 @@ const REGIONS = [
   {t:'Santhali Dong song',a:'Santhali',m:['folk','party']},
   {t:'Kurukh folk song',a:'Kurukh',m:['folk','chill']},
   {t:'Santhali modern song',a:'Santhali',m:['modern','party']},
-  {t:'Jhumar geet',a:'Nagpuri folk',m:['folk','classic']}]},
+  {t:'Jhumar geet',a:'Nagpuri folk',m:['folk','retro']}]},
 {id:'wb',name:'West Bengal',zone:'east',alias:['West Bengal'],
  lang:'Bengali',genres:'Rabindra Sangeet, Baul mystic folk, Bangla rock and adhunik',
  seed:[
-  {t:'Ekla Chalo Re',a:'Rabindra Sangeet',m:['classic','devotional','chill']},
-  {t:'Ami Chini Go Chini Tomare',a:'Rabindra Sangeet',m:['classic','chill']},
+  {t:'Ekla Chalo Re',a:'Rabindra Sangeet',m:['retro','devotional','chill']},
+  {t:'Ami Chini Go Chini Tomare',a:'Rabindra Sangeet',m:['retro','chill']},
   {t:'Sob Loke Koy',a:'Lalon Baul geeti',m:['folk','devotional','chill']},
-  {t:'Bela Bose',a:'Anjan Dutt',m:['modern','chill','classic']},
+  {t:'Bela Bose',a:'Anjan Dutt',m:['modern','chill','retro']},
   {t:'Tomake Chai',a:'Fossils',m:['modern','party']},
   {t:'Dhaker Taale Komor Dole',a:'Durga Puja dhak song',m:['party','devotional','folk']},
-  {t:'Coffee House er Sei Addata',a:'Manna Dey',m:['classic','chill']},
-  {t:'Purano Sei Diner Kotha',a:'Rabindra Sangeet',m:['classic','chill']},
-  {t:'Anandaloke Mangalaloke',a:'Rabindra Sangeet',m:['devotional','classic']},
-  {t:'Karar Oi Louho Kopat',a:'Nazrul Geeti',m:['classic','folk']},
+  {t:'Coffee House er Sei Addata',a:'Manna Dey',m:['retro','chill']},
+  {t:'Purano Sei Diner Kotha',a:'Rabindra Sangeet',m:['retro','chill']},
+  {t:'Anandaloke Mangalaloke',a:'Rabindra Sangeet',m:['devotional','retro']},
+  {t:'Karar Oi Louho Kopat',a:'Nazrul Geeti',m:['retro','folk']},
   {t:'Milon Hobe Koto Dine',a:'Lalon Baul geeti',m:['folk','devotional','chill']},
   {t:'Bhatiali song',a:'Bengali folk',m:['folk','chill']},
   {t:'Bengali kirtan',a:'Bengali devotional',m:['devotional','folk']},
-  {t:'Prithibita Naki',a:'Mohiner Ghoraguli',m:['modern','chill','classic']},
+  {t:'Prithibita Naki',a:'Mohiner Ghoraguli',m:['modern','chill','retro']},
   {t:'Holud Pakhi',a:'Cactus',m:['modern','party']},
   {t:'Brishti Tomake Dilam',a:'Nachiketa',m:['modern','chill']},
-  {t:'Shyama Sangeet',a:'Bengali devotional',m:['devotional','classic']},
+  {t:'Shyama Sangeet',a:'Bengali devotional',m:['devotional','retro']},
   {t:'Agomoni gaan',a:'Durga Puja Bengali',m:['devotional','folk']},
-  {t:'Bengali song',a:'Hemanta Mukherjee',m:['classic','chill']}]},
+  {t:'Bengali song',a:'Hemanta Mukherjee',m:['retro','chill']},
+  {t:'Nikhil Banerjee sitar raga',a:'Nikhil Banerjee',m:['classical','chill']},
+  {t:'Ali Akbar Khan sarod',a:'Ali Akbar Khan',m:['classical','chill']},
+  {t:'Amaro Porano Jaha Chay',a:'Rabindra Sangeet',m:['retro','chill']},
+  {t:'Tumi Robe Nirobe',a:'Rabindra Sangeet',m:['retro','chill','devotional']},
+  {t:'Pagla Hawar Badol Dine',a:'Rabindra Sangeet',m:['retro','folk']},
+  {t:'Jodi Tor Dak Shune Keu Na Ashe',a:'Rabindra Sangeet',m:['retro','devotional']},
+  {t:'Ei Poth Jodi Na Shesh Hoy',a:'Hemanta Mukherjee Sandhya Mukherjee',m:['retro','chill']},
+  {t:'Dhitang Dhitang Bole',a:'Bengali folk',m:['folk','party']},
+  {t:'Ranjana',a:'Anjan Dutt',m:['modern','chill']},
+  {t:'Hasi Pai',a:'Chandrabindoo',m:['modern','chill']},
+  {t:'Barandaye Roddur',a:'Bhoomi',m:['modern','folk']}]},
 {id:'odisha',name:'Odisha',zone:'east',alias:['Odisha','Orissa'],
  lang:'Odia, Sambalpuri',genres:'Odissi classical, Sambalpuri folk and Jagannath bhajan',
  seed:[
-  {t:'Rangabati',a:'Jitendra Haripal Krishna Patel',m:['folk','party','classic']},
-  {t:'Ahe Neela Saila',a:'Odia bhajan',m:['devotional','classic','chill']},
-  {t:'Dashavatara Odissi',a:'Odissi classical',m:['classic','devotional']},
+  {t:'Rangabati',a:'Jitendra Haripal Krishna Patel',m:['folk','party','retro']},
+  {t:'Ahe Neela Saila',a:'Odia bhajan',m:['devotional','retro','chill']},
+  {t:'Dashavatara Odissi',a:'Odissi classical',m:['classical','devotional']},
   {t:'Sambalpuri folk song',a:'Sambalpuri',m:['folk','party']},
-  {t:'Odia adhunika gita',a:'Odia melody',m:['chill','classic']},
+  {t:'Odia adhunika gita',a:'Odia melody',m:['chill','retro']},
   {t:'Odia song',a:'Human Sagar',m:['modern','chill']},
   {t:'Dalkhai geet',a:'Sambalpuri folk',m:['folk','party']},
-  {t:'Geeta Govinda ashtapadi',a:'Odissi classical',m:['classic','devotional']},
-  {t:'Bande Utkala Janani',a:'Odia',m:['classic','devotional']},
-  {t:'Champu Chhanda',a:'Odia classical',m:['classic','folk']},
+  {t:'Geeta Govinda ashtapadi',a:'Odissi classical',m:['classical','devotional']},
+  {t:'Bande Utkala Janani',a:'Odia',m:['retro','devotional']},
+  {t:'Champu Chhanda',a:'Odia classical',m:['classical','folk']},
   {t:'Danda Nata music',a:'Odia folk',m:['folk','devotional']},
   {t:'Rasarkeli',a:'Sambalpuri folk',m:['folk','chill']},
   {t:'Odia Jhumar',a:'Odia folk',m:['folk','party']},
-  {t:'Jagannath bhajan',a:'Odia devotional',m:['devotional','chill']}]},
+  {t:'Jagannath bhajan',a:'Odia devotional',m:['devotional','chill']},
+  {t:'Mangalacharan Odissi',a:'Odissi classical',m:['classical','devotional']},
+  {t:'Jagannath Ashtakam',a:'Odia devotional',m:['devotional','chill']},
+  {t:'Koshli Sambalpuri song',a:'Sambalpuri folk',m:['folk','party']}]},
 /* ---------------- NORTHEAST ---------------- */
 {id:'assam',name:'Assam',zone:'northeast',alias:['Assam'],
  lang:'Assamese, Bodo',genres:'Bihu folk, Borgeet, Zubeen-era Assamese pop',
  seed:[
-  {t:'Bistirno Parore',a:'Bhupen Hazarika',m:['classic','folk','chill']},
-  {t:'Manuhe Manuhar Baabe',a:'Bhupen Hazarika',m:['classic','devotional','chill']},
-  {t:'Mayabini Ratir Bukut',a:'Zubeen Garg',m:['chill','modern','classic']},
+  {t:'Bistirno Parore',a:'Bhupen Hazarika',m:['retro','folk','chill']},
+  {t:'Manuhe Manuhar Baabe',a:'Bhupen Hazarika',m:['retro','devotional','chill']},
+  {t:'Mayabini Ratir Bukut',a:'Zubeen Garg',m:['chill','modern','retro']},
   {t:'Bihu geet dhol pepa',a:'Assamese Bihu folk',m:['folk','party']},
-  {t:'Borgeet',a:'Sankardev devotional',m:['devotional','classic']},
+  {t:'Borgeet',a:'Sankardev devotional',m:['devotional','classical']},
   {t:'Assamese song',a:'Papon',m:['modern','chill']},
-  {t:'Buku Hom Hom Kore',a:'Bhupen Hazarika',m:['classic','chill']},
-  {t:'Moi Eti Jajabor',a:'Bhupen Hazarika',m:['classic','folk']},
-  {t:'Goalpariya lokgeet',a:'Pratima Barua Pandey',m:['folk','classic','chill']},
+  {t:'Buku Hom Hom Kore',a:'Bhupen Hazarika',m:['retro','chill']},
+  {t:'Moi Eti Jajabor',a:'Bhupen Hazarika',m:['retro','folk']},
+  {t:'Goalpariya lokgeet',a:'Pratima Barua Pandey',m:['folk','retro','chill']},
   {t:'Husori Bihu song',a:'Assamese folk',m:['folk','party']},
   {t:'Kamrupi lokgeet',a:'Assamese folk',m:['folk','chill']},
-  {t:'Ankiya Naat music',a:'Sankardev tradition',m:['devotional','classic']},
+  {t:'Ankiya Naat music',a:'Sankardev tradition',m:['devotional','retro']},
   {t:'Assamese Bihu song',a:'Papon',m:['modern','folk']},
   {t:'Pakhi Pakhi Mon',a:'Zubeen Garg',m:['modern','chill']},
-  {t:'Assamese Borgeet',a:'Sankardev',m:['devotional','chill']}]},
+  {t:'Assamese Borgeet',a:'Sankardev',m:['devotional','chill','classical']},
+  {t:'Jikir',a:'Assamese devotional',m:['devotional','folk']},
+  {t:'Tokari geet',a:'Assamese folk',m:['folk','chill']},
+  {t:'Assamese Nam Kirtan',a:'Sankardev tradition',m:['devotional','classical']},
+  {t:'Bihu dhol nagara',a:'Assamese folk',m:['folk','party']}]},
 {id:'meghalaya',name:'Meghalaya',zone:'northeast',alias:['Meghalaya'],
  lang:'Khasi, Garo',genres:'Khasi indie rock, gospel choir and Garo folk',
  seed:[
-  {t:'Set Me Free',a:'Soulmate',m:['modern','party','classic']},
-  {t:'Lou Majaw live',a:'Lou Majaw',m:['classic','chill','folk']},
+  {t:'Set Me Free',a:'Soulmate',m:['modern','party','retro']},
+  {t:'Lou Majaw live',a:'Lou Majaw',m:['retro','chill','folk']},
   {t:'Khasi folk song',a:'Khasi traditional',m:['folk','chill']},
-  {t:'Shillong Chamber Choir',a:'Shillong Chamber Choir',m:['devotional','classic','chill']},
+  {t:'Shillong Chamber Choir',a:'Shillong Chamber Choir',m:['devotional','retro','chill']},
   {t:'Garo folk song',a:'Garo traditional',m:['folk','party']},
   {t:'Summersalt band',a:'Summersalt',m:['modern','chill']},
   {t:'Shad Suk Mynsiem music',a:'Khasi festival',m:['folk','party']},
   {t:'Garo Wangala music',a:'Garo festival',m:['folk','party']},
-  {t:'Khasi duitara',a:'Khasi folk',m:['folk','classic','chill']},
+  {t:'Khasi duitara',a:'Khasi folk',m:['folk','retro','chill']},
   {t:'Khasi gospel choir',a:'Meghalaya',m:['devotional','chill']},
   {t:'Khasi modern song',a:'Meghalaya',m:['modern','chill']},
   {t:'Naga Hills',a:'Soulmate',m:['modern','party']}]},
 {id:'manipur',name:'Manipur',zone:'northeast',alias:['Manipur'],
  lang:'Meiteilon (Manipuri)',genres:'pena ballads, Nat Sankirtana and alt-rock',
  seed:[
-  {t:'Pena Manipuri folk instrument',a:'Manipuri pena',m:['folk','classic','chill']},
-  {t:'Nat Sankirtana',a:'Manipuri devotional',m:['devotional','classic']},
+  {t:'Pena Manipuri folk instrument',a:'Manipuri pena',m:['folk','classical','chill']},
+  {t:'Nat Sankirtana',a:'Manipuri devotional',m:['devotional','classical']},
   {t:'Lai Haraoba',a:'Manipuri ritual music',m:['folk','devotional']},
   {t:'Manipuri song',a:'Manipuri modern',m:['modern','chill','party']},
   {t:'Imphal Talkies',a:'Imphal Talkies',m:['modern','folk']},
-  {t:'Manipuri Raas Leela music',a:'Manipuri classical',m:['classic','devotional']},
+  {t:'Manipuri Raas Leela music',a:'Manipuri classical',m:['classical','devotional']},
   {t:'Thabal Chongba song',a:'Manipuri folk',m:['folk','party']},
   {t:'Pung Cholom',a:'Manipuri devotional',m:['devotional','folk','party']},
   {t:'Khunung Eshei',a:'Manipuri folk',m:['folk','chill']},
   {t:'Manipuri modern song',a:'Manipuri',m:['modern','chill']},
-  {t:'Manipuri Basanta Raas music',a:'Manipuri classical',m:['classic','devotional']}]},
+  {t:'Manipuri Basanta Raas music',a:'Manipuri classical',m:['classical','devotional']},
+  {t:'Manipuri old song',a:'Manipuri',m:['retro','chill']}]},
 {id:'nagaland',name:'Nagaland',zone:'northeast',alias:['Nagaland'],
  lang:'Nagamese, Ao, Angami',genres:'Naga polyphonic folk, gospel and rock',
  seed:[
-  {t:'Naga traditional song',a:'Naga folk',m:['folk','classic']},
+  {t:'Naga traditional song',a:'Naga folk',m:['folk','retro']},
   {t:'Alobo Naga song',a:'Alobo Naga',m:['modern','chill']},
   {t:'Hornbill Festival music',a:'Naga',m:['folk','party']},
   {t:'Naga gospel choir',a:'Nagaland gospel',m:['devotional','chill']},
   {t:'Nagaland rock band',a:'Naga rock',m:['modern','party']},
-  {t:'Naga Li folk song',a:'Naga traditional',m:['folk','classic']},
+  {t:'Naga Li folk song',a:'Naga traditional',m:['folk','retro']},
   {t:'Howey',a:'Abiogenesis',m:['modern','folk']},
   {t:'Naga log drum music',a:'Naga',m:['folk','party']},
   {t:'Purple Fusion',a:'Nagaland band',m:['modern','party']},
@@ -964,9 +1120,9 @@ const REGIONS = [
   {t:'Mizo hla song',a:'Mizo',m:['folk','chill']},
   {t:'Mizo gospel song',a:'Mizo choir',m:['devotional','chill']},
   {t:'Chheihlam',a:'Mizo folk',m:['folk','party']},
-  {t:'Mizo traditional song',a:'Mizo traditional',m:['folk','classic']},
+  {t:'Mizo traditional song',a:'Mizo traditional',m:['folk','retro']},
   {t:'Mizo modern song',a:'Mizoram',m:['modern','party']},
-  {t:'Puma Zai',a:'Mizo folk',m:['folk','classic']},
+  {t:'Puma Zai',a:'Mizo folk',m:['folk','retro']},
   {t:'Cheraw bamboo dance music',a:'Mizo',m:['folk','party']},
   {t:'Lengkhawm zai',a:'Mizo devotional',m:['devotional','chill']},
   {t:'Mizo modern band',a:'Mizoram',m:['modern','party']},
@@ -974,7 +1130,7 @@ const REGIONS = [
 {id:'tripura',name:'Tripura',zone:'northeast',alias:['Tripura'],
  lang:'Kokborok, Bengali',genres:'Hojagiri songs, Kokborok folk and Bengali music',
  seed:[
-  {t:'Sun Mere Bandhu Re',a:'S D Burman',m:['classic','chill']},
+  {t:'Sun Mere Bandhu Re',a:'S D Burman',m:['retro','chill']},
   {t:'Hojagiri dance song',a:'Tripuri folk',m:['folk','party']},
   {t:'Kokborok folk song',a:'Tripuri traditional',m:['folk','chill']},
   {t:'Tripura Bengali song',a:'Tripura',m:['modern','chill']},
@@ -983,18 +1139,18 @@ const REGIONS = [
   {t:'Garia dance music',a:'Tripuri',m:['folk','devotional']},
   {t:'Tripura Bengali kirtan',a:'Tripura devotional',m:['devotional','folk']},
   {t:'Kokborok modern song',a:'Tripura',m:['modern','party']},
-  {t:'Sachin Dev Burman song',a:'S D Burman',m:['classic','chill']}]},
+  {t:'Sachin Dev Burman song',a:'S D Burman',m:['retro','chill']}]},
 {id:'arunachal',name:'Arunachal Pradesh',zone:'northeast',alias:['Arunachal Pradesh'],
  lang:'Nyishi, Adi, Monpa',genres:'tribal folk, Buddhist chant and new indie',
  seed:[
   {t:'Walk With Me',a:'Taba Chake',m:['modern','chill']},
-  {t:'Nyishi folk song',a:'Nyishi traditional',m:['folk','classic']},
+  {t:'Nyishi folk song',a:'Nyishi traditional',m:['folk','retro']},
   {t:'Adi tribal song',a:'Adi folk',m:['folk','party']},
   {t:'Tawang monastery chant',a:'Monpa Buddhist chant',m:['devotional','chill']},
   {t:'Arunachal folk music',a:'Arunachali traditional',m:['folk','chill']},
   {t:'Ponung dance song',a:'Adi folk',m:['folk','party']},
   {t:'Apatani folk song',a:'Apatani',m:['folk','chill']},
-  {t:'Galo folk song',a:'Galo',m:['folk','classic']},
+  {t:'Galo folk song',a:'Galo',m:['folk','retro']},
   {t:'Wancho folk music',a:'Wancho',m:['folk','party']},
   {t:'Arunachal modern song',a:'Arunachal',m:['modern','party']},
   {t:'Monpa chant',a:'Tawang monastic',m:['devotional','chill']}]},
@@ -1003,7 +1159,7 @@ const REGIONS = [
  seed:[
   {t:'Nepali folk song',a:'Nepali traditional',m:['folk','chill']},
   {t:'Maruni dance song',a:'Nepali folk',m:['folk','party']},
-  {t:'Lepcha folk song',a:'Lepcha traditional',m:['folk','classic']},
+  {t:'Lepcha folk song',a:'Lepcha traditional',m:['folk','retro']},
   {t:'Sikkim monastery chant',a:'Buddhist chant',m:['devotional','chill']},
   {t:'Nepali modern song',a:'Nepali',m:['modern','party']},
   {t:'Tamang Selo',a:'Nepali folk',m:['folk','party']},
@@ -1015,106 +1171,131 @@ const REGIONS = [
 {id:'karnataka',name:'Karnataka',zone:'south',alias:['Karnataka'],
  lang:'Kannada, Tulu',genres:'Carnatic, Haridasa keerthane, bhavageethe and film music',
  seed:[
-  {t:'Bhagyada Lakshmi Baramma',a:'Purandara Dasa keerthane',m:['devotional','classic']},
+  {t:'Bhagyada Lakshmi Baramma',a:'Purandara Dasa keerthane',m:['devotional','classical']},
   {t:'Belageddu',a:'Kirik Party',m:['modern','chill']},
   {t:'Bombe Helutaite',a:'Rajakumara',m:['modern','party']},
   {t:'Mysore Se Aayi',a:'Raghu Dixit',m:['folk','party','modern']},
-  {t:'Kannada bhavageethe',a:'C Ashwath',m:['classic','chill','folk']},
-  {t:'Yakshagana music',a:'Yakshagana',m:['folk','classic','devotional']},
-  {t:'Jagadoddharana',a:'Purandara Dasa',m:['devotional','classic']},
-  {t:'Krishna Nee Begane Baaro',a:'Purandara Dasa',m:['devotional','classic','chill']},
-  {t:'Kanakadasa keerthane',a:'Kanakadasa',m:['devotional','classic']},
-  {t:'Naadamaya',a:'Dr Rajkumar',m:['classic','chill']},
+  {t:'Kannada bhavageethe',a:'C Ashwath',m:['classical','chill','folk']},
+  {t:'Yakshagana music',a:'Yakshagana',m:['folk','retro','devotional']},
+  {t:'Jagadoddharana',a:'Purandara Dasa',m:['devotional','classical']},
+  {t:'Krishna Nee Begane Baaro',a:'Purandara Dasa',m:['devotional','classical','chill']},
+  {t:'Kanakadasa keerthane',a:'Kanakadasa',m:['devotional','classical']},
+  {t:'Naadamaya',a:'Dr Rajkumar',m:['retro','chill']},
   {t:'Hey Bhagwan',a:'Raghu Dixit',m:['modern','party']},
   {t:'Kannada janapada geete',a:'Kannada folk',m:['folk','party']},
-  {t:'Vachana Basavanna',a:'Kannada devotional',m:['devotional','classic']},
+  {t:'Vachana Basavanna',a:'Kannada devotional',m:['devotional','classical']},
   {t:'Tulu folk song',a:'Tulu',m:['folk','party']},
   {t:'Kannada song',a:'Sanjith Hegde',m:['modern','chill']},
-  {t:'Dollu Kunitha music',a:'Kannada folk',m:['folk','party']}]},
+  {t:'Dollu Kunitha music',a:'Kannada folk',m:['folk','party']},
+  {t:'Raga Bhairavi Carnatic recital',a:'Carnatic classical',m:['classical','chill']},
+  {t:'Carnatic varnam',a:'Carnatic classical',m:['classical']},
+  {t:'Shishunala Sharif tatva pada',a:'Kannada folk devotional',m:['folk','devotional']},
+  {t:'Kannada film song',a:'Vijay Prakash',m:['modern','chill']},
+  {t:'No Man Will Ever Love You',a:'Raghu Dixit',m:['modern','chill']}]},
 {id:'kerala',name:'Kerala',zone:'south',alias:['Kerala'],
  lang:'Malayalam',genres:'sopana sangeetham, chenda melam, Mappila and film melody',
  seed:[
-  {t:'Harivarasanam',a:'K J Yesudas',m:['devotional','classic','chill']},
+  {t:'Harivarasanam',a:'K J Yesudas',m:['devotional','retro','chill']},
   {t:'Malare',a:'Premam',m:['chill','modern']},
   {t:'Jimikki Kammal',a:'Velipadinte Pusthakam',m:['party','modern']},
-  {t:'Pramadavanam Veendum',a:'K J Yesudas',m:['classic','chill']},
+  {t:'Pramadavanam Veendum',a:'K J Yesudas',m:['retro','chill']},
   {t:'Panchari melam chenda',a:'Kerala temple percussion',m:['folk','devotional','party']},
   {t:'Mappila pattu',a:'Malabar Mappila song',m:['folk','party']},
-  {t:'Sopanam padam',a:'Kerala temple music',m:['devotional','classic']},
-  {t:'Kathakali padam',a:'Kerala classical',m:['classic','devotional']},
+  {t:'Sopanam padam',a:'Kerala temple music',m:['devotional','classical']},
+  {t:'Kathakali padam',a:'Kerala classical',m:['classical','devotional']},
   {t:'Oppana song',a:'Malabar Muslim folk',m:['folk','party']},
-  {t:'Vadakkan Pattu',a:'Kerala folk ballad',m:['folk','classic']},
+  {t:'Vadakkan Pattu',a:'Kerala folk ballad',m:['folk','retro']},
   {t:'Thiruvathira Kali song',a:'Kerala folk',m:['folk','party']},
-  {t:'Manjal Prasadavum',a:'K S Chithra',m:['classic','chill']},
-  {t:'Gopika Vasantham',a:'K J Yesudas',m:['classic','chill']},
+  {t:'Manjal Prasadavum',a:'K S Chithra',m:['retro','chill']},
+  {t:'Gopika Vasantham',a:'K J Yesudas',m:['retro','chill']},
   {t:'Onam song',a:'Malayalam',m:['folk','party']},
   {t:'Duff Muttu',a:'Malabar folk',m:['folk','devotional']},
-  {t:'Malayalam melody song',a:'Malayalam',m:['chill','modern']}]},
+  {t:'Malayalam melody song',a:'Malayalam',m:['chill','modern']},
+  {t:'Devasabhathalam',a:'Devasuram',m:['retro','classical']},
+  {t:'Pavizha Mazha',a:'Athiran',m:['chill','modern']},
+  {t:'Kaathirunnu Kaathirunnu',a:'Ennu Ninte Moideen',m:['chill','modern']},
+  {t:'Manikya Malaraya Poovi',a:'Oru Adaar Love',m:['modern','party','folk']},
+  {t:'Swami Sharanam Ayyappa',a:'Ayyappa devotional',m:['devotional','chill']},
+  {t:'Theyyam ritual music',a:'Kerala ritual',m:['folk','devotional']},
+  {t:'Kaikottikali song',a:'Kerala folk',m:['folk','party']}]},
 {id:'tn',name:'Tamil Nadu',zone:'south',alias:['Tamil Nadu'],
  lang:'Tamil',genres:'Carnatic, nadaswaram, gaana, Kollywood and Thevaram',
  seed:[
   {t:'Enjoy Enjaami',a:'Dhee and Arivu',m:['modern','folk','party']},
   {t:'Rowdy Baby',a:'Maari 2',m:['party','modern']},
-  {t:'Nenjukkul Peidhidum',a:'Vaaranam Aayiram',m:['chill','classic']},
-  {t:'Vatapi Ganapatim Bhaje',a:'Carnatic kriti',m:['devotional','classic']},
-  {t:'Chinna Chinna Aasai',a:'Roja A R Rahman',m:['classic','chill']},
-  {t:'Nadaswaram mallari',a:'temple nadaswaram',m:['devotional','folk']},
-  {t:'Thiruppugazh',a:'Arunagirinathar',m:['devotional','classic']},
-  {t:'Janani Janani',a:'Ilaiyaraaja',m:['devotional','classic','chill']},
-  {t:'Thendral Vanthu Ennai Thodum',a:'Ilaiyaraaja',m:['classic','chill']},
-  {t:'Kurai Onrum Illai',a:'M S Subbulakshmi',m:['devotional','classic']},
-  {t:'Bhaja Govindam',a:'M S Subbulakshmi',m:['devotional','classic']},
-  {t:'Thevaram',a:'Tamil Saiva devotional',m:['devotional','classic']},
+  {t:'Nenjukkul Peidhidum',a:'Vaaranam Aayiram',m:['chill','retro']},
+  {t:'Vatapi Ganapatim Bhaje',a:'Carnatic kriti',m:['devotional','classical']},
+  {t:'Chinna Chinna Aasai',a:'Roja A R Rahman',m:['retro','chill']},
+  {t:'Nadaswaram mallari',a:'temple nadaswaram',m:['devotional','folk','classical']},
+  {t:'Thiruppugazh',a:'Arunagirinathar',m:['devotional','classical']},
+  {t:'Janani Janani',a:'Ilaiyaraaja',m:['devotional','retro','chill']},
+  {t:'Thendral Vanthu Ennai Thodum',a:'Ilaiyaraaja',m:['retro','chill']},
+  {t:'Kurai Onrum Illai',a:'M S Subbulakshmi',m:['devotional','classical']},
+  {t:'Bhaja Govindam',a:'M S Subbulakshmi',m:['devotional','classical']},
+  {t:'Thevaram',a:'Tamil Saiva devotional',m:['devotional','classical']},
   {t:'Gaana song',a:'Chennai gaana',m:['folk','party']},
   {t:'Karakattam song',a:'Tamil folk',m:['folk','party']},
-  {t:'Kadhal Rojave',a:'Roja A R Rahman',m:['chill','classic']},
+  {t:'Kadhal Rojave',a:'Roja A R Rahman',m:['chill','retro']},
   {t:'Vaathi Coming',a:'Master Anirudh',m:['party','modern']},
-  {t:'Aaluma Doluma',a:'Vedalam Anirudh',m:['party','modern']}]},
+  {t:'Aaluma Doluma',a:'Vedalam Anirudh',m:['party','modern']},
+  {t:'Nagumomu Ganaleni',a:'Tyagaraja kriti',m:['classical','devotional']},
+  {t:'Carnatic Thillana',a:'Carnatic classical',m:['classical','party']},
+  {t:'Munbe Vaa',a:'Sillunu Oru Kadhal A R Rahman',m:['chill','retro']},
+  {t:'Vaseegara',a:'Minnale Harris Jayaraj',m:['chill','retro']},
+  {t:'Kaathalae Kaathalae',a:'96 Govind Vasantha',m:['chill','modern']},
+  {t:'Arabic Kuthu',a:'Beast Anirudh',m:['party','modern']},
+  {t:'Aalaporan Thamizhan',a:'Mersal A R Rahman',m:['party','modern']},
+  {t:'Naa Ready',a:'Leo Anirudh',m:['party','modern']},
+  {t:'Ilamai Itho Itho',a:'Sakalakala Vallavan Ilaiyaraaja',m:['retro','party']}]},
 {id:'ap',name:'Andhra Pradesh',zone:'south',alias:['Andhra Pradesh'],
  lang:'Telugu',genres:'Annamacharya keerthana, Kuchipudi, janapadam and Telugu film',
  seed:[
-  {t:'Annamacharya Keerthana',a:'Annamayya',m:['devotional','classic']},
-  {t:'Ghantasala songs',a:'Ghantasala',m:['classic','chill']},
+  {t:'Annamacharya Keerthana',a:'Annamayya',m:['devotional','classical']},
+  {t:'Ghantasala songs',a:'Ghantasala',m:['retro','chill']},
   {t:'Telugu janapada geethalu',a:'Andhra folk',m:['folk','party']},
-  {t:'Samajavaragamana',a:'Sid Sriram',m:['chill','modern']},
+  {t:'Samajavaragamana',a:'Sid Sriram',m:['chill','modern','classical']},
   {t:'Butta Bomma',a:'Armaan Malik',m:['modern','party']},
-  {t:'Kuchipudi dance music',a:'Kuchipudi',m:['classic','devotional']},
-  {t:'Endaro Mahanubhavulu',a:'Tyagaraja kriti',m:['devotional','classic']},
-  {t:'Bhadrachala Ramadasu keerthana',a:'Ramadasu',m:['devotional','classic']},
-  {t:'Telugu melody',a:'S P Balasubrahmanyam',m:['classic','chill']},
-  {t:'Burrakatha',a:'Andhra folk',m:['folk','classic']},
-  {t:'Harikatha',a:'Telugu devotional',m:['devotional','folk']},
-  {t:'Telugu janapadam',a:'Andhra folk',m:['folk','party']},
+  {t:'Kuchipudi dance music',a:'Kuchipudi',m:['classical','devotional']},
+  {t:'Endaro Mahanubhavulu',a:'Tyagaraja kriti',m:['devotional','classical']},
+  {t:'Bhadrachala Ramadasu keerthana',a:'Ramadasu',m:['devotional','classical']},
+  {t:'Telugu melody',a:'S P Balasubrahmanyam',m:['retro','chill']},
+  {t:'Burrakatha',a:'Andhra folk',m:['folk','classical']},
+  {t:'Harikatha',a:'Telugu devotional',m:['devotional','folk','classical']},
+  {t:'Telugu janapadam',a:'Andhra folk',m:['folk','classical']},
   {t:'Inkem Inkem Inkem Kaavaale',a:'Geetha Govindam',m:['chill','modern']},
-  {t:'Telugu folk song',a:'Andhra',m:['folk','chill']}]},
+  {t:'Telugu folk song',a:'Andhra',m:['folk','chill']},
+  {t:'Ksheerabdhi Kanyakaku',a:'Annamacharya keerthana',m:['classical','devotional']},
+  {t:'Telugu janapada dance song',a:'Andhra folk',m:['folk','party']}]},
 {id:'telangana',name:'Telangana',zone:'south',alias:['Telangana'],
  lang:'Telugu, Urdu',genres:'Bathukamma folk, Oggu katha, qawwali and Tollywood',
  seed:[
   {t:'Naatu Naatu',a:'RRR M M Keeravani',m:['party','modern']},
   {t:'Bathukamma folk song',a:'Telangana folk',m:['folk','devotional']},
-  {t:'Telangana folk song',a:'Gaddar',m:['folk','classic']},
-  {t:'Aaj Rang Hai',a:'Amir Khusro qawwali',m:['devotional','classic']},
+  {t:'Telangana folk song',a:'Gaddar',m:['folk','retro']},
+  {t:'Aaj Rang Hai',a:'Amir Khusro qawwali',m:['devotional','retro']},
   {t:'Inkem Inkem Inkem Kaavaale',a:'Geetha Govindam',m:['chill','modern']},
-  {t:'Oggu katha',a:'Telangana ballad',m:['folk','classic']},
+  {t:'Oggu katha',a:'Telangana ballad',m:['folk','classical']},
   {t:'Bonalu song',a:'Telangana devotional',m:['devotional','folk','party']},
   {t:'Dappu drum music',a:'Telangana folk',m:['folk','party']},
-  {t:'Golkonda qawwali',a:'Hyderabad qawwali',m:['devotional','classic']},
+  {t:'Golkonda qawwali',a:'Hyderabad qawwali',m:['devotional','retro']},
   {t:'Telangana Palle Paata',a:'Telangana folk',m:['folk','chill']},
   {t:'Telugu song',a:'Sid Sriram',m:['chill','modern']},
   {t:'Telangana folk song',a:'Telangana',m:['folk','party']},
-  {t:'Butta Bomma',a:'Armaan Malik',m:['modern','party']}]},
+  {t:'Butta Bomma',a:'Armaan Malik',m:['modern','party']},
+  {t:'Golkonda khayal',a:'Hyderabad classical',m:['classical','chill']},
+  {t:'Telangana Dappu dance',a:'Telangana folk',m:['folk','party']}]},
 {id:'puducherry',name:'Puducherry',zone:'south',alias:['Puducherry','Pondicherry'],
  lang:'Tamil, French, Malayalam',genres:'Tamil film music, Carnatic and Bharatanatyam',
  seed:[
   {t:'Tamil film song',a:'Tamil cinema',m:['modern','party']},
-  {t:'Carnatic kriti',a:'Carnatic',m:['classic','devotional']},
-  {t:'Bharatanatyam music',a:'Bharatanatyam',m:['classic','devotional']},
-  {t:'Tamil melody song',a:'Tamil',m:['chill','classic']},
+  {t:'Carnatic kriti',a:'Carnatic',m:['classical','devotional']},
+  {t:'Bharatanatyam music',a:'Bharatanatyam',m:['classical','devotional']},
+  {t:'Tamil melody song',a:'Tamil',m:['chill','retro']},
   {t:'Tamil folk song',a:'Tamil folk',m:['folk','party']},
-  {t:'Bharathiyar song',a:'Tamil',m:['classic','folk']},
+  {t:'Bharathiyar song',a:'Tamil',m:['retro','folk']},
   {t:'Tamil Christian hymn',a:'Puducherry',m:['devotional','chill']},
-  {t:'Villupattu',a:'Tamil folk',m:['folk','classic']},
-  {t:'Tamil Nadaswaram',a:'Tamil temple music',m:['devotional','folk']},
+  {t:'Villupattu',a:'Tamil folk',m:['folk','classical']},
+  {t:'Tamil Nadaswaram',a:'Tamil temple music',m:['devotional','folk','classical']},
   {t:'Tamil indie song',a:'Tamil',m:['modern','chill']},
   {t:'Karakattam',a:'Tamil folk',m:['folk','party']}]},
 {id:'lakshadweep',name:'Lakshadweep',zone:'south',alias:['Lakshadweep'],
@@ -1125,28 +1306,105 @@ const REGIONS = [
   {t:'Lava dance music',a:'Lakshadweep',m:['folk','party']},
   {t:'Mappila pattu',a:'Malabar Mappila song',m:['folk','devotional']},
   {t:'Islamic devotional song Malayalam',a:'Mappila devotional',m:['devotional','chill']},
-  {t:'Mappila classic song',a:'Mappila',m:['classic','folk']},
+  {t:'Mappila classic song',a:'Mappila',m:['retro','folk']},
   {t:'Malayalam song',a:'Malayalam',m:['modern','chill']},
   {t:'Kolkali song',a:'Lakshadweep folk',m:['folk','party']},
   {t:'Duff Muttu',a:'Malabar folk',m:['folk','devotional','party']},
   {t:'Jeseri folk song',a:'Lakshadweep',m:['folk','chill']},
-  {t:'Mappila pattu',a:'Malabar',m:['folk','classic']},
+  {t:'Mappila pattu',a:'Malabar',m:['folk','retro']},
   {t:'Malayalam melody',a:'Malayalam',m:['chill','modern']}]},
 {id:'andaman',name:'Andaman & Nicobar Islands',zone:'south',
  alias:['Andaman and Nicobar Islands','Andaman & Nicobar Islands','Andaman and Nicobar'],
  lang:'Hindi, Bengali, Tamil, Nicobarese',genres:'Nicobarese folk plus the settler mix of Bengali, Tamil and Hindi song',
  seed:[
   {t:'Nicobarese folk song',a:'Nicobarese traditional',m:['folk','chill']},
-  {t:'Andaman folk music',a:'Andaman islanders',m:['folk','classic']},
+  {t:'Andaman folk music',a:'Andaman islanders',m:['folk','retro']},
   {t:'Bengali folk song',a:'Bengali folk',m:['folk','chill']},
   {t:'Tamil film song',a:'Tamil cinema',m:['modern','party']},
   {t:'Hindi bhajan',a:'Hindi devotional',m:['devotional','chill']},
   {t:'Nicobari dance music',a:'Nicobarese',m:['folk','party']},
   {t:'Andaman Hindi song',a:'Andaman',m:['modern','party']},
   {t:'Bengali folk song',a:'Bengali',m:['folk','chill']},
-  {t:'Tamil melody song',a:'Tamil',m:['chill','classic']},
+  {t:'Tamil melody song',a:'Tamil',m:['chill','retro']},
   {t:'Andaman Telugu song',a:'Telugu',m:['modern','chill']},
   {t:'Island devotional song',a:'Andaman',m:['devotional','chill']}]},
+/* ---------------- NATIONAL ---------------- */
+{id:'bollywood',name:'Bollywood \u00b7 Hindi Film',zone:'national',alias:[],freq:'100.0',
+ lang:'Hindi, Urdu',genres:'Hindi film music from the golden era to today',
+ seed:[
+  {t:'Lag Ja Gale',a:'Lata Mangeshkar',m:['retro','chill']},
+  {t:'Mere Sapno Ki Rani',a:'Kishore Kumar',m:['retro','chill']},
+  {t:'Chaudhvin Ka Chand Ho',a:'Mohammed Rafi',m:['retro','chill']},
+  {t:'Pyar Kiya To Darna Kya',a:'Lata Mangeshkar',m:['retro','party']},
+  {t:'Aaj Phir Jeene Ki Tamanna Hai',a:'Guide Lata Mangeshkar',m:['retro','chill']},
+  {t:'Yeh Shaam Mastani',a:'Kishore Kumar',m:['retro','party']},
+  {t:'Kabhi Kabhie Mere Dil Mein',a:'Mukesh',m:['retro','chill']},
+  {t:'Ae Mere Watan Ke Logo',a:'Lata Mangeshkar',m:['retro','devotional']},
+  {t:'Chaiyya Chaiyya',a:'Sukhwinder Singh A R Rahman',m:['party','folk','retro']},
+  {t:'Piya Haji Ali',a:'Fiza A R Rahman',m:['devotional','retro']},
+  {t:'Kun Faya Kun',a:'Rockstar A R Rahman',m:['devotional','chill']},
+  {t:'Achyutam Keshavam',a:'Hindi bhajan',m:['devotional','chill']},
+  {t:'Om Jai Jagdish Hare',a:'Hindi aarti',m:['devotional','folk']},
+  {t:'Maa Tujhe Salaam',a:'A R Rahman',m:['devotional','retro']},
+  {t:'Kesariya',a:'Arijit Singh Brahmastra',m:['modern','chill']},
+  {t:'Apna Bana Le',a:'Arijit Singh Bhediya',m:['modern','chill']},
+  {t:'Tum Hi Ho',a:'Arijit Singh Aashiqui 2',m:['modern','chill']},
+  {t:'Channa Mereya',a:'Arijit Singh',m:['modern','chill']},
+  {t:'Agar Tum Saath Ho',a:'Arijit Singh Alka Yagnik',m:['chill','modern']},
+  {t:'Ilahi',a:'Arijit Singh Yeh Jawaani Hai Deewani',m:['chill','modern']},
+  {t:'Kabira',a:'Tochi Raina Rekha Bhardwaj',m:['chill','folk']},
+  {t:'Gallan Goodiyaan',a:'Dil Dhadakne Do',m:['party','modern']},
+  {t:'Balam Pichkari',a:'Yeh Jawaani Hai Deewani',m:['party','modern']},
+  {t:'London Thumakda',a:'Queen',m:['party','modern']},
+  {t:'Kala Chashma',a:'Baar Baar Dekho',m:['party','modern']},
+  {t:'Badtameez Dil',a:'Yeh Jawaani Hai Deewani',m:['party','modern']},
+  {t:'Desi Girl',a:'Dostana',m:['party','modern']},
+  {t:'Genda Phool',a:'Delhi 6 A R Rahman',m:['folk','party','retro']},
+  {t:'Dhol Yaara Dhol',a:'Dev D',m:['folk','party']},
+  {t:'Sasural Genda Phool',a:'Delhi 6',m:['folk','party']},
+  {t:'Ketaki Gulab Juhi',a:'Basant Bahar Bhimsen Joshi Manna Dey',m:['classical','retro']},
+  {t:'Man Tarpat Hari Darshan Ko Aaj',a:'Baiju Bawra Mohammed Rafi',m:['classical','devotional','retro']},
+  {t:'Albela Sajan',a:'Hum Dil De Chuke Sanam',m:['classical','party']},
+  {t:'Ghar More Pardesiya',a:'Kalank Shreya Ghoshal',m:['classical','party']},
+  {t:'Jhoome Jo Pathaan',a:'Arijit Singh Sukriti',m:['party','modern']},
+  {t:'Naatu Naatu Hindi',a:'RRR',m:['party','modern']},
+  {t:'Raabta',a:'Agent Vinod Arijit Singh',m:['chill','modern']},
+  {t:'Tera Ban Jaunga',a:'Kabir Singh',m:['chill','modern']},
+  {t:'Ae Dil Hai Mushkil',a:'Arijit Singh',m:['chill','modern']},
+  {t:'Mast Magan',a:'2 States Arijit Singh',m:['chill','modern']}]},
+{id:'indie',name:'Hindi Indie',zone:'national',alias:[],freq:'101.5',
+ lang:'Hindi, Urdu',genres:'Hindi indie, fusion rock and the independent scene',
+ seed:[
+  {t:'Ghir Ghir',a:'Advaita',m:['classical','chill']},
+  {t:'Kandisa',a:'Indian Ocean',m:['devotional','classical','chill']},
+  {t:'Krishna',a:'Colonial Cousins',m:['classical','devotional','retro']},
+  {t:'Bandeh',a:'Indian Ocean',m:['retro','folk']},
+  {t:'Ma Rewa',a:'Indian Ocean',m:['folk','devotional']},
+  {t:'Dooba Dooba',a:'Silk Route',m:['retro','chill']},
+  {t:'Maeri',a:'Euphoria',m:['retro','chill']},
+  {t:'Dhoom Pichak Dhoom',a:'Euphoria',m:['retro','party']},
+  {t:'Aahatein',a:'Agnee',m:['retro','modern']},
+  {t:'Chadariya Jhini',a:'Kabir Cafe',m:['folk','devotional']},
+  {t:'Mann Lago Yaar Fakiri Mein',a:'Kabir Cafe',m:['devotional','folk','chill']},
+  {t:'Pyaasi',a:'Swarathma',m:['folk','party']},
+  {t:'Kaun Mera',a:'Papon',m:['folk','chill']},
+  {t:'Kasoor',a:'Prateek Kuhad',m:['modern','chill']},
+  {t:'cold mess',a:'Prateek Kuhad',m:['chill','modern']},
+  {t:'Husn',a:'Anuv Jain',m:['modern','chill']},
+  {t:'Baarishein',a:'Anuv Jain',m:['modern','chill']},
+  {t:'Gul',a:'Anuv Jain',m:['chill','modern']},
+  {t:'Choo Lo',a:'The Local Train',m:['modern','party']},
+  {t:'Aaoge Tum Kabhi',a:'The Local Train',m:['modern','chill']},
+  {t:'Marz',a:'The Yellow Diary',m:['modern','chill']},
+  {t:'Cigarette',a:'Osho Jain',m:['modern','chill']},
+  {t:'Faasle',a:'Aditya Rikhari',m:['modern','chill']},
+  {t:'Din Raat',a:'Lifafa',m:['modern','party']},
+  {t:'City Life',a:'Raghav Meattle',m:['chill','modern']},
+  {t:'Sabse Peeche Hum Khade',a:'Ankur Tewari',m:['chill','folk']},
+  {t:'Udd Gaye',a:'Ritviz',m:['party','modern']},
+  {t:'Liggi',a:'Ritviz',m:['party','modern']},
+  {t:'Machi Bhasad',a:'Bloodywood',m:['party','modern']},
+  {t:'Walk With Me',a:'Taba Chake',m:['chill','folk']}]}
 ];
 
 /* Rail routes: ordered so the dashed line through each zone reads geographically. */
@@ -1183,6 +1441,8 @@ REGIONS.forEach(r=>{
    imagery later.
    ========================================================================= */
 const VISUAL = {
+  bollywood: {pal:['#2b1526','#8a3f63','#f0c9a0'], terrain:'city'},
+  indie:     {pal:['#131f2e','#2f6f86','#e2dcc0'], terrain:'city'},
   jk:        {pal:['#12213d','#3d6b96','#c9d8e6'], terrain:'himalaya'},
   ladakh:    {pal:['#1b1c33','#6b5f7e','#d8c3a5'], terrain:'coldDesert'},
   hp:        {pal:['#14263f','#3f7a72','#cfe0d8'], terrain:'himalaya'},
@@ -1356,6 +1616,7 @@ function mReeds(c){          /* tribal flute + reed cluster */
 }
 
 const MOTIF = {
+  bollywood:['mic',0],  indie:['guitar',0],
   jk:['strings',1],       ladakh:['stupa',1],      hp:['drum',0],        punjab:['drum',1],
   haryana:['drum',0],     uttarakhand:['flute',0], delhi:['mic',0],      chandigarh:['mic',0],
   rajasthan:['bowed',0],  gujarat:['dancer',1],    maharashtra:['dancer',0], goa:['guitar',0],
@@ -1781,6 +2042,39 @@ async function loadMap(){
     trains.push({dot:svg.appendChild(mk('circle',{r:2.6,class:'train'})),path:el,len:el.getTotalLength(),t:Math.random()});
   });
 
+  /* The two national bands have no territory, so they sit offshore as broadcast
+     masts - in the Arabian Sea and the Bay of Bengal. Clickable like any state,
+     and clearly not pretending to be one. */
+  const OFFSHORE={ bollywood:{lon:68.9,lat:16.4,side:'right'}, indie:{lon:90.6,lat:12.4,side:'left'} };
+  REGIONS.filter(r=>r.zone==='national').forEach(r=>{
+    const o=OFFSHORE[r.id]; if(!o) return;
+    const x=PXf(o.lon), y=PYf(o.lat);
+    const g=mk('g',{class:'natstn',tabindex:'0',role:'button'});
+    const ti=mk('title',{}); ti.textContent=r.name+' - '+r.genres; g.appendChild(ti);
+    /* signal arcs */
+    for(let i=1;i<=3;i++){
+      g.appendChild(mk('circle',{cx:x,cy:y-16,r:i*9,class:'natarc',
+        style:'animation-delay:'+(i*0.5).toFixed(1)+'s'}));
+    }
+    /* mast */
+    g.appendChild(mk('path',{d:'M'+(x-6)+','+(y+9)+' L'+x+','+(y-14)+' L'+(x+6)+','+(y+9)+' Z',class:'natmast'}));
+    g.appendChild(mk('line',{x1:x-9,y1:y+9,x2:x+9,y2:y+9,class:'natbase'}));
+    g.appendChild(mk('circle',{cx:x,cy:y-16,r:3,class:'natdot'}));
+    const right=o.side==='right';
+    const label=mk('text',{x:x+(right?13:-13),y:y+2,class:'natlabel','text-anchor':right?'start':'end'});
+    label.textContent=r.name.toUpperCase();
+    g.appendChild(label);
+    const freq=mk('text',{x:x+(right?13:-13),y:y+13,class:'natfreq','text-anchor':right?'start':'end'});
+    freq.textContent=r.freq+' MHZ';
+    g.appendChild(freq);
+    g.appendChild(mk('circle',{cx:x,cy:y-2,r:26,fill:'transparent'}));
+    g.dataset.id=r.id;
+    g.addEventListener('click',()=>fire(tune(r.id),'national tune'));
+    g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fire(tune(r.id),'national tune');}});
+    svg.appendChild(g);
+    r.cx=x; r.cy=y;          /* so the live ring can pulse over the mast too */
+  });
+
   ring=svg.appendChild(mk('circle',{class:'pulse-ring',r:9,stroke:'#e8a33d',opacity:0}));
 
   /* Label only the roomiest states. 36 labels at this scale collide badly, and
@@ -1825,6 +2119,7 @@ function runTrains(){
 
 function markLive(id){
   svg.querySelectorAll('.state').forEach(p=>p.classList.toggle('live',p.dataset.id===id));
+  svg.querySelectorAll('.natstn').forEach(g=>g.classList.toggle('live',g.dataset.id===id));
   const r=byId(id);
   if(ring&&r&&r.cx!=null){
     ring.setAttribute('cx',r.cx); ring.setAttribute('cy',r.cy);
@@ -1835,11 +2130,24 @@ function markLive(id){
 /* legend + station list */
 const legendEl=document.getElementById('legend');
 Object.keys(ZONES).forEach(k=>{
+  if(k==='national') return;      /* not a place, so not on the map key */
   const sp=document.createElement('span');
   sp.innerHTML='<i style="background:'+ZONES[k].c+'"></i>'+ZONES[k].n+
     ' ('+REGIONS.filter(r=>r.zone===k).length+')';
   legendEl.appendChild(sp);
 });
+
+/* Hindi film music has no state to click, so it gets its own button above the map. */
+(function nationalChips(){
+  const host=document.getElementById('legend');
+  REGIONS.filter(r=>r.zone==='national').forEach(r=>{
+    const b=document.createElement('button');
+    b.className='natchip'; b.dataset.id=r.id;
+    b.innerHTML='<span class="dot"></span>'+esc(r.name);
+    b.addEventListener('click',()=>fire(tune(r.id),'national tune'));
+    host.appendChild(b);
+  });
+})();
 
 const listEl=document.getElementById('stnlist');
 document.getElementById('stnCount').textContent=REGIONS.length+' ON AIR';
@@ -1995,6 +2303,9 @@ function seedFor(region,mKey){
 }
 
 /* ============================= PLAYER ==================================== */
+const ICON_PLAY='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg>';
+const ICON_PAUSE='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="7.6" y="5.4" width="3.5" height="13.2" rx="1.2" fill="currentColor"/><rect x="12.9" y="5.4" width="3.5" height="13.2" rx="1.2" fill="currentColor"/></svg>';
+
 window.onYouTubeIframeAPIReady=function(){
   player=new YT.Player('ytplayer',{
     height:'100%',width:'100%',
@@ -2028,7 +2339,9 @@ function veil(show,msg){
   v.classList.toggle('gone',!show);
 }
 function syncPlayBtn(){
-  document.getElementById('playBtn').innerHTML=playing?'&#10074;&#10074;':'&#9654;';
+  /* U+25B6 and friends get swapped for colour emoji on iOS and Android, so the
+     transport uses inline vectors instead of characters. */
+  document.getElementById('playBtn').innerHTML=playing?ICON_PAUSE:ICON_PLAY;
   /* The record spins only while audio really is playing, so the deck never lies
      about what you are hearing. */
   const pl=document.getElementById('platter');
@@ -2138,25 +2451,30 @@ async function topUp(){
 async function recurate(){
   const region=current, mk=moodKey, my=++cseq;
   if(!region) return;
+
+  /* Switching from Folk to Party must not leave folk songs sitting in the list.
+     Only the song actually playing survives - everything else is replaced with
+     the new mood, so what you see is always what you are about to hear. */
+  const playing = (qi>=0 && queue[qi]) ? queue[qi] : null;
+  const keep = playing ? [playing] : [];
+  queue = keep.concat(mergeNew(seedFor(region,mk),keep));
+  qi = playing ? 0 : -1;
+  renderQueue();
   setQStatus('Re-curating \u00b7 '+MOODS[mk].n);
-  document.getElementById('trackWhy').textContent=region.genres;
-  const head=()=>queue.slice(0,Math.max(qi+1,1));
+  if(playing) document.getElementById('trackWhy').textContent=region.genres;
+
   try{
     const tracks=await curate(region,mk);
     if(my!==cseq||current!==region) return;
-    const h=head();
-    queue=h.concat(mergeNew(tracks,h));
-    renderQueue(); setQStatus('AI curated \u00b7 '+MOODS[mk].n);
+    const k=(qi>=0&&queue[qi])?[queue[qi]]:[];
+    queue=k.concat(mergeNew(tracks,k));
+    qi=k.length?0:-1;
+    renderQueue(); setQStatus('AI curated \u00b7 '+MOODS[mk].n+' \u00b7 '+queue.length+' songs');
   }catch(e){
     if(my!==cseq||current!==region) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
-    /* built-in list for the new mood, minus anything already queued up front */
-    const played=head();
-    const seen={}; played.forEach(t=>{seen[t.t]=1;});
-    queue=played.concat(seedFor(region,mk).filter(t=>!seen[t.t]));
-    renderQueue(); setQStatus('Built-in list \u00b7 '+MOODS[mk].n);
+    setQStatus('Built-in list \u00b7 '+MOODS[mk].n+' \u00b7 '+queue.length+' songs');
   }
-  /* keep the bar's mood label honest without touching the player */
   if(queue[qi]) setBar(queue[qi].t, queue[qi].a+' \u00b7 '+region.name+' \u00b7 '+MOODS[mk].n);
 }
 
@@ -2379,7 +2697,7 @@ function renderSearch(qRaw){
     h+='<div class="snone">Nothing in the built-in library matches that.</div>';
   }
   /* always offer to go and find it anyway */
-  h+='<button class="sask" id="askYt">&#9654;&nbsp; Play <b>'+esc(qRaw.trim())+'</b> anyway</button>';
+  h+='<button class="sask" id="askYt"><svg class="ic sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg> Play <b>'+esc(qRaw.trim())+'</b> anyway</button>';
   searchRows.push({kind:'ask',data:qRaw.trim()});
 
   box.innerHTML=h;
