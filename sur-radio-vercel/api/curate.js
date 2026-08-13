@@ -36,16 +36,22 @@ module.exports = async (req, res) => {
   const system =
     'You curate a regional Indian radio station. Reply with ONLY raw JSON, no markdown fences, ' +
     'matching this shape:\n{"tracks":[{"t":"song title","a":"artist or film","w":"why it belongs, max 12 words"}]}\n' +
-    'Give 12 tracks. Rules: only REAL released songs that plausibly exist on YouTube. Prefer ' +
+    'Give 18 tracks. Rules: only REAL released songs that plausibly exist on YouTube. Prefer ' +
     'well-known recordings with official uploads. Never invent titles. Match the state\'s actual ' +
     'languages and musical traditions. Order them like a radio set, not a ranked chart.';
 
-  const user =
+  // Titles the listener has already heard, so each batch reaches for new records.
+  const avoid = Array.isArray(b.avoid)
+    ? b.avoid.slice(-40).map(x => clip(x, 120)).filter(Boolean)
+    : [];
+
+  let user =
     'Indian state or union territory: ' + name +
     '\nLanguages: ' + lang +
     '\nMusical traditions there: ' + genres +
-    '\nRequested mood: ' + mood + ' - ' + moodQ +
-    '\nReturn the JSON now.';
+    '\nRequested mood: ' + mood + ' - ' + moodQ;
+  if (avoid.length) user += '\nAlready played, do not repeat these: ' + avoid.join('; ');
+  user += '\nReturn the JSON now.';
 
   try {
     const c = new AbortController();
@@ -60,7 +66,7 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify({
         model: process.env.CLAUDE_MODEL || 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 2000,
         system,
         messages: [{ role: 'user', content: user }],
       }),
@@ -91,10 +97,14 @@ module.exports = async (req, res) => {
 
     const tracks = (parsed.tracks || [])
       .filter(x => x && x.t && x.a)
-      .slice(0, 12)
+      .slice(0, 18)
       .map(x => ({ t: String(x.t).slice(0, 120), a: String(x.a).slice(0, 120), w: String(x.w || '').slice(0, 160) }));
 
-    res.setHeader('Cache-Control', 's-maxage=86400, stale-while-revalidate=604800');
+    // Only cache the plain first request. Top-up calls carry an avoid list and
+    // must not be served a cached batch, or the listener gets the same songs back.
+    res.setHeader('Cache-Control', avoid.length
+      ? 'no-store'
+      : 's-maxage=86400, stale-while-revalidate=604800');
     return res.status(200).json({ tracks });
   } catch (e) {
     console.warn('[curate] failed:', e.message);
