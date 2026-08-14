@@ -6577,6 +6577,18 @@ function syncPlayerHeight(){
     if(!bar) return;
     const h=Math.round(bar.getBoundingClientRect().height);
     document.documentElement.style.setProperty('--player-h', h+'px');
+    // Diagnostic logging for layout debugging (temporary)
+    try{
+      const shell = document.querySelector('.shell');
+      const stage = document.querySelector('.stage-main');
+      const play = document.getElementById('playBtn');
+      const shH = shell ? Math.round(shell.getBoundingClientRect().height) : null;
+      const stH = stage ? Math.round(stage.getBoundingClientRect().height) : null;
+      const pb = play ? Math.round(play.getBoundingClientRect().bottom) : null;
+      const pt = play ? Math.round(play.getBoundingClientRect().top) : null;
+      const barTop = bar ? Math.round(bar.getBoundingClientRect().top) : null;
+      console.log('SYNC_PLAYER_HEIGHT', {viewport: window.innerHeight, shell: shH, stage: stH, playerHeight: h, barTop, playTop: pt, playBottom: pb});
+    }catch(e){console.warn('layout-debug',e)}
   }catch(e){}
 }
 window.addEventListener('load',syncPlayerHeight);
