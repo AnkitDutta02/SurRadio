@@ -1011,7 +1011,7 @@
      dusk or a bright afternoon. All CSS, so it costs nothing per frame. */
   .bd-layer{position:absolute;inset:0;opacity:0;background-size:cover;
     background-position:center bottom;
-    transition:opacity 900ms ease, filter 1400ms ease;
+    transition:opacity 1100ms cubic-bezier(.4,0,.2,1), filter 1600ms ease;
     filter:brightness(var(--v-bright,1)) saturate(var(--v-sat,1)) hue-rotate(var(--v-hue,0deg));
     animation:scenedrift var(--v-drift,42s) ease-in-out infinite alternate;
     will-change:opacity;}
@@ -4737,21 +4737,98 @@ function shade(hex,f){
 }
 
 /* Builds the SVG landscape for one state. */
-function landscapeSVG(region){
+/* The craft languages, as tiling patterns. Drawn from the geometry of each tradition
+   rather than as pictures of it: a phulkari darning grid, an alpona curve, a mural
+   band, a jaali lattice. Woven across the whole scene at low opacity so it reads as
+   the surface the transmission is printed on. */
+function craftPattern(kind, col, id){
+  const P='cp'+id;
+  if(kind==='phulkari'){
+    return '<pattern id="'+P+'" width="46" height="46" patternUnits="userSpaceOnUse">'+
+      '<path d="M0,23 L23,0 L46,23 L23,46 Z" fill="none" stroke="'+col+'" stroke-width="1.1"/>'+
+      '<path d="M23,10 L36,23 L23,36 L10,23 Z" fill="'+col+'" opacity=".22"/>'+
+      '<path d="M0,0 L46,46 M46,0 L0,46" stroke="'+col+'" stroke-width=".5" opacity=".5"/></pattern>';
+  }
+  if(kind==='alpona'){
+    return '<pattern id="'+P+'" width="58" height="58" patternUnits="userSpaceOnUse">'+
+      '<path d="M29,6 C42,14 42,30 29,52 C16,30 16,14 29,6 Z" fill="none" stroke="'+col+'" stroke-width="1"/>'+
+      '<circle cx="29" cy="29" r="3.4" fill="'+col+'" opacity=".3"/>'+
+      '<path d="M6,29 C14,20 44,20 52,29" fill="none" stroke="'+col+'" stroke-width=".7" opacity=".7"/></pattern>';
+  }
+  if(kind==='mural'){
+    return '<pattern id="'+P+'" width="40" height="26" patternUnits="userSpaceOnUse">'+
+      '<path d="M0,13 Q10,2 20,13 T40,13" fill="none" stroke="'+col+'" stroke-width="1.2"/>'+
+      '<circle cx="20" cy="13" r="2.2" fill="'+col+'" opacity=".34"/>'+
+      '<path d="M0,25 H40" stroke="'+col+'" stroke-width=".6" opacity=".55"/></pattern>';
+  }
+  if(kind==='miniature'){
+    return '<pattern id="'+P+'" width="34" height="34" patternUnits="userSpaceOnUse">'+
+      '<path d="M17,1 C25,9 25,25 17,33 C9,25 9,9 17,1 Z" fill="none" stroke="'+col+'" stroke-width=".9"/>'+
+      '<path d="M1,17 C9,9 25,9 33,17 C25,25 9,25 1,17 Z" fill="none" stroke="'+col+'" stroke-width=".9"/>'+
+      '<circle cx="17" cy="17" r="1.8" fill="'+col+'" opacity=".3"/></pattern>';
+  }
+  if(kind==='warli'){
+    return '<pattern id="'+P+'" width="42" height="42" patternUnits="userSpaceOnUse">'+
+      '<path d="M12,14 L16,22 L8,22 Z M12,22 L12,32 M12,26 L6,30 M12,26 L18,30" '+
+        'fill="none" stroke="'+col+'" stroke-width="1"/>'+
+      '<path d="M30,14 L34,22 L26,22 Z M30,22 L30,32 M30,26 L24,30 M30,26 L36,30" '+
+        'fill="none" stroke="'+col+'" stroke-width="1"/></pattern>';
+  }
+  if(kind==='kolam'){
+    return '<pattern id="'+P+'" width="30" height="30" patternUnits="userSpaceOnUse">'+
+      '<circle cx="7" cy="7" r="1.6" fill="'+col+'"/><circle cx="23" cy="7" r="1.6" fill="'+col+'"/>'+
+      '<circle cx="7" cy="23" r="1.6" fill="'+col+'"/><circle cx="23" cy="23" r="1.6" fill="'+col+'"/>'+
+      '<path d="M7,7 Q15,15 23,7 Q15,15 23,23 Q15,15 7,23 Q15,15 7,7" '+
+        'fill="none" stroke="'+col+'" stroke-width=".8"/></pattern>';
+  }
+  if(kind==='patta'){
+    return '<pattern id="'+P+'" width="36" height="36" patternUnits="userSpaceOnUse">'+
+      '<path d="M0,6 H36 M0,30 H36" stroke="'+col+'" stroke-width=".7"/>'+
+      '<path d="M4,18 Q12,8 20,18 T36,18" fill="none" stroke="'+col+'" stroke-width="1"/>'+
+      '<path d="M18,10 L21,16 L18,22 L15,16 Z" fill="'+col+'" opacity=".26"/></pattern>';
+  }
+  if(kind==='bamboo'){
+    return '<pattern id="'+P+'" width="26" height="26" patternUnits="userSpaceOnUse">'+
+      '<path d="M0,6 H26 M0,19 H26" stroke="'+col+'" stroke-width="1.4" opacity=".55"/>'+
+      '<path d="M6,0 V26 M19,0 V26" stroke="'+col+'" stroke-width="1.4" opacity=".3"/></pattern>';
+  }
+  if(kind==='ikat'){
+    return '<pattern id="'+P+'" width="30" height="22" patternUnits="userSpaceOnUse">'+
+      '<path d="M0,5 L8,0 L16,5 L24,0 L30,5" fill="none" stroke="'+col+'" stroke-width="1.5" opacity=".6"/>'+
+      '<path d="M0,16 L8,11 L16,16 L24,11 L30,16" fill="none" stroke="'+col+'" stroke-width="1.5" opacity=".35"/></pattern>';
+  }
+  if(kind==='thangka'){
+    return '<pattern id="'+P+'" width="48" height="30" patternUnits="userSpaceOnUse">'+
+      '<path d="M2,20 Q10,10 18,20 Q26,10 34,20 Q42,10 48,18" fill="none" stroke="'+col+'" stroke-width="1"/>'+
+      '<path d="M6,26 Q16,18 26,26" fill="none" stroke="'+col+'" stroke-width=".7" opacity=".6"/></pattern>';
+  }
+  return '';
+}
+
+function landscapeSVG(region,art){
   const v=VISUAL[region.id]||{pal:['#1b2036','#455080','#d9d2ab'],terrain:'plains'};
   const [deep,mid,light]=v.pal;
   const R=rngOf(seedOf(region.id));
   const k=v.terrain;
-  let sky='<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">'+
-    '<stop offset="0%" stop-color="'+shade(deep,0.75)+'"/>'+
-    '<stop offset="52%" stop-color="'+mid+'" stop-opacity=".55"/>'+
-    '<stop offset="100%" stop-color="'+light+'" stop-opacity=".28"/></linearGradient></defs>'+
-    '<rect width="'+BW+'" height="'+BH+'" fill="url(#sky)"/>';
+  /* the hour of the programming mode decides the light, not the place */
+  const A = art || {hour:'evening', craftKind:'none', craftOpacity:0};
+  const H = HOUR_SKY[A.hour] || HOUR_SKY.evening;
+  const uid = (region.id||'x').replace(/[^a-z0-9]/gi,'');
 
-  /* sun or moon, placed deterministically */
-  const sunX=180+R()*840, sunY=90+R()*90;
+  let sky='<defs><linearGradient id="sky'+uid+'" x1="0" y1="0" x2="0" y2="1">'+
+    '<stop offset="0%" stop-color="'+shade(deep,H.top)+'"/>'+
+    '<stop offset="52%" stop-color="'+shade(mid,H.mid)+'" stop-opacity=".62"/>'+
+    '<stop offset="100%" stop-color="'+light+'" stop-opacity="'+H.low.toFixed(2)+'"/></linearGradient>'+
+    craftPattern(A.craftKind, light, uid)+
+    '<radialGradient id="vig'+uid+'" cx="50%" cy="46%" r="72%">'+
+      '<stop offset="55%" stop-color="#000" stop-opacity="0"/>'+
+      '<stop offset="100%" stop-color="#000" stop-opacity=".55"/></radialGradient></defs>'+
+    '<rect width="'+BW+'" height="'+BH+'" fill="url(#sky'+uid+')"/>';
+
+  /* sun or moon, placed deterministically, at the height its hour implies */
+  const sunX=180+R()*840, sunY=(BH*H.lampY)+R()*60;
   sky+='<circle cx="'+sunX.toFixed(0)+'" cy="'+sunY.toFixed(0)+'" r="'+(34+R()*22).toFixed(0)+
-       '" fill="'+light+'" opacity=".30"/>';
+       '" fill="'+H.lamp+'" opacity="'+H.lampOp.toFixed(2)+'"/>';
 
   /* the state's own boundary, floated in as a watermark */
   let outline='';
@@ -4761,101 +4838,101 @@ function landscapeSVG(region){
       '<path d="'+region.pathD+'" fill="none" stroke="'+light+'" stroke-width="'+(2/(region.bdScale||1)).toFixed(2)+'"/></g></g>';
   }
 
-  let art='';
+  let scene='';
   if(k==='himalaya'){
-    art+='<path d="'+ridgePath(400,120,16,R,true)+'" fill="'+shade(mid,0.55)+'" opacity=".85"/>';
-    art+='<path d="'+ridgePath(470,95,14,R,true)+'" fill="'+shade(deep,1.5)+'" opacity=".9"/>';
-    art+='<path d="'+ridgePath(540,60,12,R,true)+'" fill="'+deep+'"/>';
+    scene+='<path d="'+ridgePath(400,120,16,R,true)+'" fill="'+shade(mid,0.55)+'" opacity=".85"/>';
+    scene+='<path d="'+ridgePath(470,95,14,R,true)+'" fill="'+shade(deep,1.5)+'" opacity=".9"/>';
+    scene+='<path d="'+ridgePath(540,60,12,R,true)+'" fill="'+deep+'"/>';
     for(let i=0;i<5;i++){
       const x=(100+i*230+R()*60).toFixed(0);
-      art+='<path d="M'+x+',392 l30,-46 l30,46 Z" fill="'+light+'" opacity=".5"/>';
+      scene+='<path d="M'+x+',392 l30,-46 l30,46 Z" fill="'+light+'" opacity=".5"/>';
     }
   } else if(k==='coldDesert'){
-    art+='<path d="'+ridgePath(410,105,14,R,true)+'" fill="'+shade(mid,0.6)+'" opacity=".8"/>';
-    art+='<path d="'+dunePath(520,44,R)+'" fill="'+shade(light,0.62)+'" opacity=".55"/>';
-    art+='<path d="'+ridgePath(560,40,10,R,false)+'" fill="'+deep+'"/>';
+    scene+='<path d="'+ridgePath(410,105,14,R,true)+'" fill="'+shade(mid,0.6)+'" opacity=".8"/>';
+    scene+='<path d="'+dunePath(520,44,R)+'" fill="'+shade(light,0.62)+'" opacity=".55"/>';
+    scene+='<path d="'+ridgePath(560,40,10,R,false)+'" fill="'+deep+'"/>';
   } else if(k==='desert'){
-    art+='<path d="'+dunePath(430,76,R)+'" fill="'+shade(mid,0.85)+'" opacity=".7"/>';
-    art+='<path d="'+dunePath(500,64,R)+'" fill="'+shade(light,0.7)+'" opacity=".55"/>';
-    art+='<path d="'+dunePath(566,52,R)+'" fill="'+deep+'"/>';
-    for(let i=0;i<3;i++) art+=palm(160+i*430+R()*70, 566, 0.8, shade(deep,0.7));
+    scene+='<path d="'+dunePath(430,76,R)+'" fill="'+shade(mid,0.85)+'" opacity=".7"/>';
+    scene+='<path d="'+dunePath(500,64,R)+'" fill="'+shade(light,0.7)+'" opacity=".55"/>';
+    scene+='<path d="'+dunePath(566,52,R)+'" fill="'+deep+'"/>';
+    for(let i=0;i<3;i++) scene+=palm(160+i*430+R()*70, 566, 0.8, shade(deep,0.7));
   } else if(k==='saltflat'){
-    art+='<rect x="0" y="470" width="'+BW+'" height="'+(BH-470)+'" fill="'+shade(light,0.55)+'" opacity=".4"/>';
-    art+='<path d="'+ridgePath(455,30,10,R,false)+'" fill="'+shade(mid,0.7)+'" opacity=".7"/>';
+    scene+='<rect x="0" y="470" width="'+BW+'" height="'+(BH-470)+'" fill="'+shade(light,0.55)+'" opacity=".4"/>';
+    scene+='<path d="'+ridgePath(455,30,10,R,false)+'" fill="'+shade(mid,0.7)+'" opacity=".7"/>';
     for(let i=0;i<10;i++){
       const y=486+i*13;
-      art+='<line x1="0" y1="'+y+'" x2="'+BW+'" y2="'+y+'" stroke="'+light+'" stroke-width="1" opacity=".14"/>';
+      scene+='<line x1="0" y1="'+y+'" x2="'+BW+'" y2="'+y+'" stroke="'+light+'" stroke-width="1" opacity=".14"/>';
     }
   } else if(k==='coast'||k==='island'){
-    art+='<path d="'+ridgePath(430,k==='island'?46:64,12,R,false)+'" fill="'+shade(mid,0.62)+'" opacity=".75"/>';
-    art+='<rect x="0" y="474" width="'+BW+'" height="'+(BH-474)+'" fill="'+shade(deep,1.25)+'" opacity=".85"/>';
-    art+=waves(492,light,R);
+    scene+='<path d="'+ridgePath(430,k==='island'?46:64,12,R,false)+'" fill="'+shade(mid,0.62)+'" opacity=".75"/>';
+    scene+='<rect x="0" y="474" width="'+BW+'" height="'+(BH-474)+'" fill="'+shade(deep,1.25)+'" opacity=".85"/>';
+    scene+=waves(492,light,R);
     const n=k==='island'?4:3;
-    for(let i=0;i<n;i++) art+=palm(120+i*(BW/n)+R()*90, 486, 0.92, shade(deep,0.55));
+    for(let i=0;i<n;i++) scene+=palm(120+i*(BW/n)+R()*90, 486, 0.92, shade(deep,0.55));
   } else if(k==='backwater'){
-    art+='<path d="'+ridgePath(420,44,12,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".7"/>';
-    art+='<rect x="0" y="466" width="'+BW+'" height="'+(BH-466)+'" fill="'+shade(deep,1.3)+'" opacity=".88"/>';
-    art+=waves(484,light,R);
-    for(let i=0;i<5;i++) art+=palm(90+i*250+R()*60, 478, 1.0, shade(deep,0.5));
-    art+='<path d="M470,556 q60,-20 130,0 q-16,20 -65,20 q-49,0 -65,-20 Z" fill="'+shade(deep,0.6)+'" opacity=".9"/>';
-    art+='<line x1="536" y1="556" x2="536" y2="504" stroke="'+shade(deep,0.6)+'" stroke-width="3"/>';
+    scene+='<path d="'+ridgePath(420,44,12,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".7"/>';
+    scene+='<rect x="0" y="466" width="'+BW+'" height="'+(BH-466)+'" fill="'+shade(deep,1.3)+'" opacity=".88"/>';
+    scene+=waves(484,light,R);
+    for(let i=0;i<5;i++) scene+=palm(90+i*250+R()*60, 478, 1.0, shade(deep,0.5));
+    scene+='<path d="M470,556 q60,-20 130,0 q-16,20 -65,20 q-49,0 -65,-20 Z" fill="'+shade(deep,0.6)+'" opacity=".9"/>';
+    scene+='<line x1="536" y1="556" x2="536" y2="504" stroke="'+shade(deep,0.6)+'" stroke-width="3"/>';
   } else if(k==='delta'||k==='river'){
-    art+='<path d="'+ridgePath(430,40,12,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".7"/>';
+    scene+='<path d="'+ridgePath(430,40,12,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".7"/>';
     for(let i=0;i<3;i++){
       const y=478+i*36;
-      art+='<path d="M0,'+y+' Q300,'+(y-26)+' 600,'+y+' T'+BW+','+(y+8)+'" stroke="'+shade(light,0.9)+
+      scene+='<path d="M0,'+y+' Q300,'+(y-26)+' 600,'+y+' T'+BW+','+(y+8)+'" stroke="'+shade(light,0.9)+
            '" stroke-width="'+(16-i*4)+'" fill="none" opacity=".32"/>';
     }
     for(let i=0;i<26;i++){
       const x=R()*BW, y=534+R()*60;
-      art+='<line x1="'+x.toFixed(0)+'" y1="'+y.toFixed(0)+'" x2="'+(x+4).toFixed(0)+'" y2="'+(y-24).toFixed(0)+
+      scene+='<line x1="'+x.toFixed(0)+'" y1="'+y.toFixed(0)+'" x2="'+(x+4).toFixed(0)+'" y2="'+(y-24).toFixed(0)+
            '" stroke="'+shade(deep,0.8)+'" stroke-width="2" opacity=".7"/>';
     }
   } else if(k==='forest'){
-    art+='<path d="'+ridgePath(420,58,12,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".75"/>';
-    art+='<path d="'+ridgePath(500,36,10,R,false)+'" fill="'+deep+'"/>';
-    for(let i=0;i<13;i++) art+=tree(50+i*95+R()*40, 520+R()*46, 0.8+R()*0.7, shade(deep,0.75));
+    scene+='<path d="'+ridgePath(420,58,12,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".75"/>';
+    scene+='<path d="'+ridgePath(500,36,10,R,false)+'" fill="'+deep+'"/>';
+    for(let i=0;i<13;i++) scene+=tree(50+i*95+R()*40, 520+R()*46, 0.8+R()*0.7, shade(deep,0.75));
   } else if(k==='hills'){
-    art+='<path d="'+ridgePath(392,80,10,R,false)+'" fill="'+shade(mid,0.5)+'" opacity=".7"/>';
-    art+='<path d="'+ridgePath(462,66,9,R,false)+'" fill="'+shade(mid,0.36)+'" opacity=".85"/>';
-    art+='<path d="'+ridgePath(530,48,8,R,false)+'" fill="'+deep+'"/>';
-    for(let i=0;i<9;i++) art+=tree(80+i*140+R()*50, 556+R()*36, 0.7+R()*0.5, shade(deep,0.7));
+    scene+='<path d="'+ridgePath(392,80,10,R,false)+'" fill="'+shade(mid,0.5)+'" opacity=".7"/>';
+    scene+='<path d="'+ridgePath(462,66,9,R,false)+'" fill="'+shade(mid,0.36)+'" opacity=".85"/>';
+    scene+='<path d="'+ridgePath(530,48,8,R,false)+'" fill="'+deep+'"/>';
+    for(let i=0;i<9;i++) scene+=tree(80+i*140+R()*50, 556+R()*36, 0.7+R()*0.5, shade(deep,0.7));
   } else if(k==='plateau'){
-    art+='<path d="'+ridgePath(440,34,9,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".7"/>';
+    scene+='<path d="'+ridgePath(440,34,9,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".7"/>';
     for(let i=0;i<4;i++){
       const x=90+i*300+R()*60, w=150+R()*90, h=54+R()*44;
-      art+='<path d="M'+x+','+(500)+' L'+x+','+(500-h)+' L'+(x+w)+','+(500-h+8)+' L'+(x+w)+','+500+' Z" fill="'+shade(deep,1.35)+'" opacity=".9"/>';
+      scene+='<path d="M'+x+','+(500)+' L'+x+','+(500-h)+' L'+(x+w)+','+(500-h+8)+' L'+(x+w)+','+500+' Z" fill="'+shade(deep,1.35)+'" opacity=".9"/>';
     }
-    art+='<rect x="0" y="500" width="'+BW+'" height="'+(BH-500)+'" fill="'+deep+'"/>';
-    for(let i=0;i<6;i++) art+=tree(120+i*195+R()*40, 556, 0.7, shade(deep,0.7));
+    scene+='<rect x="0" y="500" width="'+BW+'" height="'+(BH-500)+'" fill="'+deep+'"/>';
+    for(let i=0;i<6;i++) scene+=tree(120+i*195+R()*40, 556, 0.7, shade(deep,0.7));
   } else if(k==='temple'){
-    art+='<path d="'+ridgePath(452,32,9,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".65"/>';
-    art+='<rect x="0" y="520" width="'+BW+'" height="'+(BH-520)+'" fill="'+deep+'"/>';
-    art+=gopuram(300,520,1.5,shade(deep,1.5));
-    art+=gopuram(880,520,1.1,shade(deep,1.35));
-    for(let i=0;i<4;i++) art+=palm(120+i*300+R()*60, 520, 0.7, shade(deep,0.72));
+    scene+='<path d="'+ridgePath(452,32,9,R,false)+'" fill="'+shade(mid,0.55)+'" opacity=".65"/>';
+    scene+='<rect x="0" y="520" width="'+BW+'" height="'+(BH-520)+'" fill="'+deep+'"/>';
+    scene+=gopuram(300,520,1.5,shade(deep,1.5));
+    scene+=gopuram(880,520,1.1,shade(deep,1.35));
+    for(let i=0;i<4;i++) scene+=palm(120+i*300+R()*60, 520, 0.7, shade(deep,0.72));
   } else if(k==='city'){
-    art+='<rect x="0" y="520" width="'+BW+'" height="'+(BH-520)+'" fill="'+deep+'"/>';
+    scene+='<rect x="0" y="520" width="'+BW+'" height="'+(BH-520)+'" fill="'+deep+'"/>';
     let x=20;
     while(x<BW){
       const w=48+R()*76, h=70+R()*180;
-      art+='<rect x="'+x.toFixed(0)+'" y="'+(520-h).toFixed(0)+'" width="'+w.toFixed(0)+'" height="'+h.toFixed(0)+
+      scene+='<rect x="'+x.toFixed(0)+'" y="'+(520-h).toFixed(0)+'" width="'+w.toFixed(0)+'" height="'+h.toFixed(0)+
            '" fill="'+shade(deep,1.4)+'" opacity=".92"/>';
       for(let wy=520-h+14; wy<512; wy+=22){
         for(let wx=x+8; wx<x+w-8; wx+=18){
-          if(R()>0.55) art+='<rect x="'+wx.toFixed(0)+'" y="'+wy.toFixed(0)+'" width="5" height="7" fill="'+light+'" opacity=".5"/>';
+          if(R()>0.55) scene+='<rect x="'+wx.toFixed(0)+'" y="'+wy.toFixed(0)+'" width="5" height="7" fill="'+light+'" opacity=".5"/>';
         }
       }
       x+=w+12;
     }
   } else { /* fields / plains */
-    art+='<path d="'+ridgePath(452,26,9,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".65"/>';
-    art+='<rect x="0" y="492" width="'+BW+'" height="'+(BH-492)+'" fill="'+shade(mid,0.45)+'" opacity=".8"/>';
+    scene+='<path d="'+ridgePath(452,26,9,R,false)+'" fill="'+shade(mid,0.6)+'" opacity=".65"/>';
+    scene+='<rect x="0" y="492" width="'+BW+'" height="'+(BH-492)+'" fill="'+shade(mid,0.45)+'" opacity=".8"/>';
     for(let i=0;i<9;i++){
       const y=500+i*15;
-      art+='<path d="M0,'+y+' Q600,'+(y-9)+' '+BW+','+y+'" stroke="'+light+'" stroke-width="2" fill="none" opacity=".17"/>';
+      scene+='<path d="M0,'+y+' Q600,'+(y-9)+' '+BW+','+y+'" stroke="'+light+'" stroke-width="2" fill="none" opacity=".17"/>';
     }
-    art+=tree(950,556,1.5,shade(deep,0.8));
+    scene+=tree(950,556,1.5,shade(deep,0.8));
   }
 
   /* the cultural motif sits between sky and terrain, so the landscape overlaps
@@ -4864,23 +4941,41 @@ function landscapeSVG(region){
   const motif='<g opacity=".17" transform="translate('+mx+','+my+') scale(1.35)">'+
               motifSVG(region.id, light)+'</g>';
 
+  /* craft over the landscape, then a vignette so the type in the middle always sits
+     on the quietest part of the picture */
+  const weave = (A.craftKind!=='none' && A.craftOpacity>0)
+    ? '<rect width="'+BW+'" height="'+BH+'" fill="url(#cp'+uid+')" opacity="'+
+      A.craftOpacity.toFixed(3)+'"/>' : '';
+  const vignette = '<rect width="'+BW+'" height="'+BH+'" fill="url(#vig'+uid+')"/>';
+
   return '<svg viewBox="0 0 '+BW+' '+BH+'" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">'+
-         sky+motif+art+outline+'</svg>';
+         sky+motif+scene+outline+weave+vignette+'</svg>';
 }
 
 let bdFlip=false;
-function paintBackdrop(region){
+/* Two layers, crossfaded, so a change of station reads as a signal travelling rather
+   than a picture being replaced. Commissioned artwork is preferred where it exists;
+   otherwise the scene is drawn for this station in this programming mode. */
+let lastArtKey=null;
+function paintBackdrop(region, mKey){
   const a=document.getElementById('bdA'), b=document.getElementById('bdB');
-  if(!a||!b) return;
+  if(!a||!b||!region) return;
+  const mode = mKey || moodKey;
+  const art = artworkFor(region, mode, null);
+
+  /* nothing to repaint if the same world in the same light is already up */
+  const key = region.id+'/'+art.hour+'/'+art.craftKind+'/'+art.craftOpacity+'/'+(art.asset||'');
+  if(key===lastArtKey) return;
+  lastArtKey=key;
+
   const incoming=bdFlip?a:b, outgoing=bdFlip?b:a;
   bdFlip=!bdFlip;
-  const photo=PHOTOS[region.id];
-  if(photo){
+  if(art.asset){
     incoming.innerHTML='';
-    incoming.style.backgroundImage='url("'+photo+'")';
+    incoming.style.backgroundImage='url("'+art.asset+'")';
   }else{
     incoming.style.backgroundImage='none';
-    incoming.innerHTML=landscapeSVG(region);
+    incoming.innerHTML=landscapeSVG(region, art);
   }
   incoming.classList.add('on');
   outgoing.classList.remove('on');
@@ -6838,7 +6933,7 @@ function paintTrack(track,searching){
   try{
     if(current && current.id===AIR_ID && track && track.rid && track.rid!==airScene){
       const home=byId(track.rid);
-      if(home){ airScene=track.rid; paintBackdrop(home); }
+      if(home){ airScene=track.rid; paintBackdrop(home,moodKey); }
     }
   }catch(e){}
   document.getElementById('trackName').textContent=trackTitle(track);
@@ -7599,6 +7694,100 @@ async function prefetchAhead(){
   } finally { prefetching=false; }
 }
 
+/* ==========================================================================
+   ART DIRECTION
+        Station -> Region -> Artwork theme -> Variant (mood) -> Song
+   The scene is not one picture per state. Each region has a visual language - a craft
+   pattern, a palette and a terrain - and each programming mode is a variant of it:
+   a different hour of the day, a different weight of pattern, a different mood of
+   light. So Punjab at Radio Mix and Punjab at Classical are the same world seen
+   differently, which is what makes it feel like programming rather than a slideshow.
+
+   Every layer is drawn, not sourced: no image is fetched and no URL is invented. If
+   real artwork is commissioned later, drop it in per station or per station+mood and
+   the renderer prefers it without any other change:
+       ART.punjab.asset            = '/art/punjab.webp'
+       ART.punjab.moods.night.asset= '/art/punjab-night.webp'
+   ========================================================================== */
+
+/* The craft language of each region, used as a woven texture across the scene rather
+   than as an illustration pasted on top. */
+const CRAFT = {
+  phulkari:  {kind:'phulkari'},    /* Punjab, Haryana - darning stitch geometry */
+  alpona:    {kind:'alpona'},      /* Bengal - rice-paste floor drawing curves */
+  mural:     {kind:'mural'},       /* Kerala - temple mural bands */
+  miniature: {kind:'miniature'},   /* Rajasthan, MP - jaali lattice of the miniatures */
+  warli:     {kind:'warli'},       /* Maharashtra, DNH - triangle figures */
+  kolam:     {kind:'kolam'},       /* Tamil Nadu, Puducherry - dot lattice */
+  pattachitra:{kind:'patta'},      /* Odisha - border scroll */
+  bamboo:    {kind:'bamboo'},      /* North-east - woven cane */
+  ikat:      {kind:'ikat'},        /* Telangana, AP, Gujarat - blurred weft bands */
+  thangka:   {kind:'thangka'},     /* Ladakh, Sikkim - cloud scroll */
+  none:      {kind:'none'}
+};
+const REGION_CRAFT = {
+  punjab:'phulkari', haryana:'phulkari', chandigarh:'phulkari', delhi:'miniature',
+  wb:'alpona', tripura:'alpona', bihar:'alpona', jharkhand:'warli',
+  kerala:'mural', lakshadweep:'mural',
+  rajasthan:'miniature', mp:'miniature', up:'miniature', chhattisgarh:'warli',
+  maharashtra:'warli', dnhdd:'warli', goa:'warli',
+  tn:'kolam', puducherry:'kolam', karnataka:'kolam', andaman:'kolam',
+  odisha:'pattachitra',
+  assam:'bamboo', meghalaya:'bamboo', nagaland:'bamboo', mizoram:'bamboo',
+  manipur:'bamboo', arunachal:'bamboo',
+  telangana:'ikat', ap:'ikat', gujarat:'ikat',
+  ladakh:'thangka', sikkim:'thangka', jk:'thangka', hp:'thangka', uttarakhand:'thangka',
+  /* the curated stations borrow the language of the music rather than a place */
+  bollywood:'miniature', indie:'none', bengalirock:'alpona', hindiclassics:'miniature',
+  englishclassics:'none', shaadi:'phulkari', air:'miniature'
+};
+
+/* How each programming mode reads: the hour, how strongly the craft shows, and how
+   the palette leans. Nothing here is per-station, so a new station inherits the whole
+   system for free. */
+const ART_VARIANT = {
+  mymix:      {hour:'evening', craft:.16, warm:.06, contrast:1.00},
+  classical:  {hour:'dawn',    craft:.30, warm:.02, contrast:0.92},
+  devotional: {hour:'dawn',    craft:.26, warm:.08, contrast:0.94},
+  retro:      {hour:'dusk',    craft:.20, warm:.14, contrast:0.96},
+  folk:       {hour:'day',     craft:.28, warm:.12, contrast:1.04},
+  party:      {hour:'night',   craft:.12, warm:.10, contrast:1.12},
+  rap:        {hour:'night',   craft:.08, warm:-.06,contrast:1.10},
+  modern:     {hour:'dusk',    craft:.10, warm:-.02,contrast:1.06},
+  hits:       {hour:'day',     craft:.14, warm:.06, contrast:1.05},
+  chill:      {hour:'night',   craft:.18, warm:-.08,contrast:0.90}
+};
+
+/* The sky of each hour. The terrain underneath does not change - only the light. */
+const HOUR_SKY = {
+  dawn:    {top:0.62, mid:0.50, low:0.30, lamp:'#f2d9a8', lampOp:.30, lampY:0.30},
+  day:     {top:0.85, mid:0.66, low:0.34, lamp:'#fdf3d8', lampOp:.26, lampY:0.20},
+  evening: {top:0.70, mid:0.52, low:0.26, lamp:'#f0b978', lampOp:.32, lampY:0.34},
+  dusk:    {top:0.52, mid:0.40, low:0.22, lamp:'#e2895c', lampOp:.34, lampY:0.42},
+  night:   {top:0.34, mid:0.26, low:0.16, lamp:'#cfd8f5', lampOp:.22, lampY:0.22}
+};
+
+/* One place that answers: what should be on screen right now? */
+function artworkFor(region, mKey, track){
+  const cfg = (typeof ART!=='undefined' && ART[region.id]) || {};
+  const modeCfg = (cfg.moods && cfg.moods[mKey]) || {};
+  const variant = ART_VARIANT[mKey] || ART_VARIANT.mymix;
+  /* a commissioned image, if one has been supplied for this station or this mode */
+  const asset = modeCfg.asset || cfg.asset || PHOTOS[region.id] || null;
+  return {
+    asset: asset,
+    craftKind: CRAFT[modeCfg.craft || cfg.craft || REGION_CRAFT[region.id] || 'none'].kind,
+    craftOpacity: modeCfg.craftOpacity!=null ? modeCfg.craftOpacity : variant.craft,
+    hour: modeCfg.hour || variant.hour,
+    warm: variant.warm,
+    contrast: variant.contrast
+  };
+}
+
+/* Station artwork configuration. Empty by default - every station is fully described
+   by its region craft, palette and terrain - and here only to be overridden. */
+const ART = {};
+
 /* ---- the manifest ---------------------------------------------------------
    A radio should never search for a song at the moment you ask for it. Every track
    needs a playable source id, and the honest way to have one ready is to harvest the
@@ -7747,9 +7936,11 @@ function setMood(k){
   if(!MOODS[k]) return;
   moodKey=k;
   markMoodRow(k);
-  /* the station stays exactly where it is; only the transmission changes */
+  /* the station stays exactly where it is; only the transmission changes - which
+     includes the light it is transmitting in */
   const md=document.getElementById('stationMode');
   if(md) md.textContent=MOODS[k].n;
+  if(current) try{ paintBackdrop(current,k); }catch(e){}
   if(current) fire(recurate(),'re-curate');
   else toast(MOODS[k].n+' selected. Now pick a station.');
 }
