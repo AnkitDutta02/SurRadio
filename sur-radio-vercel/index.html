@@ -226,8 +226,8 @@
   .qrow.on{background:rgba(232,163,61,.14);}
   .qrow.on .tt{color:var(--gold);font-weight:600;}
   .qrow.on .num{color:var(--gold);}
-  .qrow.dead{opacity:.42;cursor:default;}
-  .qrow.dead:hover{background:transparent;transform:none;}
+  .qrow.dead{opacity:.42;}   /* still tappable, so a failed song can be retried */
+  .qrow.dead:hover{background:rgba(242,236,217,.05);}
   .qrow.dead .tt{text-decoration:line-through;text-decoration-thickness:1px;}
 
   .search{margin:0 18px 10px;}
@@ -931,7 +931,7 @@
       <div class="card pad moodcard" id="moodCard">
         <span class="lbl">Mood &mdash; the list refreshes completely</span>
         <div class="moods" id="moods"></div>
-        <p class="moodnote">This band is its own mood &mdash; pick a state on the map to choose one.</p>
+        <p class="moodnote" id="moodNote">This station is a mood in itself &mdash; tap a state on the map to use moods.</p>
       </div>
 
       <div class="card">
@@ -4806,6 +4806,15 @@ function markPreset(id){
   });
   const card=document.getElementById('moodCard');
   if(card) card.classList.toggle('inert',!!nat);
+  /* "This band..." did not fit Hindi Classics or Shaadi Season, so the line names
+     whichever station is actually on air. */
+  const note=document.getElementById('moodNote');
+  if(note){
+    const r=nat?byId(id):null;
+    note.textContent = r
+      ? r.name+' is a mood in itself \u2014 tap a state on the map to use moods.'
+      : 'This station is a mood in itself \u2014 tap a state on the map to use moods.';
+  }
 }
 
 const listEl=document.getElementById('stnlist');
@@ -5180,6 +5189,31 @@ function seedFor(region,mKey){
 const ICON_PLAY='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg>';
 const ICON_PAUSE='<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="7.6" y="5.4" width="3.5" height="13.2" rx="1.2" fill="currentColor"/><rect x="12.9" y="5.4" width="3.5" height="13.2" rx="1.2" fill="currentColor"/></svg>';
 
+/* Runs only once an error has been confirmed as belonging to the current selection. */
+function confirmedError(){
+  const t=queue[qi];
+  /* Another upload of the same song may well be embeddable, so try those before
+     writing the song off. */
+  if(t&&t.alts&&t.altI!=null&&t.altI+1<t.alts.length&&t.altI<3){
+    t.altI++;
+    t.vid=t.alts[t.altI];
+    loadVideo(t.vid);
+    return;
+  }
+  if(lastErrIdx===qi) return;           /* one error per row, not per event */
+  lastErrIdx=qi;
+  playErrors++;
+  markBad(qi);
+  renderQueue();
+  if(playErrors>=6){
+    veil(true,'Several songs could not be played');
+    setBar('These videos are blocked from embedding','Try another station or mood');
+    setQStatus('Paused \u00b7 too many blocked videos');
+    return;
+  }
+  fire(playAt(qi+1,playErrors),'skip after player error');
+}
+
 window.onYouTubeIframeAPIReady=function(){
   player=new YT.Player('ytplayer',{
     height:'100%',width:'100%',
@@ -5196,43 +5230,40 @@ window.onYouTubeIframeAPIReady=function(){
       onStateChange:function(e){
         if(e.data===YT.PlayerState.PLAYING){
           playing=true;syncPlayBtn();veil(false);startProg();
+          playedToken=loadToken;              /* this particular load did start */
           playErrors=0; lastErrIdx=-1;        /* a good play clears the error streak */
         }
         else if(e.data===YT.PlayerState.PAUSED){playing=false;syncPlayBtn();stopProg();}
-        else if(e.data===YT.PlayerState.ENDED){playing=false;stopProg();next();}
+        else if(e.data===YT.PlayerState.ENDED){playing=false;stopProg();next(false);}
       },
       /* Plenty of YouTube videos are blocked from embedding, and each block fires
          this. It used to call playAt with a fresh depth of zero, so the skip chain
          was unbounded: it walked the queue, hit the end, pulled in a newly shuffled
          batch and kept going - which is what made the list churn on its own.
          The streak is now counted, passed in as depth, and capped. */
+      /* Choosing song A, then B, then A again used to leave both crossed out. The
+         reason: abandoning A's load makes YouTube report an error for it moments
+         later, by which time the selection has moved - and the report was believed
+         immediately, so it condemned whichever row was selected by then.
+         Now an error has to still be true a moment later: if a newer load has begun,
+         or the video has started playing, the report belonged to something we
+         already walked away from and is discarded. */
       onError:function(e){
-        /* Ignore an error that belongs to a video we are no longer waiting on. */
-        let failedId=null;
-        try{ failedId=player&&player.getVideoData?player.getVideoData().video_id:null; }catch(_){ }
-        if(failedId&&activeVid&&failedId!==activeVid) return;
+        /* The player does not say which load failed, and reading the current token
+           here is useless because it has already advanced. Timing does tell us: a
+           report arriving within a moment of a brand-new load cannot belong to that
+           load - it is the previous one, which we abandoned. */
+        if(Date.now()-loadAt < 120) return;
 
-        const t=queue[qi];
-        /* Another upload of the same song may well be embeddable, so try those
-           before writing the song off. */
-        if(t&&t.alts&&t.altI!=null&&t.altI+1<t.alts.length&&t.altI<3){
-          t.altI++;
-          t.vid=t.alts[t.altI];
-          loadVideo(t.vid);
-          return;
-        }
-        if(lastErrIdx===qi) return;           /* one error per row, not per event */
-        lastErrIdx=qi;
-        playErrors++;
-        markBad(qi);
-        if(playErrors>=6){
-          veil(true,'Several songs could not be played');
-          setBar('These videos are blocked from embedding','Try another station or mood');
-          setQStatus('Paused \u00b7 too many blocked videos');
-          return;
-        }
-        fire(playAt(qi+1,playErrors),'skip after player error');
+        const tok=loadToken, row=loadRow;
+        setTimeout(function(){
+          if(tok!==loadToken) return;        /* a newer load replaced this one */
+          if(playedToken===tok) return;      /* this load did start after all */
+          if(row!==qi) return;               /* the selection moved on */
+          confirmedError();
+        },350);
       }
+
     }
   });
 };
@@ -5260,10 +5291,23 @@ if(FILE_ORIGIN){
    errors from the abandoned loads arrive after the queue has already moved on, and
    they were being blamed on whatever was selected by then - marking innocent songs
    unavailable and running the error count up until playback stopped. */
-let activeVid=null;
+let activeVid=null, loadToken=0, loadRow=-1, loadAt=0, playedToken=-1;
 function loadVideo(id){
   activeVid=id;
+  loadToken++;
+  loadRow=qi;
+  loadAt=Date.now();           /* when this particular load began */
   if(ytReady&&player&&player.loadVideoById) player.loadVideoById(id); else pendingVid=id;
+
+  /* If a load neither plays nor reports anything, treat it as failed after a while.
+     Without this, an error we correctly ignored as stale could leave things stuck. */
+  const tok=loadToken, row=loadRow;
+  setTimeout(function(){
+    if(tok!==loadToken||playedToken===tok||row!==qi) return;
+    confirmedError();
+  },9000);   /* generous: a cold start on mobile data can take several seconds, and
+                declaring a song dead while it is still buffering would be worse than
+                waiting. This only catches a load that reports nothing at all. */
 }
 function veil(show,msg){
   const v=document.getElementById('veil');
@@ -5462,10 +5506,10 @@ async function playPicked(i){
   /* Choosing a song by hand is a fresh start: it should not inherit an error streak
      from earlier attempts, otherwise a few blocked songs leave the player stuck. */
   playErrors=0; lastErrIdx=-1; dupSkips=0;
-  return await playAt(i);
+  return await playAt(i,0,true);
 }
 
-async function playAt(i,depth){
+async function playAt(i,depth,manual){
   if(!queue.length||!current) return;
   depth=depth||0;
   if(i<0) i=0;
@@ -5539,7 +5583,11 @@ async function playAt(i,depth){
      Capped: if several in a row resolve to the same thing we stop skipping and
      just play it, otherwise one repeated video could walk the whole queue and
      trigger a needless re-fetch. */
-  if(playedVids.has(id) && i+1<queue.length && dupSkips<3){
+  /* Choosing a song by hand is never a repeat. Without this, playing A, then B, then
+     A again hit the duplicate guard on the second visit to A - the video was already
+     in the played set - so A was marked unavailable and skipped. That is exactly the
+     "both songs get crossed out" behaviour. */
+  if(!manual && playedVids.has(id) && i+1<queue.length && dupSkips<3){
     dupSkips++;
     track.bad=true; renderQueue();
     return await playAt(i+1,depth+1);
@@ -5664,7 +5712,9 @@ function renderQueue(){
       /* the index moves as the queue changes, so resolve it at click time */
       node.addEventListener('click',function(){
         const at=queue.indexOf(t);
-        if(at<0||t.bad||at===qi) return;      /* already playing: leave it be */
+        if(at<0||at===qi) return;             /* already playing: leave it be */
+        /* A row marked unavailable can still be tapped: playAt clears the mark and
+           tries the other uploads of that song, so a wrong call is recoverable. */
         buzz(PICK);
         fire(playPicked(at),'queue click');
       });
@@ -5694,8 +5744,8 @@ function renderQueue(){
   }
   el.scrollTop=scrollWas;      /* never yank the listener back to the top */
 }
-function next(){ playErrors=0; lastErrIdx=-1; fire(playAt(qi+1),'next'); }
-function prev(){ playErrors=0; lastErrIdx=-1; fire(playAt(Math.max(0,qi-1)),'prev'); }
+function next(manual){ playErrors=0; lastErrIdx=-1; fire(playAt(qi+1,0,manual===true),'next'); }
+function prev(){ playErrors=0; lastErrIdx=-1; fire(playAt(Math.max(0,qi-1),0,true),'prev'); }
 
 /* ============================ CONTROLS =================================== */
 const moodsEl=document.getElementById('moods');
@@ -5722,7 +5772,7 @@ document.getElementById('playBtn').addEventListener('click',function(){
   if(!player||!player.playVideo) return;
   if(playing) player.pauseVideo(); else player.playVideo();
 });
-document.getElementById('nextBtn').addEventListener('click',function(){buzz(TAP);next();});
+document.getElementById('nextBtn').addEventListener('click',function(){buzz(TAP);next(true);});
 document.getElementById('prevBtn').addEventListener('click',function(){buzz(TAP);prev();});
 document.getElementById('randomBtn').addEventListener('click',()=>fire(tune(pick(REGIONS).id),'tune'));
 document.getElementById('shuffleBtn').addEventListener('click',function(){
@@ -5802,7 +5852,7 @@ progWrap.addEventListener('keydown',function(e){
 document.addEventListener('keydown',function(e){
   if(e.target&&e.target.matches&&e.target.matches('input,textarea,button')) return;
   if(e.code==='Space'){ e.preventDefault(); document.getElementById('playBtn').click(); }
-  if(e.key==='ArrowRight') next();
+  if(e.key==='ArrowRight') next(true);
   if(e.key==='ArrowLeft') prev();
 });
 
