@@ -190,8 +190,17 @@
   .eq i:nth-child(4){animation-delay:.36s} .eq i:nth-child(5){animation-delay:.48s}
   @keyframes bob{0%,100%{height:5px}50%{height:19px}}
 
-  .np-track{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;line-height:1.25;margin:13px 0 3px;}
-  .np-artist{font-size:.85rem;color:var(--paper);opacity:.8;margin:0 0 7px;}
+  /* Titles run to 40 characters and artist lines to 47, so both are clamped with a
+     reserved height: a long title wraps elegantly instead of pushing the controls. */
+  /* Titles run to 40 characters and artist lines to 47, so both reserve their space:
+     a long title wraps within its own box instead of pushing the controls down. */
+  .np-track{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;
+    line-height:1.3;margin:13px 0 3px;min-height:2.6em;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    text-wrap:balance;}
+  .np-artist{font-size:.85rem;color:var(--paper);opacity:.8;margin:0 0 7px;
+    line-height:1.35;min-height:1.35em;
+    display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
   .np-why{font-size:.8rem;color:var(--dim);line-height:1.5;margin:0;}
   .np-idle{text-align:center;padding:10px 4px 4px;}
   .np-idle p{color:var(--dim);font-size:.87rem;line-height:1.6;margin:0 0 14px;}
@@ -464,29 +473,55 @@
   .on-air .sig i:nth-child(5){animation-delay:.6s;}
   @keyframes sigbar{0%,100%{height:3px;}50%{height:11px;}}
 
+  /* THE FIX for station switching moving the page.
+     Station names run from "Goa" to "Dadra & Nagar Haveli and Daman & Diu", so at a
+     fixed type size the heading took one, two or three lines depending on which
+     station was on air - and everything below it moved by up to 80px. Two rules
+     together remove that: the block reserves a constant height whatever it contains,
+     and the name is auto-fitted to its own length so it never needs a third line. */
+  .station-head{min-height:124px;display:flex;flex-direction:column;
+    justify-content:center;align-items:flex-start;}
   .station-name{font-family:'Fraunces',serif;font-weight:600;font-size:2.5rem;
-    line-height:1.02;letter-spacing:-.02em;margin:0 0 7px;color:var(--paper);}
-  .station-sub{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+    line-height:1.05;letter-spacing:-.02em;margin:0 0 7px;color:var(--paper);
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+    overflow:hidden;text-wrap:balance;max-width:100%;}
+  /* sized by name length, so the longest name fits two lines in any container */
+  .station-name[data-fit="l"]{font-size:2.1rem;}
+  .station-name[data-fit="xl"]{font-size:1.75rem;line-height:1.1;}
+  .station-name[data-fit="xxl"]{font-size:1.4rem;line-height:1.18;letter-spacing:-.01em;}
+  /* the frequency row never wraps, so it cannot add a line of its own */
+  .station-sub{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;
+    flex-wrap:nowrap;width:100%;}
   .station-freq{font-family:'IBM Plex Mono',monospace;font-size:1.02rem;font-weight:600;
     color:var(--gold);letter-spacing:.02em;}
   .station-mhz{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.16em;
     color:var(--dim);text-transform:uppercase;}
   .station-script{margin-left:auto;font-size:.95rem;color:rgba(242,236,217,.35);
-    letter-spacing:.02em;}
+    letter-spacing:.02em;flex:none;max-width:44%;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
   /* the descriptor line, in small caps like a band label */
   .np-place{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.17em;
-    text-transform:uppercase;color:rgba(242,236,217,.62);margin:0 0 15px;line-height:1.7;}
+    text-transform:uppercase;color:rgba(242,236,217,.62);margin:0;line-height:1.7;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
   /* the frequency ticking while a station is being found */
   .station-freq.scanning{color:var(--paper);opacity:.75;}
 
   @media (max-width:760px){
-    .station-name{font-size:2.1rem;}
+    .station-head{min-height:110px;}
+    .station-name{font-size:2.05rem;}
+    .station-name[data-fit="l"]{font-size:1.75rem;}
+    .station-name[data-fit="xl"]{font-size:1.5rem;}
+    .station-name[data-fit="xxl"]{font-size:1.22rem;}
     .station-script{font-size:.85rem;}
     .np-place{font-size:.55rem;letter-spacing:.14em;}
   }
   @media (max-width:380px){
-    .station-name{font-size:1.85rem;}
+    .station-head{min-height:104px;}
+    .station-name{font-size:1.8rem;}
+    .station-name[data-fit="l"]{font-size:1.55rem;}
+    .station-name[data-fit="xl"]{font-size:1.34rem;}
+    .station-name[data-fit="xxl"]{font-size:1.12rem;}
   }
 
   /* ===================== SEARCH ========================================== */
@@ -890,7 +925,7 @@
         </span>
       </button>
       <p class="knob-cap">Turn the dial</p>
-      <p class="land-station"><b>ALL INDIA RADIO</b><span>88.0 MHz &middot; every tongue</span></p>
+      <p class="land-station"><b>ALL INDIA RADIO</b><span>88.0 MHz &middot; every language</span></p>
     </div>
   </div>
 </div>
@@ -976,12 +1011,14 @@
             <span class="sig" id="sigBars"><i></i><i></i><i></i><i></i><i></i></span>
             <span class="onair-net">SUR NETWORK</span>
           </div>
-          <h2 class="station-name" id="stationName">&mdash;</h2>
-          <div class="station-sub">
-            <span class="station-freq" id="freq">&mdash;</span><span class="station-mhz">MHz</span>
-            <span class="station-script" id="stationScript"></span>
+          <div class="station-head" id="stationHead">
+            <h2 class="station-name" id="stationName">&mdash;</h2>
+            <div class="station-sub">
+              <span class="station-freq" id="freq">&mdash;</span><span class="station-mhz">MHz</span>
+              <span class="station-script" id="stationScript"></span>
+            </div>
+            <p class="np-place" id="place">&mdash;</p>
           </div>
-          <p class="np-place" id="place">&mdash;</p>
           <div class="deck">
             <div class="platter" id="platter">
               <div class="disc-glow"><div id="ytplayer"></div></div>
@@ -5858,6 +5895,31 @@ function scanTo(target){
   },52);
 }
 
+/* Every part of the station header comes from one station object in one pass, so the
+   name, dial, script, descriptor and artwork can never be a frame out of step with
+   each other during a switch. */
+function renderStation(region){
+  if(!region) return;
+  const nameEl=document.getElementById('stationName');
+  if(nameEl){
+    nameEl.textContent=region.name;
+    /* auto-fit by length: the longest name is 36 characters, the shortest is 3 */
+    const n=region.name.length;
+    nameEl.setAttribute('data-fit', n<=13 ? 'm' : n<=18 ? 'l' : n<=26 ? 'xl' : 'xxl');
+  }
+  const f=document.getElementById('freq');
+  if(f) f.textContent=region.freq||'--';
+  const sc=document.getElementById('stationScript');
+  if(sc) sc.textContent=region.script||'';
+  const pl=document.getElementById('place');
+  /* the descriptor is the station's character line; the language list is the fallback */
+  if(pl) pl.textContent=region.desc||(region.name+' \u00b7 '+region.lang);
+  const vs=document.getElementById('vstate');
+  if(vs) vs.textContent=(region.name||'SUR RADIO').toUpperCase();
+  const vf=document.getElementById('vfreq');
+  if(vf) vf.textContent=region.freq||'--';
+}
+
 function statusLabel(region,mk){
   const n=queue.length+(queue.length===1?' song':' songs');
   if(region&&region.zone==='national') return n;
@@ -5884,11 +5946,7 @@ async function tune(id,opts){
   document.getElementById('mapHint').textContent=region.freq+' MHZ \u00b7 '+region.name.toUpperCase();
   document.getElementById('npIdle').style.display='none';
   document.getElementById('npLive').style.display='block';
-  document.getElementById('freq').textContent=region.freq||'--';
-  document.getElementById('stationName').textContent=region.name;
-  document.getElementById('stationScript').textContent=region.script||'';
-  /* the descriptor is the station's character line; the language list is the fallback */
-  document.getElementById('place').textContent=region.desc||(region.name+' \u00b7 '+region.lang);
+  renderStation(region);
   document.getElementById('vfreq').textContent=region.freq||'--';
   document.getElementById('vstate').textContent=region.name;
   const vl=document.getElementById('vlabel');
