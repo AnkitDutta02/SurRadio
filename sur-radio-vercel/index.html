@@ -512,6 +512,11 @@
     color:var(--gold);letter-spacing:.02em;}
   .station-mhz{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.16em;
     color:var(--dim);text-transform:uppercase;}
+  /* the station is where you are; the mode is what it is broadcasting */
+  .station-sep{color:rgba(242,236,217,.25);font-size:.8rem;margin:0 1px;}
+  .station-mode{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.16em;
+    color:rgba(242,236,217,.72);text-transform:uppercase;white-space:nowrap;
+    max-width:48%;overflow:hidden;text-overflow:ellipsis;}
   /* the state's own name, directly under the English one, so the two read as a pair
      rather than the script looking like a stray glyph at the end of a row */
   .station-script{font-size:1.02rem;line-height:1.3;color:rgba(232,163,61,.62);
@@ -549,6 +554,8 @@
      used to make the page longer now lives in a panel that scrolls on its own. */
   html,body{height:100%;}
   body.staged{overflow:hidden;}
+  /* while the drawer is open nothing behind it may move */
+  body.drawer-open{overflow:hidden;touch-action:none;}
   /* one height for the player, referenced by the shell and by the panel, so the two
      can never disagree about where the protected region begins */
   :root{--player-h:86px;}
@@ -639,13 +646,26 @@
     .stage-main{padding:0 calc(16px + env(safe-area-inset-right)) 104px
       calc(16px + env(safe-area-inset-left));}
     /* a sheet from the bottom reads better than a side drawer on a phone */
-    /* a near full screen sheet on a phone, still stopping above the player */
-    .panel{top:8px;left:0;right:0;width:auto;height:auto;bottom:var(--player-h);
-      border-left:none;border-top:1px solid rgba(242,236,217,.16);
-      border-radius:18px 18px 0 0;transform:translateY(103%);
-      box-shadow:0 -30px 70px -30px rgba(0,0,0,.85);}
+    /* On a phone this is a full-screen overlay, not a sheet attached to the page.
+       It was bottom:var(--player-h) with height:auto, which on Safari collapsed to
+       little more than its own header. Fixed to the dynamic viewport with the safe
+       areas respected, so browser chrome cannot mis-place it. */
+    .panel{position:fixed;inset:0;width:auto;height:100dvh;max-height:100dvh;
+      z-index:80;border-radius:0;border-left:none;
+      border-top:1px solid rgba(242,236,217,.16);
+      transform:translateY(100%);
+      padding-top:env(safe-area-inset-top);
+      padding-bottom:env(safe-area-inset-bottom);
+      box-shadow:none;}
+    @supports not (height:100dvh){ .panel{height:100vh;max-height:100vh;} }
+    .panel.open{transform:none;}
+    /* it covers the stage completely, so the veil beneath it is redundant */
+    .panel-veil{display:none;}
     .panel.open{transform:none;}
     .panel-head{padding:16px 15px 11px;}
+    /* the drawer is full screen on a phone, so it carries its own way back */
+    .panel-close{width:38px;height:38px;display:flex;align-items:center;
+      justify-content:center;font-size:1.7rem;}
   }
 
 
@@ -1010,7 +1030,8 @@
   .deck{position:relative;padding:6px 0 2px;display:flex;justify-content:center;}
   /* one expression rather than a ladder of height breakpoints: the record is always
      the thing that gives up room first, so the station identity above it survives */
-  .platter{position:relative;width:min(268px,72vw,26vh);aspect-ratio:1;border-radius:50%;
+  .platter{position:relative;container-type:inline-size;
+    width:min(268px,72vw,26vh);aspect-ratio:1;border-radius:50%;
     background:radial-gradient(circle at 50% 50%, #2a2f52 0 6%, #14162c 6% 100%);
     box-shadow:0 22px 44px -18px rgba(0,0,0,.85), inset 0 0 0 1px rgba(242,236,217,.07);
     display:flex;align-items:center;justify-content:center;}
@@ -1030,16 +1051,27 @@
   @keyframes spin{to{transform:rotate(360deg);}}
   .vinyl::after{content:"";position:absolute;inset:0;border-radius:50%;
     background:conic-gradient(from 210deg, transparent 0 12%, rgba(242,236,217,.11) 18%, transparent 26% 100%);}
+  /* A pressed record label: about a third of the disc, with its own inner padding and
+     the spindle kept clear of the type. Sized from the record itself with container
+     units, so it stays proportional from a phone to a desktop rather than being a
+     desktop font that overwhelms a small disc. The MHz is not repeated - the dial
+     reading above the record already says it. */
   .vlabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;
-    width:41%;aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;z-index:3;
-    background:var(--gold);color:#141021;box-shadow:0 3px 14px -4px rgba(0,0,0,.7);padding:6px;}
-  .vlabel b{font-family:'Fraunces',serif;font-size:1.34rem;line-height:1;font-weight:700;}
-  .vlabel i{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.44rem;letter-spacing:.13em;opacity:.75;margin-top:2px;}
-  .vlabel span{font-family:'IBM Plex Mono',monospace;font-size:.46rem;letter-spacing:.07em;
-    margin-top:4px;line-height:1.25;max-width:95%;text-transform:uppercase;font-weight:600;}
-  .spindle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    width:9px;height:9px;border-radius:50%;background:#0d1024;z-index:4;box-shadow:0 0 0 2px rgba(242,236,217,.18);}
+    width:32%;aspect-ratio:1;border-radius:50%;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:11% 9% 13%;box-sizing:border-box;overflow:hidden;
+    background:radial-gradient(circle at 50% 42%, #f4ead2 0%, #e7d9ba 72%, #d6c69f 100%);
+    color:#2a2233;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16), 0 1px 5px rgba(0,0,0,.4);}
+  .vlabel b{font-family:'Fraunces',serif;font-weight:700;line-height:.95;
+    font-size:clamp(9px, 30cqw, 21px);letter-spacing:-.01em;}
+  .vlabel span{font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:clamp(4.5px, 11cqw, 8px);letter-spacing:.1em;line-height:1.25;
+    text-transform:uppercase;margin-top:9%;opacity:.72;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  /* the centre hole belongs to the record, not to the text: it sits under the label
+     copy so the two never collide */
+  .spindle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;
+    width:7px;height:7px;border-radius:50%;background:#0d1024;z-index:4;box-shadow:0 0 0 2px rgba(242,236,217,.18);}
   .tonearm{position:absolute;top:5%;right:-2%;width:47%;height:6px;z-index:5;
     transform-origin:calc(100% - 9px) 50%;transform:rotate(-32deg);
     transition:transform 1.1s cubic-bezier(.4,.1,.3,1);pointer-events:none;}
@@ -1365,6 +1397,8 @@
             <p class="station-script" id="stationScript"></p>
             <div class="station-sub">
               <span class="station-freq" id="freq">&mdash;</span><span class="station-mhz">MHz</span>
+              <span class="station-sep">/</span>
+              <span class="station-mode" id="stationMode">Radio Mix</span>
             </div>
             <p class="np-place" id="place">&mdash;</p>
           </div>
@@ -1373,7 +1407,7 @@
               <div class="disc-glow"><div id="ytplayer"></div></div>
               <div class="vinyl"></div>
               <div class="vlabel" id="vlabel">
-                <b id="vfreq">&mdash;</b><i>MHZ</i><span id="vstate">SUR RADIO</span>
+                <b id="vfreq">&mdash;</b><span id="vstate">SUR RADIO</span>
               </div>
               <div class="spindle"></div>
               <div class="disc-veil" id="veil">
@@ -6356,6 +6390,12 @@ function loadVideo(id){
   /* If a load neither plays nor reports anything, treat it as failed after a while.
      Without this, an error we correctly ignored as stale could leave things stuck. */
   const tok=loadToken, row=loadRow;
+  /* if it has not started shortly after loading, that is almost always the autoplay
+     policy rather than a broken video: invite a tap instead of showing an error */
+  setTimeout(function(){
+    if(tok!==loadToken||playedToken===tok||row!==qi) return;
+    try{ offerTapToListen(); }catch(e){}
+  },1400);
   setTimeout(function(){
     if(tok!==loadToken||playedToken===tok||row!==qi) return;
     confirmedError();
@@ -6457,6 +6497,8 @@ function renderStation(region){
   const vf=document.getElementById('vfreq');
   if(vf) vf.textContent=region.freq||'--';
   /* Explore India shows what you are currently tuned to, above the map */
+  const md=document.getElementById('stationMode');
+  if(md) md.textContent=(MOODS[moodKey]?MOODS[moodKey].n:'Radio Mix');
   const en=document.getElementById('exploreNow');
   if(en) en.textContent=(region.freq||'--')+' MHz \u00b7 '+region.name.toUpperCase();
 }
@@ -6518,7 +6560,7 @@ async function tune(id,opts){
      show it twice in quick succession. Just set the status. */
   setQStatus(opts.first?'Requested \u00b7 then '+region.name:statusLabel(region,moodKey));
   fire(hydrateTitles(),'hydrate titles');
-  veil(true,'Finding the song...');
+  veil(true,'Tuning\u2026');
   setBar('Tuning in...',region.name);
   fire(playAt(0),'first track');
 
@@ -6673,7 +6715,7 @@ async function playAt(i,depth,manual){
     return;
   }
 
-  paintTrack(track,true); veil(true,'Finding the song...');
+  paintTrack(track,true); veil(true,'Tuning\u2026');
   /* A track chosen from YouTube search already knows its video. Placeholder rows
      go through resolveFull so the listener sees the actual song name instead of
      "Bhojpuri song". Real titles keep the name we wrote. */
@@ -6802,7 +6844,7 @@ function paintTrack(track,searching){
   document.getElementById('trackName').textContent=trackTitle(track);
   document.getElementById('trackArtist').textContent=trackArtist(track);
   document.getElementById('trackWhy').textContent=track.w||current.genres;
-  setBar(searching?'Finding "'+track.t+'"...':trackTitle(track),
+  setBar(searching?'Tuning\u2026':trackTitle(track),
     trackArtist(track)+' \u00b7 '+current.name+' \u00b7 '+MOODS[moodKey].n);
 }
 let uidSeq=0;
@@ -6908,6 +6950,17 @@ MOOD_KEYS.forEach(function(k){
   b.addEventListener('click',function(){ buzz(TAP); setMood(k); });
   moodsEl.appendChild(b);
 });
+/* A browser may refuse audible autoplay until the listener touches the page. That is
+   the browser's rule and we do not fight it: the song stays selected and preloaded and
+   the bar simply invites a tap, which then plays with no further wait. */
+function offerTapToListen(){
+  if(playing) return;
+  const t=document.getElementById('barTitle');
+  const sb=document.getElementById('barSub');
+  if(t) t.textContent='Tap to listen';
+  if(sb&&current) sb.textContent=current.name+' \u00b7 '+(current.freq||'')+' MHz \u00b7 ready';
+}
+
 document.getElementById('playBtn').addEventListener('click',function(){
   buzz(TAP);
   if(!current){ fire(tune(AIR_ID),'tune'); return; }
@@ -7546,6 +7599,48 @@ async function prefetchAhead(){
   } finally { prefetching=false; }
 }
 
+/* ---- the manifest ---------------------------------------------------------
+   A radio should never search for a song at the moment you ask for it. Every track
+   needs a playable source id, and the honest way to have one ready is to harvest the
+   ids once, at build time, and ship them: tools/build-manifest.js writes
+   public/manifest.json, which is loaded here and seeded into the resolve cache before
+   anything plays. With it present there is no runtime lookup at all.
+   Without it the app still works - it falls back to resolving on demand and
+   remembering the result - so a fresh deployment is never broken, just slower on the
+   first listen of each track. */
+let manifestReady=false;
+async function loadManifest(){
+  try{
+    const r=await fetch('manifest.json',{cache:'force-cache'});
+    if(!r.ok) return;
+    const m=await r.json();
+    let n=0;
+    Object.keys(m||{}).forEach(function(key){
+      const v=m[key];
+      const id=typeof v==='string'?v:(v&&v.id);
+      if(!id) return;
+      ResolveCache.put(key,id,(v&&v.alts)||[id]);
+      n++;
+    });
+    manifestReady=n>0;
+    if(n) console.info('[Sur Radio] manifest: '+n+' sources known up front');
+  }catch(e){ /* no manifest shipped: resolve on demand as before */ }
+}
+
+/* The first song should be ready before the listener asks for it, so the dial on the
+   landing screen has something to play the instant it is turned. */
+async function warmFirstTrack(){
+  try{
+    const region=byId(AIR_ID);
+    if(!region) return;
+    const first=programStation(region,'mymix',3)[0];
+    if(!first||!first.key) return;
+    if(ResolveCache.get(first.key)) return;      /* already known */
+    const found=await resolveFull(searchPhrase(first,region));
+    if(found) ResolveCache.put(first.key,found.id,found.alts||[found.id]);
+  }catch(e){}
+}
+
 /* ---- the frequency dial ---------------------------------------------------
    One renderer for every station type, because the brief is explicit that regional
    and curated stations must not have separate implementations. They differ only in
@@ -7652,6 +7747,9 @@ function setMood(k){
   if(!MOODS[k]) return;
   moodKey=k;
   markMoodRow(k);
+  /* the station stays exactly where it is; only the transmission changes */
+  const md=document.getElementById('stationMode');
+  if(md) md.textContent=MOODS[k].n;
   if(current) fire(recurate(),'re-curate');
   else toast(MOODS[k].n+' selected. Now pick a station.');
 }
@@ -7766,6 +7864,10 @@ renderFreqList();
 renderCollections();
 renderMoodList();
 
+/* First audio beats everything else: the manifest and the opening track are fetched
+   immediately, while the map and the rest of the console can arrive whenever. */
+fire(loadManifest().then(warmFirstTrack),'warm first track');
+
 const TunePanel = (function(){
   const panel = document.getElementById('tunePanel');
   const veil  = document.getElementById('panelVeil');
@@ -7778,6 +7880,8 @@ const TunePanel = (function(){
     if(!panel) return;
     panel.classList.toggle('open',open);
     panel.setAttribute('aria-hidden',open?'false':'true');
+    /* nothing behind the drawer may scroll while it is up */
+    document.body.classList.toggle('drawer-open',open);
     if(btn) btn.setAttribute('aria-expanded',open?'true':'false');
     if(veil){
       if(open){ veil.hidden=false; requestAnimationFrame(()=>veil.classList.add('show')); }
