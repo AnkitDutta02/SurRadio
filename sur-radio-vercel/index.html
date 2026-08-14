@@ -578,7 +578,7 @@
      height fixes it at any window size. */
   .stage-main{grid-row:2;min-height:0;display:flex;align-items:flex-start;
     container-type:size;
-    justify-content:center;padding:0 calc(20px + env(safe-area-inset-right)) 12px
+    justify-content:center;padding:0 calc(20px + env(safe-area-inset-right)) calc(var(--player-h) + 18px)
     calc(20px + env(safe-area-inset-left));}
   .stage-main .np{margin-top:auto;margin-bottom:auto;}
   /* the hero is no longer a card; it is the stage itself */
@@ -1418,7 +1418,7 @@
               <div class="platter-ring" id="platterRing"></div>
               <div class="vinyl"></div>
               <div class="vlabel" id="vlabel">
-                <b id="vfreq">&mdash;</b><span id="vstate">SUR RADIO</span>
+                <span id="vstate"></span>
               </div>
               <div class="spindle"></div>
               <div class="disc-veil" id="veil">
@@ -6613,8 +6613,7 @@ function renderStation(region){
   /* Do not show the station name on the vinyl label; keep only the frequency there. */
   const vs=document.getElementById('vstate');
   if(vs) vs.textContent='';
-  const vf=document.getElementById('vfreq');
-  if(vf) vf.textContent=region.freq||'--';
+  /* vinyl label intentionally left blank (no station name or frequency) */
   /* Explore India shows what you are currently tuned to, above the map */
   const md=document.getElementById('stationMode');
   if(md) md.textContent=(MOODS[moodKey]?MOODS[moodKey].n:'Radio Mix');
@@ -6655,7 +6654,7 @@ async function tune(id,opts){
   document.getElementById('npIdle').style.display='none';
   document.getElementById('npLive').style.display='block';
   renderStation(region);
-  document.getElementById('vfreq').textContent=region.freq||'--';
+  /* no center frequency shown on the vinyl */
   const vl=document.getElementById('vlabel');
   if(vl) vl.style.background=ZONES[region.zone].c;
   paintBackdrop(region);
@@ -7074,11 +7073,9 @@ MOOD_KEYS.forEach(function(k){
    the browser's rule and we do not fight it: the song stays selected and preloaded and
    the bar simply invites a tap, which then plays with no further wait. */
 function offerTapToListen(){
-  if(playing) return;
-  /* Do not overwrite the transport bar with a tap affordance — listeners
-     tap the large play button on the platter. Show a persistent toast until
-     the user taps the main play button. */
-  toast('Tap the big play button to start listening', true);
+  /* No-op: do not show a tap-to-listen prompt — users tap the platter play
+     button. This avoids confusing the bottom transport bar. */
+  return;
 }
 
 /* Update the small map tap hint: when music is playing show the current track,
