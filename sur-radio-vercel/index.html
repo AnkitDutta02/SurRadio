@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Sur Radio — Real music from every state of India</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +24,13 @@
      out, so the overflow is pinned on html as well as body - hiding it on body
      alone is not enough there. */
   html{overflow-x:hidden;max-width:100%;}
+  /* I have now chased this drift through several individual elements, so rather than
+     keep hardening them one at a time: pan-y tells the browser this page scrolls
+     vertically only, so a stray overflow anywhere cannot be panned into view, and
+     overscroll-behavior-x stops the rubber-band that leaves it stuck there. */
+  body{touch-action:pan-y;overscroll-behavior-x:none;}
+  /* the fixed transport bar must never contribute to document width */
+  .bar{overflow:hidden;}
   html.locked,body.locked{overflow:hidden;height:100%;}
   body{
     background:transparent;
@@ -274,7 +281,8 @@
   .bar-info .t{font-size:.86rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .bar-info .s{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .vol{display:flex;align-items:center;gap:8px;flex:none;}
-  .vol input{width:92px;accent-color:var(--gold);}
+  /* a range input is dragged sideways, so it opts out of the page-level pan-y */
+  .vol input{width:92px;accent-color:var(--gold);touch-action:manipulation;}
   .ghost .ico{display:none;}
   @media (max-width:760px){
     .vol{display:none;}
@@ -406,6 +414,7 @@
     color:var(--paper);caret-color:var(--gold);
     font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;letter-spacing:.01em;
     padding:12px 0;}
+  @media (max-width:760px){ .searchbox input,input,textarea,select{font-size:16px;} }
   .searchbox input::placeholder{color:rgba(242,236,217,.38);}
   .searchbox input::-webkit-search-cancel-button,
   .searchbox input::-webkit-search-decoration,
@@ -721,7 +730,10 @@
     .mood b{font-size:.64rem;}
     .mood i{font-size:.46rem;}
     .searchcard{padding:11px 12px;}
-    .searchbox input{font-size:.85rem;padding:11px 0;}
+    /* Safari on iOS zooms the page whenever a focused field is under 16px, and the
+       page is left panned sideways afterwards. 16px exactly keeps the zoom away
+       without changing how the field looks much. */
+    .searchbox input{font-size:16px;padding:11px 0;}
     .queue{max-height:196px;padding:0 13px 13px;}
     .stnlist{max-height:210px;padding:0 13px 13px;}
     .search{margin:0 13px 9px;}
@@ -6159,6 +6171,30 @@ function enterStation(){
 }
 /* Scrolling the list asks for the next batch of names, so lookups stay in proportion
    to what is actually being looked at rather than resolving hundreds of rows up front. */
+/* Belt and braces. Any single stray element - now or after a future change - can let
+   iOS pan the document sideways, and once it does the whole page looks broken. This
+   notices a horizontal offset and puts it back, which is cheap and invisible when
+   nothing is wrong. */
+(function keepHorizontallyPut(){
+  let fixing=false;
+  function reset(){
+    if(fixing) return;
+    const el=document.scrollingElement||document.documentElement;
+    const off=(el&&el.scrollLeft)||window.pageXOffset||0;
+    if(off>0){
+      fixing=true;
+      if(el) el.scrollLeft=0;
+      if(window.scrollTo) window.scrollTo(0,window.pageYOffset||0);
+      fixing=false;
+    }
+  }
+  window.addEventListener('scroll',reset,{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(reset,260));
+  window.addEventListener('resize',()=>setTimeout(reset,120));
+  document.addEventListener('focusout',()=>setTimeout(reset,60));
+  setInterval(reset,1200);
+})();
+
 (function(){
   const q=document.getElementById('queue');
   if(!q) return;
