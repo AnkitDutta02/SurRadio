@@ -34,9 +34,10 @@
   .card-head > *, .head-right > *, .bar-in > *, .bar-info > *,
   .searchbox > *, .qrow > *, .srow > *, .sres > *, .preset > *,
   .legend > *, .presets-row > *, .np > *, .deck > *{min-width:0;}
-  /* and nothing inside the page may be wider than the page itself, except the
-     deliberately oversized video behind the record */
-  .shell :not(svg):not(svg *):not(.disc-glow):not(.disc-glow *){max-width:100%;}
+  /* A blanket max-width guard used to live here. It outranked every deliberate
+     max-width in the stylesheet - the tagline's 46ch among them - and stretched
+     things that were meant to be narrow. The min-width:0 sweep above plus
+     overflow-x on html already prevent sideways overflow, so it is not needed. */
   /* I have now chased this drift through several individual elements, so rather than
      keep hardening them one at a time: pan-y tells the browser this page scrolls
      vertically only, so a stray overflow anywhere cannot be panned into view, and
@@ -56,12 +57,16 @@
   .shell{max-width:1400px;margin:0 auto;overflow-x:clip;
     padding:0 calc(24px + env(safe-area-inset-right)) 132px calc(24px + env(safe-area-inset-left));}
 
-  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 14px;flex-wrap:wrap;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 10px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:11px;}
   .brand svg{width:32px;height:32px;flex:none;}
   .brand-name{font-family:'Fraunces',serif;font-weight:700;font-size:1.3rem;line-height:1;}
   .brand-name small{display:block;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:.55rem;letter-spacing:.17em;color:var(--dim);margin-top:4px;}
-  .tagline{font-size:.86rem;color:var(--dim);max-width:46ch;line-height:1.5;}
+  /* Sits under the header as its own line, left-aligned with the brand, rather than
+     drifting to the far right of a wide screen. */
+  .tagline{font-size:.84rem;color:var(--dim);max-width:62ch;line-height:1.55;
+    margin:-4px 0 16px;}
+  .tagline b{color:var(--paper);font-weight:600;}
 
   .grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
   @media (max-width:1040px){
@@ -735,7 +740,7 @@
     .brand svg{width:28px;height:28px;}
     .brand-name{font-size:1.12rem;}
     .brand-name small{font-size:.5rem;letter-spacing:.14em;}
-    .tagline{font-size:.78rem;line-height:1.5;}
+    .tagline{font-size:.78rem;line-height:1.5;margin:-2px 0 12px;max-width:100%;}
 
     .grid{gap:14px;}
     .card-head{padding:13px 13px 0;}
@@ -836,8 +841,9 @@
       </svg>
       <span class="brand-name">SUR RADIO<small>SHORTWAVE MEMORIES</small></span>
     </div>
-    <p class="tagline">Thirty-six states, thirty-six frequencies. Tap one and the needle drops itself &mdash; change the mood and the whole region retunes around it.</p>
   </header>
+  <p class="tagline">Every state is a station, and <b>All India Radio</b> when you would rather
+    not choose. Tap the map, or leave it running.</p>
 
   <div class="grid">
     <div class="card">
@@ -845,11 +851,11 @@
         <h2>The Sur Network</h2>
         <div class="head-right">
           <span class="onair" id="mapHint">Tap any state</span>
-          <button class="shuffle" id="shuffleBtn" title="Play a random station">
+          <button class="shuffle" id="shuffleBtn" title="Tune All India Radio">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l3 4M20 7h-4l-8 10H4M20 17h-4"
               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <path d="M17 4l3 3-3 3M17 14l3 3-3 3" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round"/></svg>Shuffle
+              stroke-width="2" stroke-linecap="round"/></svg>All India
           </button>
         </div>
       </div>
@@ -3235,6 +3241,10 @@ const REGIONS = [
   {t:'Hindi rap',a:'Hindi hip hop',m:['rap','party'],g:1},
   {t:'Andaman street rap',a:'Andaman hip hop',m:['rap','modern'],g:1}]},
 /* ---------------- NATIONAL ---------------- */
+{id:'air',name:'All India Radio',zone:'national',alias:[],freq:'88.0',
+ lang:'All Indian languages',
+ genres:'the whole country on one frequency \u2014 programmed across every state',
+ seed:[]},
 {id:'bollywood',name:'Hindi Film',zone:'national',alias:[],freq:'100.0',
  lang:'Hindi, Urdu',genres:'Hindi film music from the golden era to today',
  seed:[
@@ -3841,6 +3851,7 @@ const VISUAL = {
   hindiclassics: {pal:['#2a2216','#8a6b3a','#f0dfb4'], terrain:'temple'},
   englishclassics:{pal:['#161c26','#4a6178','#dfe3e8'], terrain:'hills'},
   shaadi:        {pal:['#33121f','#a8425f','#f2cf9e'], terrain:'city'},
+  air:           {pal:['#141b2c','#c08a3e','#f4e3bd'], terrain:'hills'},
   jk:        {pal:['#12213d','#3d6b96','#c9d8e6'], terrain:'himalaya'},
   ladakh:    {pal:['#1b1c33','#6b5f7e','#d8c3a5'], terrain:'coldDesert'},
   hp:        {pal:['#14263f','#3f7a72','#cfe0d8'], terrain:'himalaya'},
@@ -4016,7 +4027,7 @@ function mReeds(c){          /* tribal flute + reed cluster */
 const MOTIF = {
   bollywood:['mic',0],  indie:['guitar',0],
   bengalirock:['guitar',1], hindiclassics:['strings',1], englishclassics:['guitar',0],
-  shaadi:['drum',1],
+  shaadi:['drum',1], air:['mic',1],
   jk:['strings',1],       ladakh:['stupa',1],      hp:['drum',0],        punjab:['drum',1],
   haryana:['drum',0],     uttarakhand:['flute',0], delhi:['mic',0],      chandigarh:['mic',0],
   rajasthan:['bowed',0],  gujarat:['dancer',1],    maharashtra:['dancer',0], goa:['guitar',0],
@@ -4274,7 +4285,7 @@ function paintBackdrop(region){
 
 /* ============================ STATE ====================================== */
 let player=null, ytReady=false, playing=false, scrubbing=false;
-let current=null, moodKey='modern', queue=[], qi=-1, seq=0, progTimer=null, pendingVid=null;
+let current=null, moodKey='mymix', queue=[], qi=-1, seq=0, progTimer=null, pendingVid=null;
 let geoReady=false, trains=[], ring=null, tempoFactor=1, ringPulse=0;
 let cseq=0;   /* curation generation, deliberately separate from playback seq */
 
@@ -4529,6 +4540,7 @@ async function loadMap(){
     bollywood:      {lon:69.6,lat:19.4,side:'right'},
     hindiclassics:  {lon:68.6,lat:15.4,side:'right'},
     shaadi:         {lon:69.6,lat:11.8,side:'right'},
+    air:            {lon:78.9,lat:20.4,side:'right'}   /* centre of the country */,
     indie:          {lon:91.4,lat:15.2,side:'left'},
     bengalirock:    {lon:90.4,lat:12.2,side:'left'},
     englishclassics:{lon:85.4,lat:9.0, side:'left'}
@@ -5160,6 +5172,370 @@ async function curate(region,mKey,avoid){
   return parsed.tracks.filter(t=>t&&t.t&&t.a).slice(0,18);
 }
 function shuffled(a){ return a.slice().sort(()=>Math.random()-0.5); }
+const AIR_ID = 'air';
+
+/* ==========================================================================
+   RADIO ENGINE
+   The catalogue only ever stored a title, an artist string and mood tags. A radio
+   station needs more than that to program a sequence, so the extra metadata is
+   *derived* at load rather than authored - nothing here invents a song, an artist
+   or a URL, it only reads what is already in the row.
+   ========================================================================== */
+
+/* Artists whose work a general listener is likely to recognise. Used only to weight
+   selection; nothing is added to or removed from the catalogue because of it. */
+const FAMOUS = ('lata mangeshkar|mohammed rafi|kishore kumar|asha bhosle|manna dey|'+
+ 'hemanta|geeta dutt|mukesh|talat|s d burman|r d burman|a r rahman|arijit singh|'+
+ 'shreya ghoshal|sonu nigam|kk|udit narayan|kumar sanu|alka yagnik|sunidhi chauhan|'+
+ 'atif aslam|rahat fateh ali khan|nusrat fateh ali khan|jagjit singh|ghulam ali|'+
+ 'begum akhtar|bhimsen joshi|kishori amonkar|ravi shankar|bismillah khan|zakir hussain|'+
+ 'hariprasad chaurasia|shivkumar sharma|amjad ali khan|m s subbulakshmi|k j yesudas|'+
+ 'ilaiyaraaja|anirudh|harris jayaraj|sid sriram|s p balasubrahmanyam|ghantasala|'+
+ 'bhupen hazarika|zubeen garg|papon|sharda sinha|gurdas maan|diljit dosanjh|'+
+ 'sidhu moose wala|ap dhillon|karan aujla|badshah|divine|mc stan|seedhe maut|'+
+ 'prateek kuhad|anuv jain|the local train|indian ocean|kabir cafe|fossils|cactus|'+
+ 'chandrabindoo|anupam roy|anjan dutt|mohiner ghoraguli|rabindra sangeet|lalon|'+
+ 'teejan bai|mame khan|falguni pathak|kailash kher|jubin nautiyal|b praak|'+
+ 'bob dylan|john denver|pink floyd|john lennon|the beatles|eagles|queen|'+
+ 'led zeppelin|simon and garfunkel|dire straits|eric clapton|leonard cohen|'+
+ 'scorpions|creedence|neil young|cat stevens|coke studio|ritviz|nucleya|'+
+ 'euphoria|silk route|colonial cousins|raghu dixit|swarathma|tetseo|soulmate'
+).split('|');
+
+/* Words in the artist field that describe a film, label or format rather than a
+   performer. Stripped before comparing two rows for "same artist". */
+const NOT_A_NAME = ('folk|modern|retro|classical|devotional|traditional|film|cinema|'+
+ 'hip|hop|band|choir|gospel|geet|sangeet|geeti|pattu|padam|kirtan|bhajan|qawwali|'+
+ 'selection|music|song|songs|hit|new|old|best|of|live|the|and|a|in|for'
+).split('|');
+
+const NOISE_W = {};
+NOT_A_NAME.forEach(function(w){ NOISE_W[w]=1; });
+
+function trackKey(t){ return norm(t.t)+'|'+norm(t.a); }
+
+/* One pass over the catalogue, at load. Adds only derived fields. */
+(function enrichCatalogue(){
+  REGIONS.filter(function(r){ return r.id!==AIR_ID; }).forEach(function(r){
+    const langs = r.lang.split(',').map(function(x){ return x.trim().toLowerCase(); });
+    r.seed.forEach(function(t){
+      t.key   = trackKey(t);
+      t.rid   = r.id;
+      t.lang  = langs[0] || '';
+
+      /* artist signature: the distinctive words of the artist field, so
+         "Baiju Bawra Mohammed Rafi" and "Mohammed Rafi" are recognised as related */
+      const words = norm(t.a).split(' ').filter(function(w){ return w && !NOISE_W[w]; });
+      t.akey = words.slice(0,3).join(' ') || norm(t.a);
+      t.sig  = norm(t.a);                       /* exact field, for a stricter gap */
+
+      const famous = FAMOUS.some(function(f){ return t.sig.indexOf(f)>-1; });
+
+      /* Popularity is a weighting hint, not a claim of chart position. Tags the
+         catalogue already carries are the evidence: a row tagged Hits is by
+         definition one of the better known ones for its station. */
+      let p = 0.30;
+      if(t.m.indexOf('hits')>-1)   p += 0.30;
+      if(t.m.indexOf('mymix')>-1)  p += 0.14;
+      if(t.m.indexOf('party')>-1)  p += 0.06;
+      if(t.m.indexOf('retro')>-1)  p += 0.05;
+      if(t.m.indexOf('modern')>-1) p += 0.04;
+      if(famous)                   p += 0.22;
+      if(t.g)                      p -= 0.22;   /* a described row, not a named song */
+      t.pop = Math.max(0.05, Math.min(1, p));
+
+      /* era, used to avoid five decades-old songs in a row and vice versa */
+      t.era = (t.m.indexOf('retro')>-1 || t.m.indexOf('classical')>-1) ? 'classic'
+            : (t.m.indexOf('modern')>-1 || t.m.indexOf('rap')>-1)      ? 'now'
+            : 'mid';
+    });
+  });
+})();
+
+/* ---- memory ---------------------------------------------------------------
+   What was heard, and when. Kept in localStorage where available; a blob-URL
+   iframe (how the React wrapper loads this file) has an opaque origin and throws
+   on access, so an in-memory copy backs it up and the app never depends on it. */
+const MEM_KEY = 'surradio_history_v1';
+const RadioMemory = (function(){
+  let mem = {days:{}, recent:[], counts:{}};
+  let usable = true;
+  try{
+    const raw = localStorage.getItem(MEM_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.days) mem = parsed;
+    }
+  }catch(e){ usable = false; }
+
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function save(){
+    if(!usable) return;
+    try{ localStorage.setItem(MEM_KEY, JSON.stringify(mem)); }
+    catch(e){ usable = false; }         /* quota or opaque origin: carry on in memory */
+  }
+  function prune(){
+    /* three days of day-buckets is enough to make "yesterday" mean something */
+    const keep = {};
+    const days = Object.keys(mem.days).sort().slice(-3);
+    days.forEach(function(d){ keep[d]=mem.days[d]; });
+    mem.days = keep;
+    if(mem.recent.length > 400) mem.recent = mem.recent.slice(-400);
+  }
+  return {
+    today: today,
+    /* every key heard today for this station+mood */
+    playedToday: function(stationKey){
+      const d = mem.days[today()];
+      return (d && d[stationKey]) ? d[stationKey] : [];
+    },
+    playedYesterday: function(stationKey){
+      const days = Object.keys(mem.days).sort();
+      const prev = days[days.indexOf(today())-1] || days[days.length-2];
+      const d = prev ? mem.days[prev] : null;
+      return (d && d[stationKey]) ? d[stationKey] : [];
+    },
+    recentKeys: function(n){
+      return mem.recent.slice(-(n||120)).map(function(x){ return x.k; });
+    },
+    playCount: function(key){ return mem.counts[key]||0; },
+    record: function(stationKey, key){
+      if(!key) return;
+      const d = today();
+      mem.days[d] = mem.days[d] || {};
+      mem.days[d][stationKey] = mem.days[d][stationKey] || [];
+      if(mem.days[d][stationKey].indexOf(key)<0) mem.days[d][stationKey].push(key);
+      mem.recent.push({k:key, at:Date.now()});
+      mem.counts[key] = (mem.counts[key]||0)+1;
+      prune(); save();
+    },
+    persistent: function(){ return usable; }
+  };
+})();
+
+/* ---- deterministic daily randomness --------------------------------------
+   The same station on the same day should feel like the same station; tomorrow it
+   should not. A seed built from station + mood + date gives exactly that, and it
+   means a page refresh does not reshuffle everything from scratch. */
+function hashSeed(str){
+  let h = 2166136261;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function rngFrom(seedStr){
+  let a = hashSeed(seedStr);
+  return function(){
+    a += 0x6D2B79F5;
+    let t = a;
+    t = Math.imul(t ^ (t>>>15), t | 1);
+    t ^= t + Math.imul(t ^ (t>>>7), t | 61);
+    return ((t ^ (t>>>14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- the pool a station draws from ---------------------------------------
+   Three kinds of station, one pool builder.
+     Radio Mix   - the whole region, weighted towards its better known songs
+     a mood       - strictly that mood, widened only if it is too small to rotate
+     All India    - the recognisable end of every mapped region
+   Documented exception (there is no way round it): a region+mood with fewer than
+   15 songs cannot rotate on its own. Those widen into the closest related moods of
+   the *same region*, which slightly relaxes the strict mood separation, and the row
+   says so in the player. Regions with no tradition in a mood at all - Ladakh has no
+   classical repertoire - fall back to a live search as before. */
+const MOOD_NEIGHBOURS = {
+  classical:['devotional','retro','folk'],
+  retro:['classical','folk','chill','hits'],
+  folk:['devotional','retro','party'],
+  devotional:['classical','folk','chill'],
+  modern:['hits','party','chill','rap'],
+  party:['hits','modern','folk'],
+  chill:['retro','modern','devotional'],
+  hits:['party','modern','retro'],
+  rap:['modern','party','hits'],
+  mymix:[]
+};
+const ROTATION_FLOOR = 15;
+
+/* Some stations are cities or island groups rather than musical regions of their own.
+   Chandigarh's music *is* Punjabi; Puducherry's is Tamil; Lakshadweep's is Malabar
+   Malayalam. Widening those into their parent region is more honest than either
+   inventing local songs or leaving the station unable to rotate. Documented as an
+   exception because it does cross a regional boundary. */
+const PARENT_REGION = {
+  chandigarh:'punjab', delhi:'up', puducherry:'tn', lakshadweep:'kerala',
+  andaman:'tn', dnhdd:'gujarat', ladakh:'jk', sikkim:'wb',
+  haryana:'up', uttarakhand:'up', goa:'maharashtra', tripura:'wb',
+  meghalaya:'assam', nagaland:'assam', mizoram:'assam', arunachal:'assam',
+  manipur:'assam', jharkhand:'bihar', chhattisgarh:'mp'
+};
+
+function poolFor(region, mKey){
+  if(region.id === AIR_ID) return airPool();
+
+  /* Radio Mix and the preset bands are the station itself, so the pool is the
+     whole catalogue for that station and the programming does the shaping. */
+  if(mKey === 'mymix' || region.zone === 'national'){
+    return region.seed.slice();
+  }
+
+  const strict = region.seed.filter(function(t){ return t.m.indexOf(mKey)>-1; });
+  if(strict.length >= ROTATION_FLOOR) return strict;
+
+  const out = strict.slice();
+  const have = {};
+  out.forEach(function(t){ have[t.key]=1; });
+  /* first widen within the station's own catalogue */
+  (MOOD_NEIGHBOURS[mKey]||[]).forEach(function(alt){
+    region.seed.forEach(function(t){
+      if(out.length >= ROTATION_FLOOR) return;
+      if(t.m.indexOf(alt)<0 || have[t.key]) return;
+      have[t.key]=1;
+      const copy = Object.create(t);
+      copy.widened = MOODS[alt] ? MOODS[alt].n : alt;
+      out.push(copy);
+    });
+  });
+
+  /* still short, and this station has a parent musical region: draw on it, on-mood */
+  const parent = PARENT_REGION[region.id] && byId(PARENT_REGION[region.id]);
+  if(out.length < ROTATION_FLOOR && parent){
+    parent.seed.forEach(function(t){
+      if(out.length >= ROTATION_FLOOR) return;
+      if(t.m.indexOf(mKey)<0 || have[t.key]) return;
+      have[t.key]=1;
+      const copy = Object.create(t);
+      copy.widened = parent.name;
+      out.push(copy);
+    });
+  }
+  return out;
+}
+
+/* All India Radio: the songs across the mapped states that a general listener is
+   most likely to enjoy, not one token track per state. */
+function airPool(){
+  const out = [];
+  REGIONS.filter(function(r){ return r.zone!=='national'; }).forEach(function(r){
+    r.seed.forEach(function(t){
+      if(t.pop >= 0.5 || t.m.indexOf('hits')>-1 || t.m.indexOf('mymix')>-1) out.push(t);
+    });
+  });
+  return out;
+}
+
+/* ---- scoring --------------------------------------------------------------
+   Weighted, not random. Popularity pulls up, having been heard recently pushes
+   down hard, and the daily seed provides the variation that makes tomorrow differ
+   from today without making a refresh feel like a different station. */
+function scoreTracks(pool, ctx){
+  const recent   = {}; ctx.recent.forEach(function(k,i){ recent[k]=i; });
+  const today    = {}; ctx.today.forEach(function(k){ today[k]=1; });
+  const yest     = {}; ctx.yesterday.forEach(function(k){ yest[k]=1; });
+  const rnd      = ctx.rnd;
+  const nRecent  = ctx.recent.length || 1;
+
+  return pool.map(function(t){
+    let sc = 0.95 * t.pop;
+    sc += 0.55 * rnd();                                  /* today's rotation */
+
+    /* an underplayed song earns a nudge, so the catalogue actually gets used */
+    const plays = RadioMemory.playCount(t.key);
+    sc += 0.30 / (1 + plays);
+
+    if(today[t.key])  sc -= 1.70;                        /* already heard today */
+    if(yest[t.key])   sc -= 0.85;                        /* yesterday sounded like this */
+    if(recent[t.key]!=null){
+      const howRecent = 1 - (recent[t.key]/nRecent);     /* 1 = just played */
+      sc -= 1.30 * howRecent;
+    }
+    if(t.bad) sc -= 3;                                   /* known unplayable */
+    return {t:t, sc:sc};
+  }).sort(function(a,b){ return b.sc - a.sc; });
+}
+
+/* ---- sequencing -----------------------------------------------------------
+   Scores alone would still cluster: three songs by one artist, five from one film,
+   ten of the same mood. This lays the run out with the separation a programmer
+   would keep, relaxing the rules only if the catalogue is too small to honour them. */
+function sequence(scored, ctx, count){
+  const out = [];
+  const used = {};
+  const ARTIST_GAP = 3, FILM_GAP = 3, REGION_GAP = 3, LANG_GAP = 2;
+
+  function conflicts(cand, relax){
+    if(relax >= 3) return false;
+    const back = out.slice(-Math.max(ARTIST_GAP, REGION_GAP));
+    for(let i=0;i<back.length;i++){
+      const prev = back[back.length-1-i];
+      const gap = i+1;
+      if(relax < 1){
+        if(gap <= ARTIST_GAP && prev.akey && prev.akey === cand.akey) return true;
+        if(gap <= FILM_GAP  && prev.sig  && prev.sig  === cand.sig)  return true;
+      }
+      if(ctx.isAir){
+        if(gap <= REGION_GAP && prev.rid === cand.rid) return true;
+        if(relax < 1 && gap <= LANG_GAP && prev.lang && prev.lang === cand.lang) return true;
+      }
+      /* Radio Mix should move around emotionally rather than sit in one mood */
+      if(relax < 2 && ctx.isMix && gap <= 2){
+        const shared = (prev.m||[]).filter(function(x){ return (cand.m||[]).indexOf(x)>-1; });
+        if(shared.length >= 2 && prev.era === cand.era) return true;
+      }
+    }
+    return false;
+  }
+
+  for(let relax=0; relax<=3 && out.length<count; relax++){
+    for(let i=0; i<scored.length && out.length<count; i++){
+      const cand = scored[i].t;
+      if(used[cand.key]) continue;
+      if(conflicts(cand, relax)) continue;
+      used[cand.key] = 1;
+      out.push(cand);
+    }
+  }
+  return out;
+}
+
+/* Weighted pick among the strongest candidates, so the opening of a station is
+   reliably good without being identical every time. */
+function programStation(region, mKey, count){
+  const stationKey = region.id + '/' + mKey;
+  const pool = poolFor(region, mKey);
+  if(!pool.length) return [];
+
+  const ctx = {
+    rnd: rngFrom(stationKey + '/' + RadioMemory.today()),
+    recent: RadioMemory.recentKeys(140),
+    today: RadioMemory.playedToday(stationKey),
+    yesterday: RadioMemory.playedYesterday(stationKey),
+    isAir: region.id === AIR_ID,
+    isMix: mKey === 'mymix' || region.zone === 'national'
+  };
+
+  const scored = scoreTracks(pool, ctx);
+  /* shuffle the top slice with the daily seed so the first song varies by day */
+  const head = scored.slice(0, Math.min(14, scored.length));
+  for(let i=head.length-1;i>0;i--){
+    const j = Math.floor(ctx.rnd()*(i+1));
+    const tmp = head[i]; head[i]=head[j]; head[j]=tmp;
+  }
+  const ordered = head.concat(scored.slice(head.length));
+
+  return sequence(ordered, ctx, count || 24).map(function(t){
+    return {
+      t: t.t, a: t.a, g: t.g, key: t.key, rid: t.rid, akey: t.akey, sig: t.sig,
+      pop: t.pop, era: t.era, m: t.m, lang: t.lang,
+      w: t.widened ? (MOODS[mKey] && t.widened===MOODS[mKey].n
+                        ? ''
+                        : 'Widened from ' + t.widened + ' \u2014 this station\u2019s ' +
+                          (MOODS[mKey]?MOODS[mKey].n:mKey) + ' list is small')
+                   : (ctx.isAir ? (byId(t.rid) ? byId(t.rid).name : '') : '')
+    };
+  });
+}
+
 function seedFor(region,mKey){
   /* A preset band is already a mood - Shaadi Season is party, Hindi Classics is
      classical - so filtering it again by mood would gut the list. Use everything. */
@@ -5389,7 +5765,9 @@ async function tune(id,opts){
 
   /* A song picked from search opens the station, so it plays first and the rest
      of the region follows on behind it. */
-  queue=seedFor(region,moodKey);
+  /* the radio engine programs the run, rather than shuffling a mood list */
+  queue=programStation(region,moodKey,26);
+  if(!queue.length) queue=seedFor(region,moodKey);      /* nothing eligible: fall back */
   if(opts.first){
     queue=[opts.first].concat(mergeNew(queue,[opts.first]));
   }
@@ -5437,7 +5815,7 @@ async function topUp(){
     let fresh=[];
     try{ fresh=mergeNew(await curate(region,mk,queue.map(t=>t.t)),queue); }
     catch(e){ console.warn('[Sur Radio] top-up curation failed:',e); }
-    if(!fresh.length) fresh=mergeNew(seedFor(region,mk),queue);   /* built-ins as backstop */
+    if(!fresh.length) fresh=mergeNew(programStation(region,mk,18),queue);   /* engine tops up */
 
     /* Pool exhausted. Recycle it rather than re-tuning the station: a re-tune
        rebuilds the queue from scratch and reshuffles everything the listener can
@@ -5450,7 +5828,7 @@ async function topUp(){
          against everything still upcoming rather than against all history. */
       const upcoming={};
       queue.slice(Math.max(qi,0)).forEach(t=>{ upcoming[titleKey(t)]=1; });
-      fresh=shuffled(seedFor(region,mk)).filter(t=>!upcoming[titleKey(t)]);
+      fresh=programStation(region,mk,18).filter(t=>!upcoming[titleKey(t)]);
       playedVids.clear();          /* a full pass is done, repeats are fine now */
       dupSkips=0;
     }
@@ -5477,7 +5855,8 @@ async function recurate(){
      playing and the bottom bar still owns it, but it is no longer listed - the
      list is purely what comes next, so it never shows a leftover from the mood
      you just left. */
-  queue = seedFor(region,mk);
+  queue = programStation(region,mk,26);
+  if(!queue.length) queue = seedFor(region,mk);
   qi = -1;
   renderQueue();
   fire(hydrateTitles(),'hydrate titles');
@@ -5594,6 +5973,9 @@ async function playAt(i,depth,manual){
   }
   dupSkips=0;
   playedVids.add(id);
+  /* remember it, so tomorrow does not sound like today and a refresh does not
+     replay the same opening */
+  try{ RadioMemory.record(current.id+'/'+moodKey, track.key||titleKey(track)); }catch(e){}
   if(playedVids.size>400) playedVids.clear();
 
   track.vid=id; loadVideo(id); paintTrack(track,false);
@@ -5768,17 +6150,18 @@ MOOD_KEYS.forEach(function(k){
 });
 document.getElementById('playBtn').addEventListener('click',function(){
   buzz(TAP);
-  if(!current){ fire(tune(pick(REGIONS).id),'tune'); return; }
+  if(!current){ fire(tune(AIR_ID),'tune'); return; }
   if(!player||!player.playVideo) return;
   if(playing) player.pauseVideo(); else player.playVideo();
 });
 document.getElementById('nextBtn').addEventListener('click',function(){buzz(TAP);next(true);});
 document.getElementById('prevBtn').addEventListener('click',function(){buzz(TAP);prev();});
-document.getElementById('randomBtn').addEventListener('click',()=>fire(tune(pick(REGIONS).id),'tune'));
+document.getElementById('randomBtn').addEventListener('click',()=>fire(tune(AIR_ID),'tune'));
+/* Shuffle used to mean pick(REGIONS), which is exactly the "playlist" feeling this
+   is meant to avoid. The button is now the national station. */
 document.getElementById('shuffleBtn').addEventListener('click',function(){
   buzz(CONFIRM);
-  const pool=REGIONS.filter(r=>!current||r.id!==current.id);
-  fire(tune(pick(pool).id),'shuffle');
+  fire(tune(AIR_ID),'all india radio');
 });
 document.getElementById('vol').addEventListener('input',e=>setVol(e.target.value));
 /* ---- seeking by touch ----------------------------------------------------
@@ -6278,7 +6661,9 @@ function enterStation(){
   },620);
   /* This click is the browser's required audio gesture, so it is the right
      moment to actually start playing something. */
-  setTimeout(()=>fire(tune(pick(REGIONS).id),'tune from landing'),520);
+  /* You turned on a radio: the national station is already on the dial, so nothing
+     has to be chosen before there is music. */
+  setTimeout(()=>fire(tune(AIR_ID),'tune from landing'),520);
 }
 /* Scrolling the list asks for the next batch of names, so lookups stay in proportion
    to what is actually being looked at rather than resolving hundreds of rows up front. */
