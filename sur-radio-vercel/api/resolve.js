@@ -11,6 +11,28 @@
  * Caching: Vercel's CDN honours s-maxage, so a hit costs zero quota and zero
  * function time. 30 days is safe because a resolved video id rarely changes.
  */
+
+/**
+ * YouTube's public oEmbed endpoint answers 401/403 for a video whose owner has
+ * disabled embedding, and 404 if it is gone. That lets us drop those candidates
+ * before they ever reach the player, which is the difference between a song that
+ * plays and the "blocked from embedding" dead end.
+ */
+async function embeddable(id, ms = 2500) {
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), ms);
+  try {
+    const r = await fetch(
+      'https://www.youtube.com/oembed?format=json&url=' +
+      encodeURIComponent('https://www.youtube.com/watch?v=' + id),
+      { signal: c.signal }
+    );
+    return r.status === 200;
+  } catch (e) {
+    return true;          // network hiccup: do not discard a possibly good video
+  } finally { clearTimeout(t); }
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -65,16 +87,19 @@ module.exports = async (req, res) => {
     const attempts = mirrors.map(base => withTimeout(base + encodeURIComponent(q), 4500)
       .then(j => {
         const arr = (j && j.items) || (Array.isArray(j) ? j : []);
+        const cands = [];
         for (const it of arr) {
           const u = it && it.url;
           const dur = it && typeof it.duration === 'number' ? it.duration : null;
-        if (dur !== null && (dur < 45 || dur > 1500)) continue;   // skip clips and full-album rips
-        if (u && u.includes('watch?v=')) {
+          if (dur !== null && (dur < 45 || dur > 1500)) continue;   // skip clips and full-album rips
+          if (u && u.includes('watch?v=')) {
             const cand = u.split('watch?v=')[1].split('&')[0];
-            if (valid(cand)) return cand;
+            if (valid(cand)) cands.push(cand);
           }
+          if (cands.length >= 5) break;
         }
-        throw new Error('no match');
+        if (!cands.length) throw new Error('no match');
+        return cands;
       })
     ).concat(invidious.map(base => withTimeout(base + encodeURIComponent(q), 4500)
       .then(j => {
@@ -85,15 +110,20 @@ module.exports = async (req, res) => {
     ));
 
     try {
-      id = await Promise.any(attempts);
-      via = 'mirror';
+      const cands = await Promise.any(attempts);
+      /* Walk the candidates in order and take the first that can actually be
+         embedded, rather than betting everything on the top result. */
+      for (const c of (Array.isArray(cands) ? cands : [cands])) {
+        if (await embeddable(c)) { id = c; via = 'mirror'; break; }
+      }
+      if (!id) { id = null; via = 'blocked'; }
     } catch (e) { id = null; }
   }
 
   if (!id) {
     // Cache misses briefly too, so a broken query cannot hammer the function.
     res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=3600');
-    return res.status(200).json({ none: true });
+    return res.status(200).json({ none: true, reason: via === 'blocked' ? 'not embeddable' : 'no match' });
   }
 
   res.setHeader('Cache-Control', 's-maxage=2592000, stale-while-revalidate=31536000');

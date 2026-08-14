@@ -64,7 +64,16 @@
   /* ---- map ---- */
   .maphold{padding:6px 10px 10px;position:relative;min-height:320px;}
   svg#map{width:100%;height:auto;display:block;max-height:74vh;}
-  .state{stroke:var(--ink);stroke-width:.8;cursor:pointer;transition:fill-opacity .18s ease;fill-opacity:.30;}
+  .state{stroke:var(--ink);stroke-width:.8;cursor:pointer;transition:fill-opacity .18s ease;
+    fill-opacity:.30;-webkit-tap-highlight-color:transparent;}
+  /* These shapes are focusable for keyboard users, but a touch was drawing the
+     browser's default focus ring - a rectangle around the shape's bounding box,
+     which looked like a stray square flashing over the map. Pointer focus is now
+     silent; keyboard focus still gets a visible ring. */
+  .state:focus,.natstn:focus,.isle:focus{outline:none;}
+  .state:focus-visible{outline:none;stroke:var(--gold);stroke-width:2.4;}
+  .natstn:focus-visible .natmast,.isle:focus-visible .isledot{fill:var(--gold);}
+  #map{-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
   .state:hover{fill-opacity:.62;}
   .state.live{fill-opacity:.9;stroke:var(--paper);stroke-width:1.4;}
   .state.nodata{fill:#2a2f52;fill-opacity:.35;cursor:default;pointer-events:none;}
@@ -77,12 +86,16 @@
      names hold up over any state colour, but thin enough not to look bolded. */
   /* One size, one weight, one colour for every state. Tiered sizes made the map
      look uneven; a single quiet treatment reads as a map rather than a poster. */
-  .slabel{font-family:'IBM Plex Mono',monospace;font-size:10.5px;font-weight:500;
-    letter-spacing:.02em;fill:rgba(242,236,217,.88);pointer-events:none;text-anchor:middle;
-    paint-order:stroke;stroke:rgba(9,11,26,.66);stroke-width:2.2px;stroke-linejoin:round;}
-  .slabel.big,.slabel.mid,.slabel.tiny{font-size:10.5px;font-weight:500;
-    fill:rgba(242,236,217,.88);letter-spacing:.02em;stroke-width:2.2px;}
-  .slabel.tiny{fill:rgba(242,236,217,.78);}
+  /* Printed maps set region names in letter-spaced small capitals rather than a
+     monospace face - it reads as cartography instead of code, and the wider
+     tracking keeps short names legible at this size. */
+  .slabel{font-family:'IBM Plex Sans','Helvetica Neue',sans-serif;font-size:9.5px;
+    font-weight:600;letter-spacing:.13em;text-transform:uppercase;
+    fill:rgba(242,236,217,.9);pointer-events:none;text-anchor:middle;
+    paint-order:stroke;stroke:rgba(9,11,26,.7);stroke-width:2.4px;stroke-linejoin:round;}
+  .slabel.big,.slabel.mid,.slabel.tiny{font-size:9.5px;font-weight:600;
+    letter-spacing:.13em;fill:rgba(242,236,217,.9);stroke-width:2.4px;}
+  .slabel.tiny{fill:rgba(242,236,217,.8);letter-spacing:.1em;}
   .isle{cursor:pointer;}
   .isle .isledot{stroke:var(--ink);stroke-width:1.6;transition:r .16s ease;}
   .isle:hover .isledot{r:6.4;}
@@ -106,7 +119,7 @@
   .natstn .natarc{fill:none;stroke:var(--gold);stroke-width:1;opacity:.34;
     animation:natpulse 3.2s ease-out infinite;}
   @keyframes natpulse{0%{opacity:.5;}70%{opacity:0;}100%{opacity:0;}}
-  .natstn .natlabel{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:var(--paper);
+  .natstn .natlabel{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:8.5px;fill:var(--paper);
     letter-spacing:.06em;pointer-events:none;font-weight:600;}
   .natstn .natfreq{font-family:'IBM Plex Mono',monospace;font-size:7.5px;
     fill:rgba(242,236,217,.6);letter-spacing:.08em;pointer-events:none;}
@@ -305,7 +318,7 @@
 
 
   /* ===================== PRESET BAND ROW ================================= */
-  .presets{padding:12px 18px 4px;}
+  .presets{padding:14px 18px 4px;}
   .presets-lbl{display:block;font-family:'IBM Plex Mono',monospace;font-size:.54rem;
     letter-spacing:.16em;text-transform:uppercase;color:rgba(154,154,184,.85);margin-bottom:8px;}
   .presets-row{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
@@ -675,7 +688,7 @@
     svg#map{max-height:44vh;margin:0 auto;}
     /* the map is physically smaller here, so the type has to be proportionally larger */
     /* Same uniform size, scaled for the smaller rendered map. */
-    .slabel,.slabel.big,.slabel.mid{font-size:19px;stroke-width:3.8px;}
+    .slabel,.slabel.big,.slabel.mid{font-size:20px;letter-spacing:.07em;stroke-width:4.2px;}
     .slabel.tiny{display:none;}          /* dots only; tap to see the name */
     .state{stroke-width:1.6;fill-opacity:.55;}
     .hub{r:4.6;}
@@ -714,7 +727,7 @@
     .brand-name{font-size:1.02rem;}
     /* On the narrowest screens only the largest states stay labelled - anything
        smaller would render under 8px, which is not worth showing. Tap for the name. */
-    .slabel,.slabel.big{font-size:22px;stroke-width:4.2px;}
+    .slabel,.slabel.big{font-size:23px;letter-spacing:.05em;stroke-width:4.6px;}
     .slabel.mid{display:none;}
     .state{stroke-width:1.8;fill-opacity:.6;}
   }
@@ -782,7 +795,6 @@
       <!-- Preset row, the way a car radio has six buttons. These stations are their
            own mood, so choosing one hides the mood grid. -->
       <div class="presets">
-        <span class="presets-lbl">Presets</span>
         <div class="presets-row" id="presetsRow"></div>
       </div>
       <div class="legend" id="legend"></div>
@@ -4926,7 +4938,12 @@ window.onYouTubeIframeAPIReady=function(){
          was unbounded: it walked the queue, hit the end, pulled in a newly shuffled
          batch and kept going - which is what made the list churn on its own.
          The streak is now counted, passed in as depth, and capped. */
-      onError:function(){
+      onError:function(e){
+        /* Ignore an error that belongs to a video we are no longer waiting on. */
+        let failedId=null;
+        try{ failedId=player&&player.getVideoData?player.getVideoData().video_id:null; }catch(_){ }
+        if(failedId&&activeVid&&failedId!==activeVid) return;
+
         const t=queue[qi];
         /* Another upload of the same song may well be embeddable, so try those
            before writing the song off. */
@@ -4971,7 +4988,15 @@ if(FILE_ORIGIN){
   },600);
 }
 
-function loadVideo(id){ if(ytReady&&player&&player.loadVideoById) player.loadVideoById(id); else pendingVid=id; }
+/* Remember which video we last asked for. Clicking two or three songs quickly means
+   errors from the abandoned loads arrive after the queue has already moved on, and
+   they were being blamed on whatever was selected by then - marking innocent songs
+   unavailable and running the error count up until playback stopped. */
+let activeVid=null;
+function loadVideo(id){
+  activeVid=id;
+  if(ytReady&&player&&player.loadVideoById) player.loadVideoById(id); else pendingVid=id;
+}
 function veil(show,msg){
   const v=document.getElementById('veil');
   if(msg) document.getElementById('veilText').textContent=msg;
@@ -5010,6 +5035,14 @@ function toast(m){
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3200);
 }
 function setBar(t,s){ document.getElementById('barTitle').textContent=t; document.getElementById('barSub').textContent=s; }
+/* A preset band is its own mood, so naming a mood beside its song list is noise.
+   Mapped states still show which mood is loaded. */
+function statusLabel(region,mk){
+  const n=queue.length+(queue.length===1?' song':' songs');
+  if(region&&region.zone==='national') return n;
+  return (MOODS[mk]?MOODS[mk].n+' \u00b7 ':'')+n;
+}
+
 function setQStatus(s){ document.getElementById('qStatus').textContent=String(s).toUpperCase(); }
 /* No render here: whoever handles the failure paints the list right after, and
    rendering twice per skip doubles the visible churn. */
@@ -5051,7 +5084,7 @@ async function tune(id,opts){
   qi=-1;
   /* playAt renders immediately below, so painting the list here as well would
      show it twice in quick succession. Just set the status. */
-  setQStatus(opts.first?'Requested \u00b7 then '+region.name:MOODS[moodKey].n+' \u00b7 '+queue.length+' songs');
+  setQStatus(opts.first?'Requested \u00b7 then '+region.name:statusLabel(region,moodKey));
   veil(true,'Finding the song...');
   setBar('Tuning in...',region.name);
   fire(playAt(0),'first track');
@@ -5064,11 +5097,11 @@ async function tune(id,opts){
        which is what looked like the songs reshuffling on their own. Appending only
        ever adds rows below what is already on screen. */
     queue=queue.concat(mergeNew(tracks,queue));
-    renderQueue(); setQStatus(MOODS[moodKey].n+' \u00b7 '+queue.length+' songs');
+    renderQueue(); setQStatus(statusLabel(region,moodKey));
   }catch(e){
     if(mySeq!==seq) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
-    setQStatus('Built-in list \u00b7 '+MOODS[moodKey].n);
+    setQStatus(statusLabel(region,moodKey));
   }
 }
 
@@ -5114,7 +5147,7 @@ async function topUp(){
          appeared to reshuffle. Instead we simply stop growing it. */
       if(queue.length<200) queue=queue.concat(fresh).slice(0,200);
       renderQueue();
-      setQStatus(MOODS[mk]?MOODS[mk].n+' \u00b7 '+queue.length+' songs':queue.length+' songs');
+      setQStatus(statusLabel(region,mk));
     }
   } finally { topping=false; }
 }
@@ -5133,18 +5166,18 @@ async function recurate(){
   queue = seedFor(region,mk);
   qi = -1;
   renderQueue();
-  setQStatus('Re-curating \u00b7 '+MOODS[mk].n);
+  setQStatus(region.zone==='national'?statusLabel(region,mk):'Re-curating \u00b7 '+MOODS[mk].n);
 
   try{
     const tracks=await curate(region,mk);
     if(my!==cseq||current!==region) return;
     /* the mood list is already on screen; the AI batch joins the end of it */
     queue=queue.concat(mergeNew(tracks,queue));
-    renderQueue(); setQStatus(MOODS[mk].n+' \u00b7 '+queue.length+' songs');
+    renderQueue(); setQStatus(statusLabel(region,mk));
   }catch(e){
     if(my!==cseq||current!==region) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
-    setQStatus('Built-in list \u00b7 '+MOODS[mk].n+' \u00b7 '+queue.length+' songs');
+    setQStatus(statusLabel(region,mk));
   }
 }
 
@@ -5154,6 +5187,9 @@ async function recurate(){
    reshuffling that kept coming back. */
 async function playPicked(i){
   if(i<0||i>=queue.length) return;
+  /* Choosing a song by hand is a fresh start: it should not inherit an error streak
+     from earlier attempts, otherwise a few blocked songs leave the player stuck. */
+  playErrors=0; lastErrIdx=-1; dupSkips=0;
   return await playAt(i);
 }
 
@@ -5178,6 +5214,7 @@ async function playAt(i,depth){
   }
   const mySeq=seq; qi=i;
   const track=queue[i];
+  track.bad=false;                 /* give it another go rather than showing a stale mark */
   renderQueue();
 
   /* No point starting: a file:// page cannot embed YouTube at all, and attempting
@@ -5385,8 +5422,8 @@ function renderQueue(){
   }
   el.scrollTop=scrollWas;      /* never yank the listener back to the top */
 }
-function next(){ fire(playAt(qi+1),'next'); }
-function prev(){ fire(playAt(Math.max(0,qi-1)),'prev'); }
+function next(){ playErrors=0; lastErrIdx=-1; fire(playAt(qi+1),'next'); }
+function prev(){ playErrors=0; lastErrIdx=-1; fire(playAt(Math.max(0,qi-1)),'prev'); }
 
 /* ============================ CONTROLS =================================== */
 const moodsEl=document.getElementById('moods');
