@@ -6563,6 +6563,20 @@ function clearToast(){
   if(el._t){ clearTimeout(el._t); el._t=null; }
   el._sticky = false; el.classList.remove('show');
 }
+
+/* Ensure the CSS variable --player-h matches the actual persistent player height.
+   This lets the shell and panels reserve the correct space structurally rather
+   than relying on a fixed value. Called on load and resize. */
+function syncPlayerHeight(){
+  try{
+    const bar=document.querySelector('.bar');
+    if(!bar) return;
+    const h=Math.round(bar.getBoundingClientRect().height);
+    document.documentElement.style.setProperty('--player-h', h+'px');
+  }catch(e){}
+}
+window.addEventListener('load',syncPlayerHeight);
+window.addEventListener('resize',function(){ syncPlayerHeight(); setTimeout(syncPlayerHeight,160); });
 function setBar(t,s){ document.getElementById('barTitle').textContent=t; document.getElementById('barSub').textContent=s; }
 /* A preset band is its own mood, so naming a mood beside its song list is noise.
    Mapped states still show which mood is loaded. */
