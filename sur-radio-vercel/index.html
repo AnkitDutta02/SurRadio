@@ -20,6 +20,10 @@
   /* While the landing is up, the tall page behind it must not scroll - otherwise
      you can dismiss the dial and land halfway down the page with the map above
      the fold. */
+  /* Safari on iOS will happily pan the page sideways if any single element sticks
+     out, so the overflow is pinned on html as well as body - hiding it on body
+     alone is not enough there. */
+  html{overflow-x:hidden;max-width:100%;}
   html.locked,body.locked{overflow:hidden;height:100%;}
   body{
     background:transparent;
@@ -53,7 +57,7 @@
   .card{background:rgba(21,25,54,.80);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(242,236,217,.10);border-radius:var(--r);}
   .card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:15px 18px 0;}
   .card-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;margin:0;
-    white-space:nowrap;}   /* 'The Sur Network' must never wrap */
+    white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;}
   @media (max-width:420px){
     .card-head{flex-wrap:wrap;gap:4px;}
     .card-head h2{font-size:.98rem;}
@@ -62,7 +66,7 @@
   .card-head span{font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.09em;color:var(--dim);}
 
   /* ---- map ---- */
-  .maphold{padding:6px 10px 10px;position:relative;min-height:320px;}
+  .maphold{padding:6px 10px 10px;position:relative;min-height:320px;overflow:hidden;}
   svg#map{width:100%;height:auto;display:block;max-height:74vh;}
   .state{stroke:var(--ink);stroke-width:.8;cursor:pointer;transition:fill-opacity .18s ease;
     fill-opacity:.30;-webkit-tap-highlight-color:transparent;}
@@ -110,7 +114,8 @@
   /* Touch a state and its name comes up in real type, not 4px SVG text. */
   .statename{position:absolute;z-index:4;pointer-events:none;transform:translate(-50%,-135%);
     background:var(--paper);color:var(--ink);border-radius:8px;padding:6px 11px;
-    font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;white-space:nowrap;
+    font-family:'IBM Plex Sans',sans-serif;font-size:.82rem;font-weight:600;
+    white-space:nowrap;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;
     box-shadow:0 8px 20px -8px rgba(0,0,0,.7);opacity:0;transition:opacity .16s ease;}
   .statename.show{opacity:1;}
   .statename small{display:block;font-family:'IBM Plex Mono',monospace;font-size:.55rem;
@@ -243,7 +248,8 @@
   .progtime{position:absolute;bottom:100%;transform:translateX(-50%);
     font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.04em;
     background:var(--paper);color:var(--ink);padding:3px 7px;border-radius:5px;
-    opacity:0;pointer-events:none;transition:opacity .15s ease;white-space:nowrap;font-weight:600;}
+    opacity:0;pointer-events:none;transition:opacity .15s ease;white-space:nowrap;
+    font-weight:600;max-width:60%;overflow:hidden;}
   .progwrap.scrubbing .progtime{opacity:1;}
   @media (max-width:760px){
     .progwrap{padding:13px 0 11px;}     /* even easier to hit with a thumb */
@@ -612,7 +618,8 @@
     background:rgba(13,16,36,.86);backdrop-filter:blur(6px);
     border:1px solid rgba(232,163,61,.45);border-radius:999px;padding:8px 15px;
     font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.1em;
-    text-transform:uppercase;color:var(--paper);white-space:nowrap;
+    text-transform:uppercase;color:var(--paper);
+    max-width:calc(100% - 20px);text-align:center;
     animation:hintbob 2.6s ease-in-out infinite;transition:opacity .5s ease,transform .5s ease;}
   .taphint.gone{opacity:0;transform:translateX(-50%) translateY(-8px);}
   .taphint .tapdot{width:8px;height:8px;border-radius:50%;background:var(--gold);flex:none;
@@ -4262,9 +4269,13 @@ function showName(region,ev){
   if(!el||!host||!region) return;
   const r=host.getBoundingClientRect();
   el.innerHTML=esc(region.name)+'<small>'+esc(region.lang.split(',')[0])+' \u00b7 '+region.freq+' MHz</small>';
-  el.style.left=(ev.clientX-r.left)+'px';
-  el.style.top=(ev.clientY-r.top)+'px';
+  /* Clamp to the map box. Unclamped, a tap near the right edge pushed this bubble
+     past the viewport, and iOS then let the whole page scroll sideways. */
   el.classList.add('show');
+  const half=(el.offsetWidth||160)/2+8;
+  const x=Math.max(half,Math.min(r.width-half,ev.clientX-r.left));
+  el.style.left=x+'px';
+  el.style.top=Math.max(34,ev.clientY-r.top)+'px';
   clearTimeout(nameTimer);
   nameTimer=setTimeout(()=>el.classList.remove('show'),1800);
 }
@@ -5690,7 +5701,10 @@ function paintScrub(ratio,dur){
   document.getElementById('progFill').style.width=pct;
   document.getElementById('progHandle').style.left=pct;
   const tip=document.getElementById('progTime');
-  tip.style.left=pct;
+  /* keep it inside the bar: at 0% or 100% this used to hang off the edge */
+  const w=progWrap.offsetWidth||300;
+  const halfT=(tip.offsetWidth||46)/2+6;
+  tip.style.left=Math.max(halfT,Math.min(w-halfT,ratio*w))+'px';
   tip.textContent=fmtTime(ratio*(dur||0));
   progWrap.setAttribute('aria-valuenow',Math.round(ratio*100));
 }
