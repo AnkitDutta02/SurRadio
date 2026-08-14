@@ -54,7 +54,7 @@
   }
   ::selection{background:var(--gold);color:var(--ink);}
   button{font-family:inherit;}
-  .shell{max-width:1400px;margin:0 auto;overflow-x:clip;
+  .shell{max-width:none;margin:0;overflow-x:clip;
     padding:0 calc(24px + env(safe-area-inset-right)) 132px calc(24px + env(safe-area-inset-left));}
 
   header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 10px;flex-wrap:wrap;}
@@ -68,9 +68,9 @@
     margin:-4px 0 16px;}
   .tagline b{color:var(--paper);font-weight:600;}
 
-  .grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+  /* the old two-column page grid is gone; the panel lays its cards out in a column */
+  .panel-scroll{align-items:stretch;}
   @media (max-width:1040px){
-    .grid{grid-template-columns:1fr;}
     /* Single column stacks map above deck, so the map is capped to leave the
        record player just below the fold rather than far down the page. On tablets
        the map would otherwise fill the whole first screen on its own. */
@@ -144,8 +144,12 @@
     white-space:nowrap;max-width:calc(100% - 16px);overflow:hidden;text-overflow:ellipsis;
     box-shadow:0 8px 20px -8px rgba(0,0,0,.7);opacity:0;transition:opacity .16s ease;}
   .statename.show{opacity:1;}
-  .statename small{display:block;font-family:'IBM Plex Mono',monospace;font-size:.55rem;
-    font-weight:500;letter-spacing:.08em;text-transform:uppercase;opacity:.62;margin-top:1px;}
+  .statename b{display:block;font-family:'Fraunces',serif;font-size:.9rem;font-weight:600;}
+  .statename small{display:block;font-family:'IBM Plex Mono',monospace;font-size:.5rem;
+    font-weight:500;letter-spacing:.1em;text-transform:uppercase;opacity:.62;margin-top:3px;}
+  .statename em{display:block;font-style:normal;font-family:'IBM Plex Mono',monospace;
+    font-size:.5rem;letter-spacing:.16em;text-transform:uppercase;color:var(--madder);
+    margin-top:5px;font-weight:600;}
   /* offshore national bands */
   .natstn{cursor:pointer;}
   .natstn .natmast{fill:rgba(242,236,217,.55);transition:fill .18s ease;}
@@ -171,7 +175,7 @@
   .srcnote{padding:2px 18px 14px;font-family:'IBM Plex Mono',monospace;font-size:.57rem;color:rgba(154,154,184,.75);line-height:1.6;}
   .srcnote a{color:rgba(232,163,61,.85);}
 
-  .rail-col{display:flex;flex-direction:column;gap:16px;}
+
 
   .np{padding:18px;}
   .np-freq{display:flex;align-items:flex-end;gap:9px;margin-bottom:2px;}
@@ -271,7 +275,14 @@
   details.settings input:focus{border-color:var(--gold);}
   details.settings a{color:var(--gold);}
 
-  .bar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(13,16,36,.94);backdrop-filter:blur(14px);border-top:1px solid rgba(242,236,217,.12);}
+  /* THE PLAYER IS A LAYOUT ROW, NOT AN OVERLAY.
+     It used to be position:fixed at z-index 50 while the Tune India panel sat at 59
+     and spanned bottom:0 - so the panel covered the play button, and no amount of
+     z-index would have been the right answer. The shell is now a three-row grid
+     (header / stage / player) and the player occupies its own reserved row, so
+     nothing can be laid over it because nothing shares its space. */
+  .bar{grid-row:3;position:relative;z-index:2;background:rgba(13,16,36,.94);
+    backdrop-filter:blur(14px);border-top:1px solid rgba(242,236,217,.12);}
   /* The bar itself stays thin, but the touch zone around it is 22px tall so a
      thumb can actually grab it. touch-action:none lets us drag without the page
      scrolling underneath. */
@@ -329,7 +340,6 @@
   @media (max-width:760px){
     .vol{display:none;}
     .moods{gap:6px;}
-    .shell{padding:0 calc(14px + env(safe-area-inset-right)) 124px calc(14px + env(safe-area-inset-left));}
     /* Transport bar rebuilt for thumbs: one big play, two round skip buttons,
        and a taller progress strip that is actually tappable. */
     .prog{height:5px;}
@@ -342,7 +352,7 @@
     .ghost .ico{display:inline;opacity:.85;}
     .bar-info .t{font-size:.82rem;}
     .bar-info .s{font-size:.6rem;}
-    .platter{width:min(240px,66vw);}
+    .platter{width:min(240px,66vw,24vh);}
     .mood{padding:8px 3px;min-height:52px;}
     .mood b{font-size:.67rem;}
     .mood i{font-size:.5rem;}
@@ -428,9 +438,15 @@
      it had shifted. The card now stays exactly where it is and simply goes quiet. */
   .moodcard.inert .moods{opacity:.28;pointer-events:none;filter:saturate(.35);}
   .moodcard.inert .lbl{opacity:.5;}
-  .moodnote{display:none;font-family:'IBM Plex Mono',monospace;font-size:.6rem;
-    letter-spacing:.06em;color:var(--gold);margin-top:11px;line-height:1.6;}
-  .moodcard.inert .moodnote{display:block;}
+  /* The card itself no longer collapses, but this note did: display:none -> block
+     added a line on every preset and pushed everything below it. It now always
+     occupies its space and only its visibility changes, so the mood card is exactly
+     the same height for a state, a preset and All India Radio alike. */
+  .moodnote{visibility:hidden;font-family:'IBM Plex Mono',monospace;font-size:.6rem;
+    letter-spacing:.06em;color:var(--gold);margin-top:11px;line-height:1.6;
+    min-height:2.2em;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .moodcard.inert .moodnote{visibility:visible;}
 
   @media (max-width:1040px){
     .presets-row{grid-template-columns:repeat(3,1fr);}
@@ -479,7 +495,7 @@
      station was on air - and everything below it moved by up to 80px. Two rules
      together remove that: the block reserves a constant height whatever it contains,
      and the name is auto-fitted to its own length so it never needs a third line. */
-  .station-head{min-height:124px;display:flex;flex-direction:column;
+  .station-head{min-height:150px;display:flex;flex-direction:column;
     justify-content:center;align-items:flex-start;}
   .station-name{font-family:'Fraunces',serif;font-weight:600;font-size:2.5rem;
     line-height:1.05;letter-spacing:-.02em;margin:0 0 7px;color:var(--paper);
@@ -496,9 +512,11 @@
     color:var(--gold);letter-spacing:.02em;}
   .station-mhz{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.16em;
     color:var(--dim);text-transform:uppercase;}
-  .station-script{margin-left:auto;font-size:.95rem;color:rgba(242,236,217,.35);
-    letter-spacing:.02em;flex:none;max-width:44%;white-space:nowrap;
-    overflow:hidden;text-overflow:ellipsis;}
+  /* the state's own name, directly under the English one, so the two read as a pair
+     rather than the script looking like a stray glyph at the end of a row */
+  .station-script{font-size:1.02rem;line-height:1.3;color:rgba(232,163,61,.62);
+    margin:0 0 7px;min-height:1.3em;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;max-width:100%;}
   /* the descriptor line, in small caps like a band label */
   .np-place{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.17em;
     text-transform:uppercase;color:rgba(242,236,217,.62);margin:0;line-height:1.7;
@@ -508,20 +526,286 @@
   .station-freq.scanning{color:var(--paper);opacity:.75;}
 
   @media (max-width:760px){
-    .station-head{min-height:110px;}
+    .station-head{min-height:134px;}
     .station-name{font-size:2.05rem;}
     .station-name[data-fit="l"]{font-size:1.75rem;}
     .station-name[data-fit="xl"]{font-size:1.5rem;}
     .station-name[data-fit="xxl"]{font-size:1.22rem;}
-    .station-script{font-size:.85rem;}
+    .station-script{font-size:.92rem;}
     .np-place{font-size:.55rem;letter-spacing:.14em;}
   }
   @media (max-width:380px){
-    .station-head{min-height:104px;}
+    .station-head{min-height:126px;}
     .station-name{font-size:1.8rem;}
     .station-name[data-fit="l"]{font-size:1.55rem;}
     .station-name[data-fit="xl"]{font-size:1.34rem;}
     .station-name[data-fit="xxl"]{font-size:1.12rem;}
+  }
+
+
+  /* ===================== THE RADIO STAGE ================================= */
+  /* The viewport IS the radio. The document does not scroll during normal use:
+     the artwork, the station and the controls all stay put, and everything that
+     used to make the page longer now lives in a panel that scrolls on its own. */
+  html,body{height:100%;}
+  body.staged{overflow:hidden;}
+  /* one height for the player, referenced by the shell and by the panel, so the two
+     can never disagree about where the protected region begins */
+  :root{--player-h:86px;}
+  .shell{max-width:none;margin:0;padding:0;overflow:hidden;
+    height:100dvh;display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;}
+  /* 100dvh rather than 100vh, so mobile browser chrome cannot cut the stage off */
+  @supports not (height:100dvh){ .shell{height:100vh;} }
+
+  .shell > header{grid-row:1;padding:18px calc(24px + env(safe-area-inset-right)) 10px
+    calc(24px + env(safe-area-inset-left));}
+  /* align-items:center on a scroll container clips whatever overflows the TOP and
+     makes it unreachable - which is exactly how the station name, its frequency and
+     its script disappeared. Centring with auto margins keeps the hero centred when
+     it fits and scrollable from the top when it does not. */
+  .stage-main{grid-row:2;min-height:0;display:flex;align-items:flex-start;
+    justify-content:center;padding:0 calc(20px + env(safe-area-inset-right)) 12px
+    calc(20px + env(safe-area-inset-left));}
+  .stage-main .np{margin-top:auto;margin-bottom:auto;}
+  /* the hero is no longer a card; it is the stage itself */
+  .stage-main .np{background:none;border:none;box-shadow:none;padding:0;
+    width:100%;max-width:520px;text-align:left;}
+
+  /* the way in, always in the same place */
+  .tune-btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;
+    background:rgba(242,236,217,.06);border:1px solid rgba(242,236,217,.18);
+    border-radius:999px;padding:9px 17px;color:var(--paper);
+    font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.16em;
+    text-transform:uppercase;transition:background .18s ease,border-color .18s ease;}
+  .tune-btn:hover{background:rgba(232,163,61,.14);border-color:rgba(232,163,61,.5);}
+  .tune-btn:active{transform:scale(.97);}
+  .tune-dial{width:11px;height:11px;border-radius:50%;flex:none;
+    border:2px solid var(--gold);position:relative;}
+  .tune-dial::after{content:"";position:absolute;left:50%;top:-4px;width:2px;height:5px;
+    background:var(--gold);transform:translateX(-50%);border-radius:1px;}
+
+  /* ===================== TUNE INDIA PANEL ================================ */
+  .panel-veil{position:fixed;top:0;left:0;right:0;bottom:var(--player-h);z-index:58;
+    background:rgba(9,11,26,.42);
+    backdrop-filter:blur(3px);opacity:0;transition:opacity .38s ease;}
+  .panel-veil.show{opacity:1;}
+  .panel{position:fixed;top:0;right:0;bottom:var(--player-h);z-index:59;width:min(460px,92vw);
+    display:flex;flex-direction:column;
+    background:linear-gradient(180deg, rgba(16,19,42,.96), rgba(11,14,32,.97));
+    border-left:1px solid rgba(242,236,217,.14);
+    box-shadow:-30px 0 70px -30px rgba(0,0,0,.8);
+    transform:translateX(102%);transition:transform .42s cubic-bezier(.22,.9,.24,1);
+    padding-right:env(safe-area-inset-right);}
+  .panel.open{transform:none;}
+  .panel-head{flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:20px 20px 12px;border-bottom:1px solid rgba(242,236,217,.1);}
+  .panel-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.05rem;margin:0;}
+  .panel-close{background:none;border:none;color:var(--dim);font-size:1.5rem;line-height:1;
+    cursor:pointer;padding:2px 6px;border-radius:8px;}
+  .panel-close:hover{color:var(--paper);background:rgba(242,236,217,.08);}
+  /* the panel is the only thing that scrolls */
+  .panel-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;padding:14px 14px calc(28px + env(safe-area-inset-bottom));
+    display:flex;flex-direction:column;gap:14px;}
+  .panel-scroll::-webkit-scrollbar{width:7px;}
+  .panel-scroll::-webkit-scrollbar-thumb{background:rgba(242,236,217,.16);border-radius:4px;}
+  .panel-scroll > .card{margin:0;}
+  /* inside the panel the lists size themselves to the panel, not the viewport */
+  .panel-scroll .queue,.panel-scroll .stnlist{max-height:none;}
+  .panel-scroll svg#map{max-height:none;}
+  /* The dial should read as a map, not as a labelled diagram: only the largest
+     states keep a permanent name, the rest are quiet dots you touch. The masts and
+     island markers stay but recede. */
+  #viewDial .slabel.mid,#viewDial .slabel.tiny{display:none;}
+  #viewDial .natstn{opacity:.5;}
+  #viewDial .natstn .natlabel,#viewDial .natstn .natfreq{display:none;}
+  #viewDial .isle .slabel{opacity:.6;}
+  #viewDial .state{stroke-width:1;fill-opacity:.4;}
+  #viewDial .state:hover{fill-opacity:.75;}
+  #viewDial .hub{opacity:.5;}
+
+  @media (max-width:760px){
+    .shell > header{padding:14px calc(14px + env(safe-area-inset-right)) 8px
+      calc(14px + env(safe-area-inset-left));}
+    .stage-main{padding:0 calc(16px + env(safe-area-inset-right)) 104px
+      calc(16px + env(safe-area-inset-left));}
+    /* a sheet from the bottom reads better than a side drawer on a phone */
+    /* a near full screen sheet on a phone, still stopping above the player */
+    .panel{top:8px;left:0;right:0;width:auto;height:auto;bottom:var(--player-h);
+      border-left:none;border-top:1px solid rgba(242,236,217,.16);
+      border-radius:18px 18px 0 0;transform:translateY(103%);
+      box-shadow:0 -30px 70px -30px rgba(0,0,0,.85);}
+    .panel.open{transform:none;}
+    .panel-head{padding:16px 15px 11px;}
+  }
+
+
+  /* ---- presets inside Tune India ----------------------------------------
+     Six tiles across a 1400px page worked; six across a 460px panel gave every
+     station about 66px, so the names truncated to "A..." and "H..." and the list
+     told the listener nothing. In the panel they are full-width station rows -
+     name, frequency, descriptor - which is what the brief asked the browser to
+     look like anyway. */
+  .panel-scroll .presets{padding:12px 14px 4px;}
+  .panel-scroll .presets-row{display:flex;flex-direction:column;gap:6px;}
+  .panel-scroll .preset{flex-direction:row;align-items:center;gap:12px;
+    min-height:0;padding:11px 13px;text-align:left;}
+  .panel-scroll .preset .num{position:static;right:auto;top:auto;flex:none;
+    width:16px;font-size:.55rem;color:rgba(154,154,184,.6);}
+  .panel-scroll .preset .pmeta{flex:1 1 auto;min-width:0;}
+  .panel-scroll .preset b{display:block;font-size:.9rem;white-space:normal;
+    overflow:visible;text-overflow:clip;padding-right:0;line-height:1.25;}
+  .panel-scroll .preset .pdesc{display:block;font-family:'IBM Plex Mono',monospace;
+    font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--dim);margin-top:4px;white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;}
+  .panel-scroll .preset i{flex:none;font-size:.68rem;font-weight:600;
+    color:rgba(232,163,61,.85);letter-spacing:.02em;}
+  .panel-scroll .preset.on i{color:#171226;}
+  .panel-scroll .preset.on .pdesc{color:rgba(23,18,38,.7);}
+  .panel-scroll .preset.on .num{color:rgba(23,18,38,.6);}
+  .panel-scroll .preset.on::after{display:none;}
+  /* the panel already says Tune India, so its cards' own heads may wrap freely */
+  .panel-scroll .card-head{flex-wrap:wrap;}
+  .panel-scroll .card-head h2{white-space:normal;overflow:visible;text-overflow:clip;}
+
+
+  /* ---- the stage, centred -------------------------------------------------
+     The header used to be left-aligned while the record sat centred, so the track
+     title read as though it had fallen into a corner. One axis now: everything on
+     the stage is centred on the disc. */
+  .stage-main .np{text-align:center;}
+  .stage-main .station-head{align-items:center;}
+  .stage-main .onair-row{justify-content:center;}
+  .stage-main .onair-net{display:none;}          /* the brand already says this */
+  .stage-main .station-sub{justify-content:center;}
+
+  .stage-main .np-track,.stage-main .np-artist{text-align:center;}
+
+  /* the transport belongs with the record, not in a separate strip below it */
+  .stage-controls{display:flex;align-items:center;justify-content:center;gap:20px;
+    margin-top:16px;}
+  .stage-controls .btn.play{width:62px;height:62px;border-radius:50%;}
+  .stage-controls .btn.play .ic{width:23px;height:23px;}
+  .stage-controls .btn.ghost{width:46px;height:46px;border-radius:50%;padding:0;
+    justify-content:center;}
+  .stage-controls .btn.ghost .txt{display:none;}  /* the arrows say it */
+  .stage-controls .btn.ghost .ic{width:18px;height:18px;}
+
+  /* on a short window the stage stays whole: the record gives up room first, and
+     the stage scrolls on its own rather than the document */
+  .stage-main{overflow-y:auto;overscroll-behavior:contain;}
+
+  @media (max-height:700px){
+    .station-head{min-height:104px;}
+    .np-track{margin-top:8px;}
+    .stage-controls{margin-top:10px;gap:16px;}
+  }
+
+
+  @media (max-width:760px){
+    .stage-controls{gap:16px;margin-top:12px;}
+    .stage-controls .btn.play{width:58px;height:58px;}
+    .stage-controls .btn.ghost{width:44px;height:44px;}
+  }
+
+
+  /* ===================== THE FREQUENCY DIAL ============================== */
+  /* A printed frequency table, not a set of cards: a dial reading, the station in
+     small caps, its character line, separated by hairlines. */
+  .viewtabs{display:flex;gap:0;border-bottom:1px solid rgba(242,236,217,.14);
+    margin:2px 2px 4px;}
+  .viewtab{flex:1 1 0;background:none;border:none;cursor:pointer;
+    padding:11px 8px 10px;color:var(--dim);
+    font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.2em;
+    text-transform:uppercase;border-bottom:2px solid transparent;
+    transition:color .18s ease,border-color .18s ease;}
+  .viewtab:hover{color:var(--paper);}
+  .viewtab.on{color:var(--gold);border-bottom-color:var(--gold);}
+
+  .view{display:none;}
+  .view.on{display:block;}
+  .view-extra{display:none;flex-direction:column;gap:14px;}
+  .view-extra.on{display:flex;}
+
+  .freqlist{display:block;}
+  .fsec{font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.22em;
+    text-transform:uppercase;color:rgba(154,154,184,.85);
+    padding:22px 4px 8px;border-bottom:1px solid rgba(242,236,217,.10);
+    margin-bottom:2px;}
+  .fsec.first{padding-top:6px;}
+
+  .frow{display:grid;grid-template-columns:46px 1fr auto;align-items:baseline;
+    gap:12px;width:100%;text-align:left;background:none;border:none;cursor:pointer;
+    padding:11px 4px;border-bottom:1px solid rgba(242,236,217,.055);
+    color:var(--paper);transition:background .14s ease;}
+  .frow:hover{background:rgba(242,236,217,.05);}
+  .frow:active{background:rgba(232,163,61,.12);}
+  .fdial{font-family:'IBM Plex Mono',monospace;font-size:.76rem;font-weight:600;
+    color:rgba(232,163,61,.75);letter-spacing:.01em;}
+  .fname{font-family:'Fraunces',serif;font-size:.94rem;font-weight:600;line-height:1.2;
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .fdesc{font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.13em;
+    text-transform:uppercase;color:var(--dim);text-align:right;white-space:nowrap;
+    max-width:38%;overflow:hidden;text-overflow:ellipsis;}
+  /* the station on air is marked with the dial lit, not with a filled block */
+  .frow.on{background:rgba(232,163,61,.09);}
+  .frow.on .fdial{color:var(--gold);}
+  .frow.on .fname{color:var(--gold);}
+
+  /* the presets no longer need to be tiles anywhere inside the panel */
+  .view .presets{display:none;}
+
+  /* the drawer sits on top of the radio world rather than replacing it */
+  .panel{background:linear-gradient(180deg, rgba(13,16,36,.82), rgba(9,11,26,.90));
+    backdrop-filter:blur(18px) saturate(1.1);}
+  .panel-veil{backdrop-filter:blur(2px);}
+
+  @media (max-width:760px){
+    .frow{grid-template-columns:42px 1fr;gap:10px;padding:12px 4px;}
+    .fdesc{grid-column:2;text-align:left;max-width:100%;margin-top:3px;}
+    .fname{white-space:normal;}
+    .viewtab{font-size:.56rem;}
+  }
+
+
+  /* ---- the tuning scale under the two views ---- */
+  .viewtabs{border-bottom:none;}
+  .dialrule{position:relative;height:1px;background:rgba(242,236,217,.14);
+    margin:0 4px 4px;}
+  .dialrule::before,.dialrule::after{content:"";position:absolute;top:-3px;width:1px;
+    height:7px;background:rgba(242,236,217,.14);}
+  .dialrule::before{left:25%;}
+  .dialrule::after{left:75%;}
+  .dialmark{position:absolute;top:-3px;left:25%;width:7px;height:7px;border-radius:50%;
+    background:var(--gold);transform:translateX(-50%);
+    box-shadow:0 0 0 3px rgba(232,163,61,.16);
+    transition:left .34s cubic-bezier(.3,.9,.3,1);}
+  .dialrule.at-dial .dialmark{left:75%;}
+
+  /* ---- Explore India ---- */
+  .explore-head{padding:16px 16px 4px;}
+  .explore-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;
+    margin:0;letter-spacing:-.01em;}
+  .explore-sub{font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);margin:6px 0 0;}
+  .explore-now{font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--gold);margin:11px 0 0;
+    padding-top:10px;border-top:1px solid rgba(242,236,217,.1);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+
+  /* A landscape phone has no room for a record. The station identity, the song and
+     the controls are what matter, so the disc steps aside rather than pushing the
+     name off the top of the screen. */
+  @media (max-height:600px){
+    .deck{display:none;}
+    .station-head{min-height:96px;}
+    .station-name{font-size:1.5rem;}
+    .station-script{font-size:.82rem;margin-bottom:4px;}
+    .np-track{margin-top:6px;min-height:1.4em;-webkit-line-clamp:1;}
+    .stage-controls{margin-top:8px;}
   }
 
   /* ===================== SEARCH ========================================== */
@@ -604,17 +888,30 @@
 
   /* ================= BACKDROP: one generated landscape per state ========= */
   .backdrop{position:fixed;inset:0;z-index:-2;overflow:hidden;background:var(--ink);}
-  .bd-layer{position:absolute;inset:0;opacity:0;transition:opacity 1.1s ease;background-size:cover;background-position:center bottom;}
+  /* The scene is one asset; these properties are what make it read as monsoon,
+     dusk or a bright afternoon. All CSS, so it costs nothing per frame. */
+  .bd-layer{position:absolute;inset:0;opacity:0;background-size:cover;
+    background-position:center bottom;
+    transition:opacity 900ms ease, filter 1400ms ease;
+    filter:brightness(var(--v-bright,1)) saturate(var(--v-sat,1)) hue-rotate(var(--v-hue,0deg));
+    animation:scenedrift var(--v-drift,42s) ease-in-out infinite alternate;
+    will-change:opacity;}
+  @keyframes scenedrift{
+    from{transform:scale(1.06) translate3d(0,0,0);}
+    to{transform:scale(1.12) translate3d(calc(var(--v-movement,.4) * -2.2%), -1.4%, 0);}}
   .bd-layer.on{opacity:1;}
   .bd-layer svg{position:absolute;inset:0;width:100%;height:100%;}
   .bd-scrim{position:fixed;inset:0;z-index:-1;pointer-events:none;
     background:linear-gradient(to bottom, rgba(13,16,36,.90) 0%, rgba(13,16,36,.60) 44%, rgba(13,16,36,.92) 100%);}
-  .bd-grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+  .bd-grain{position:fixed;inset:0;z-index:-1;pointer-events:none;
+    opacity:var(--v-grain,.32);transition:opacity 1.4s ease;mix-blend-mode:overlay;
     background-image:radial-gradient(rgba(255,255,255,.09) .5px, transparent .5px);background-size:3px 3px;}
 
   /* ================= VINYL DECK ========================================== */
   .deck{position:relative;padding:6px 0 2px;display:flex;justify-content:center;}
-  .platter{position:relative;width:min(268px,72vw);aspect-ratio:1;border-radius:50%;
+  /* one expression rather than a ladder of height breakpoints: the record is always
+     the thing that gives up room first, so the station identity above it survives */
+  .platter{position:relative;width:min(268px,72vw,26vh);aspect-ratio:1;border-radius:50%;
     background:radial-gradient(circle at 50% 50%, #2a2f52 0 6%, #14162c 6% 100%);
     box-shadow:0 22px 44px -18px rgba(0,0,0,.85), inset 0 0 0 1px rgba(242,236,217,.07);
     display:flex;align-items:center;justify-content:center;}
@@ -836,14 +1133,11 @@
 
   /* ===================== PHONE LAYOUT ==================================== */
   @media (max-width:560px){
-    .shell{padding:0 calc(12px + env(safe-area-inset-right)) 118px calc(12px + env(safe-area-inset-left));}
     header{padding:14px 0 8px;gap:10px;}
     .brand svg{width:28px;height:28px;}
     .brand-name{font-size:1.12rem;}
     .brand-name small{font-size:.5rem;letter-spacing:.14em;}
     .tagline{font-size:.78rem;line-height:1.5;margin:-2px 0 12px;max-width:100%;}
-
-    .grid{gap:14px;}
     .card-head{padding:13px 13px 0;}
     .card-head h2{font-size:.95rem;}
 
@@ -866,7 +1160,7 @@
     .np{padding:14px;}
     .np-freq b{font-size:2rem;}
     .np-place{font-size:.62rem;letter-spacing:.09em;}
-    .platter{width:min(210px,60vw);}
+    .platter{width:min(210px,60vw,23vh);}
     .np-track{font-size:1rem;}
     .pad{padding:13px 13px 14px;}
     .moods{grid-template-columns:repeat(4,1fr);gap:6px;}
@@ -900,7 +1194,11 @@
     .state{stroke-width:1.8;fill-opacity:.6;}
   }
 
-  @media (prefers-reduced-motion:reduce){*{animation:none!important;}}
+  /* the scene holds still for anyone who asks for less motion */
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;}
+    .bd-layer{transform:scale(1.06);}
+  }
 </style>
 </head>
 <body>
@@ -943,13 +1241,131 @@
       </svg>
       <span class="brand-name">SUR RADIO<small>SHORTWAVE MEMORIES</small></span>
     </div>
+    <button class="tune-btn" id="tuneBtn" aria-expanded="false">
+      <span class="tune-dial"></span>Tune India
+    </button>
   </header>
-  <p class="tagline">Every state is a station. Tap the map, or leave it running.</p>
 
-  <div class="grid">
+  <div class="stage-main" id="stageMain">
+    <div class="np" id="npCard">
+        <div class="np-idle" id="npIdle">
+          <p><b style="color:var(--paper)">Nothing on air yet.</b><br>Tap a state on the map, or start somewhere random.</p>
+          <button class="btn ghost" id="randomBtn" style="width:100%;justify-content:center;">Tune me somewhere</button>
+        </div>
+        <div id="npLive" style="display:none;">
+          <div class="onair-row">
+            <span class="onair-dot" id="onAirDot"></span>
+            <span class="onair-txt" id="onAirTxt">ON AIR</span>
+            <span class="sig" id="sigBars"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="onair-net">SUR NETWORK</span>
+          </div>
+          <div class="station-head" id="stationHead">
+            <h2 class="station-name" id="stationName">&mdash;</h2>
+            <p class="station-script" id="stationScript"></p>
+            <div class="station-sub">
+              <span class="station-freq" id="freq">&mdash;</span><span class="station-mhz">MHz</span>
+            </div>
+            <p class="np-place" id="place">&mdash;</p>
+          </div>
+          <div class="deck">
+            <div class="platter" id="platter">
+              <div class="disc-glow"><div id="ytplayer"></div></div>
+              <div class="vinyl"></div>
+              <div class="vlabel" id="vlabel">
+                <b id="vfreq">&mdash;</b><i>MHZ</i><span id="vstate">SUR RADIO</span>
+              </div>
+              <div class="spindle"></div>
+              <div class="disc-veil" id="veil">
+                <div>
+                  <div class="eq"><i></i><i></i><i></i><i></i><i></i></div>
+                  <span id="veilText">Finding the song&hellip;</span>
+                </div>
+              </div>
+              <div class="tonearm" id="tonearm">
+                <div class="arm"></div><div class="head"></div><div class="pivot"></div>
+              </div>
+            </div>
+          </div>
+          <div class="deck-meta">
+            <span class="rpm"><b></b><span id="rpmText">Stopped</span></span>
+          </div>
+          <h3 class="np-track" id="trackName">&mdash;</h3>
+          <p class="np-artist" id="trackArtist">&mdash;</p>
+          <div class="stage-controls">
+            <button class="btn ghost" id="prevBtn" disabled aria-label="Previous song"><span class="ico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.5 5.6 L10.4 12 L18.5 18.4 Z" fill="currentColor"/><rect x="5.8" y="5.6" width="2.5" height="12.8" rx="1.1" fill="currentColor"/></svg></span><span class="txt">Prev</span></button>
+            <button class="btn play" id="playBtn" disabled aria-label="Play or pause"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg></button>
+            <button class="btn ghost" id="nextBtn" disabled aria-label="Next song"><span class="txt">Next</span><span class="ico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5.6 L13.6 12 L5.5 18.4 Z" fill="currentColor"/><rect x="15.7" y="5.6" width="2.5" height="12.8" rx="1.1" fill="currentColor"/></svg></span></button>
+          </div>
+          <p class="np-why" id="trackWhy">&mdash;</p>
+        </div>
+    </div>
+  </div>
+
+<div class="bar">
+  <div class="progwrap" id="progWrap" role="slider" aria-label="Seek" tabindex="0"
+       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="prog"><i id="progFill"></i><span class="proghandle" id="progHandle"></span></div>
+    <span class="progtime" id="progTime">0:00</span>
+  </div>
+  <div class="bar-in">
+    <div class="bar-info">
+      <div class="t" id="barTitle">Sur Radio &mdash; off air</div>
+      <div class="s" id="barSub">Select a state to begin</div>
+    </div>
+    <div class="vol">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);">VOL</span>
+      <input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume">
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Tune India: the whole network lives here, over the stage, scrolling on its own
+     so the radio environment behind it never moves. -->
+<div class="panel-veil" id="panelVeil" hidden></div>
+<aside class="panel" id="tunePanel" aria-hidden="true" aria-label="Tune India">
+  <div class="panel-head">
+    <h2>Tune India</h2>
+    <button class="panel-close" id="panelClose" aria-label="Close">&times;</button>
+  </div>
+  <div class="panel-scroll" id="panelScroll">
+    <!-- one search, above both views -->
+      <div class="card searchcard">
+        <div class="searchbox">
+          <svg class="sicon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12.6" y1="12.6" x2="17.5" y2="17.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input id="songSearch" type="search" autocomplete="off" spellcheck="false"
+                 placeholder="Search a song, artist or state...">
+          <button class="sclear" id="searchClear" aria-label="Clear search">&times;</button>
+        </div>
+        <div class="sresults" id="sresults"></div>
+      </div>
+
+    <!-- only one of these two is ever on screen -->
+    <div class="viewtabs" role="tablist">
+      <button class="viewtab on" id="tabStations" role="tab" aria-selected="true">Stations</button>
+      <button class="viewtab" id="tabDial" role="tab" aria-selected="false">Explore</button>
+    </div>
+    <!-- a tuning scale rather than an underline: the marker slides to the view you
+         are on, which is the same gesture as moving along a dial -->
+    <div class="dialrule" id="dialRule" aria-hidden="true"><span class="dialmark"></span></div>
+
+    <section class="view on" id="viewStations">
+      <div class="freqlist" id="freqList"></div>
+      <div class="card pad moodcard" id="moodCard">
+        <span class="lbl">Tune a frequency within this station</span>
+        <div class="moods" id="moods"></div>
+        <p class="moodnote" id="moodNote">This station is a mood in itself &mdash; tap a state on the map to use moods.</p>
+      </div>
+    </section>
+
+    <section class="view" id="viewDial">
     <div class="card">
+      <div class="explore-head">
+        <h2>Explore India</h2>
+        <p class="explore-sub">Tune in by place</p>
+        <p class="explore-now" id="exploreNow">&mdash;</p>
+      </div>
       <div class="card-head">
-        <h2>Tune India</h2>
         <div class="head-right">
           <span class="onair" id="mapHint">Tap any state to tune</span>
           <button class="shuffle" id="shuffleBtn" title="Tune All India Radio">
@@ -987,71 +1403,14 @@
         derived from Survey of India / DataMeet sources. Administrative boundaries are shown for navigation only.
       </p>
     </div>
+    </section>
 
-    <div class="rail-col">
-      <div class="card searchcard">
-        <div class="searchbox">
-          <svg class="sicon" viewBox="0 0 20 20" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.2" fill="none" stroke="currentColor" stroke-width="1.8"/><line x1="12.6" y1="12.6" x2="17.5" y2="17.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          <input id="songSearch" type="search" autocomplete="off" spellcheck="false"
-                 placeholder="Search a song, artist or state...">
-          <button class="sclear" id="searchClear" aria-label="Clear search">&times;</button>
-        </div>
-        <div class="sresults" id="sresults"></div>
-      </div>
+    <!-- the queue and the full station index stay with the stations view -->
+    <div class="view-extra" id="viewExtra">
 
-      <div class="card np">
-        <div class="np-idle" id="npIdle">
-          <p><b style="color:var(--paper)">Nothing on air yet.</b><br>Tap a state on the map, or start somewhere random.</p>
-          <button class="btn ghost" id="randomBtn" style="width:100%;justify-content:center;">Tune me somewhere</button>
-        </div>
-        <div id="npLive" style="display:none;">
-          <div class="onair-row">
-            <span class="onair-dot" id="onAirDot"></span>
-            <span class="onair-txt" id="onAirTxt">ON AIR</span>
-            <span class="sig" id="sigBars"><i></i><i></i><i></i><i></i><i></i></span>
-            <span class="onair-net">SUR NETWORK</span>
-          </div>
-          <div class="station-head" id="stationHead">
-            <h2 class="station-name" id="stationName">&mdash;</h2>
-            <div class="station-sub">
-              <span class="station-freq" id="freq">&mdash;</span><span class="station-mhz">MHz</span>
-              <span class="station-script" id="stationScript"></span>
-            </div>
-            <p class="np-place" id="place">&mdash;</p>
-          </div>
-          <div class="deck">
-            <div class="platter" id="platter">
-              <div class="disc-glow"><div id="ytplayer"></div></div>
-              <div class="vinyl"></div>
-              <div class="vlabel" id="vlabel">
-                <b id="vfreq">&mdash;</b><i>MHZ</i><span id="vstate">SUR RADIO</span>
-              </div>
-              <div class="spindle"></div>
-              <div class="disc-veil" id="veil">
-                <div>
-                  <div class="eq"><i></i><i></i><i></i><i></i><i></i></div>
-                  <span id="veilText">Finding the song&hellip;</span>
-                </div>
-              </div>
-              <div class="tonearm" id="tonearm">
-                <div class="arm"></div><div class="head"></div><div class="pivot"></div>
-              </div>
-            </div>
-          </div>
-          <div class="deck-meta">
-            <span class="rpm"><b></b><span id="rpmText">Stopped</span></span>
-          </div>
-          <h3 class="np-track" id="trackName">&mdash;</h3>
-          <p class="np-artist" id="trackArtist">&mdash;</p>
-          <p class="np-why" id="trackWhy">&mdash;</p>
-        </div>
-      </div>
 
-      <div class="card pad moodcard" id="moodCard">
-        <span class="lbl">Tune a frequency within this station</span>
-        <div class="moods" id="moods"></div>
-        <p class="moodnote" id="moodNote">This station is a mood in itself &mdash; tap a state on the map to use moods.</p>
-      </div>
+
+
 
       <div class="card">
         <div class="card-head" style="padding-bottom:12px;"><h2>Songs</h2><span id="qStatus">&mdash;</span></div>
@@ -1065,28 +1424,8 @@
       </div>
     </div>
   </div>
-</div>
+</aside>
 
-<div class="bar">
-  <div class="progwrap" id="progWrap" role="slider" aria-label="Seek" tabindex="0"
-       aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-    <div class="prog"><i id="progFill"></i><span class="proghandle" id="progHandle"></span></div>
-    <span class="progtime" id="progTime">0:00</span>
-  </div>
-  <div class="bar-in">
-    <button class="btn play" id="playBtn" disabled aria-label="Play or pause"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg></button>
-    <div class="bar-info">
-      <div class="t" id="barTitle">Sur Radio &mdash; off air</div>
-      <div class="s" id="barSub">Select a state to begin</div>
-    </div>
-    <button class="btn ghost" id="prevBtn" disabled aria-label="Previous song"><span class="ico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18.5 5.6 L10.4 12 L18.5 18.4 Z" fill="currentColor"/><rect x="5.8" y="5.6" width="2.5" height="12.8" rx="1.1" fill="currentColor"/></svg></span><span class="txt">Prev</span></button>
-    <button class="btn ghost" id="nextBtn" disabled aria-label="Next song"><span class="txt">Next</span><span class="ico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5.6 L13.6 12 L5.5 18.4 Z" fill="currentColor"/><rect x="15.7" y="5.6" width="2.5" height="12.8" rx="1.1" fill="currentColor"/></svg></span></button>
-    <div class="vol">
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);">VOL</span>
-      <input type="range" id="vol" min="0" max="100" value="80" aria-label="Volume">
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast"></div>
 
 <!-- Shown only when the page is opened straight from disk. YouTube refuses to embed
@@ -4443,7 +4782,10 @@ function showName(region,ev){
   const host=document.querySelector('.maphold');
   if(!el||!host||!region) return;
   const r=host.getBoundingClientRect();
-  el.innerHTML=esc(region.name)+'<small>'+esc(region.lang.split(',')[0])+' \u00b7 '+region.freq+' MHz</small>';
+  /* the contextual station label: name, dial reading, character line, tune in */
+  el.innerHTML='<b>'+esc(region.name)+'</b>'+
+    '<small>'+esc(region.freq)+' MHz \u00b7 '+esc(shortDesc(region))+'</small>'+
+    '<em>Tune in</em>';
   /* Clamp to the map box. Unclamped, a tap near the right edge pushed this bubble
      past the viewport, and iOS then let the whole page scroll sideways. */
   el.classList.add('show');
@@ -4460,6 +4802,8 @@ function hideName(){
 }
 
 let beaconStop=null;
+let relabelNow=null;   /* set once the map has drawn */
+let airScene=null;     /* which region All India Radio is currently painted as */
 /* Confirms the touch landed, which matters most on phones where there is no cursor. */
 function tapRipple(ev){
   dismissHint();
@@ -4743,7 +5087,16 @@ async function loadMap(){
     'Dadra & Nagar Haveli and Daman & Diu':'DNH','Lakshadweep':'LKD',
     'Andaman & Nicobar Islands':'AND'
   };
-  const narrow=()=>{ try{ return window.matchMedia('(max-width:560px)').matches; }catch(e){ return false; } };
+  /* The map used to fill the page, so a viewport media query was a fair proxy for
+     how much room the labels had. It now lives inside the Tune India panel, so ask
+     the map element how wide it actually is. */
+  const narrow=()=>{
+    try{
+      const w=svg.getBoundingClientRect().width;
+      if(w>4) return w<520;
+      return window.matchMedia('(max-width:560px)').matches;
+    }catch(e){ return false; }
+  };
   const labelFor=r=>narrow() ? (CODE[r.name]||SHORT[r.name]||r.name) : (SHORT[r.name]||r.name);
 
   const labelNodes=[];
@@ -4829,6 +5182,8 @@ async function loadMap(){
     clearTimeout(deTimer);
     deTimer=setTimeout(relabel,220);
   });
+  /* the panel calls this when it opens, because labels can only be measured on screen */
+  relabelNow = relabel;
 
   /* the two island UTs, placed in open water and clearly labelled */
   /* Real coordinates, not eyeballed ones. Andaman was sitting at 18.6N, level with
@@ -4914,7 +5269,12 @@ Object.keys(ZONES).forEach(k=>{
     const b=document.createElement('button');
     b.className='preset'; b.dataset.id=r.id;
     b.setAttribute('aria-pressed','false');
-    b.innerHTML='<span class="num">'+(i+1)+'</span><b>'+esc(r.name)+'</b><i>'+r.freq+' MHz</i>';
+    /* name, frequency and character line, so a preset reads as a station wherever
+       it is rendered - tile on the stage, row in the panel */
+    b.innerHTML='<span class="num">'+(i+1)+'</span>'+
+      '<span class="pmeta"><b>'+esc(r.name)+'</b>'+
+        '<span class="pdesc">'+esc(r.desc||r.lang)+'</span></span>'+
+      '<i>'+r.freq+' MHz</i>';
     b.addEventListener('click',function(){ buzz(PICK); fire(tune(r.id),'preset tune'); });
     host.appendChild(b);
   });
@@ -5313,6 +5673,66 @@ const AIR_ID = 'air';
   REGIONS.forEach(function(r){ if(!r.freq) r.freq='87.9'; });
 })();
 
+
+/* ==========================================================================
+   VISUAL STATE
+   The artwork should be the world the transmission comes from, not a picture behind
+   the UI. The same Kerala scene has to read as monsoon evening or as a bright folk
+   afternoon, so rather than drawing new scenes we derive a few parameters from the
+   station, the mood and the track, and let CSS apply them to the one scene.
+   No audio analysis and no ML: the mood tags the catalogue already carries are the
+   evidence, which means the accuracy is at mood level rather than per second.
+   ========================================================================== */
+const MOOD_VISUAL = {
+  classical:  {energy:.20, warmth:.55, movement:.18, atmos:'dawn'},
+  retro:      {energy:.34, warmth:.78, movement:.26, atmos:'sepia'},
+  folk:       {energy:.62, warmth:.74, movement:.55, atmos:'afternoon'},
+  devotional: {energy:.26, warmth:.62, movement:.22, atmos:'dawn'},
+  modern:     {energy:.66, warmth:.48, movement:.52, atmos:'city'},
+  party:      {energy:.90, warmth:.66, movement:.80, atmos:'night'},
+  chill:      {energy:.20, warmth:.40, movement:.20, atmos:'monsoon'},
+  hits:       {energy:.74, warmth:.60, movement:.60, atmos:'afternoon'},
+  rap:        {energy:.80, warmth:.36, movement:.66, atmos:'night'},
+  mymix:      {energy:.48, warmth:.58, movement:.40, atmos:'evening'}
+};
+
+/* A track nudges the mood's baseline rather than replacing it, so the place stays
+   itself and only the atmosphere shifts between songs. */
+function visualFor(region, mKey, track){
+  const base = MOOD_VISUAL[mKey] || MOOD_VISUAL.mymix;
+  let e=base.energy, w=base.warmth, m=base.movement, atmos=base.atmos;
+  if(track && Array.isArray(track.m)){
+    const has=k=>track.m.indexOf(k)>-1;
+    if(has('party')||has('rap')){ e+=.16; m+=.16; }
+    if(has('chill')||has('devotional')){ e-=.14; m-=.12; }
+    if(has('classical')){ m-=.08; w+=.04; }
+    if(has('retro')){ w+=.10; }
+    if(has('modern')||has('hits')){ e+=.06; }
+    if(has('folk')){ w+=.06; m+=.08; }
+    if(track.era==='classic') w+=.06;
+    if(track.era==='now')     e+=.04;
+  }
+  const clamp=v=>Math.max(0,Math.min(1,v));
+  return {energy:clamp(e), warmth:clamp(w), movement:clamp(m), atmos:atmos};
+}
+
+/* Applied as custom properties, so the whole thing is CSS transitions rather than a
+   render loop - it costs nothing while a song plays. */
+function applyVisual(v){
+  const root=document.documentElement;
+  if(!root||!v) return;
+  root.style.setProperty('--v-energy',   v.energy.toFixed(3));
+  root.style.setProperty('--v-warmth',   v.warmth.toFixed(3));
+  root.style.setProperty('--v-movement', v.movement.toFixed(3));
+  /* warmth leans the scene amber, energy lifts it, calm songs sit darker and cooler */
+  root.style.setProperty('--v-bright', (0.80 + v.energy*0.30).toFixed(3));
+  root.style.setProperty('--v-sat',    (0.78 + v.warmth*0.55).toFixed(3));
+  root.style.setProperty('--v-hue',    ((v.warmth-0.5)*14).toFixed(2)+'deg');
+  /* movement sets how fast the scene drifts: slow ballad, restless dance track */
+  root.style.setProperty('--v-drift',  (46 - v.movement*30).toFixed(1)+'s');
+  root.style.setProperty('--v-grain',  (0.22 + (1-v.energy)*0.18).toFixed(3));
+  document.body.setAttribute('data-atmos', v.atmos);
+}
 
 /* ==========================================================================
    RADIO ENGINE
@@ -5918,6 +6338,9 @@ function renderStation(region){
   if(vs) vs.textContent=(region.name||'SUR RADIO').toUpperCase();
   const vf=document.getElementById('vfreq');
   if(vf) vf.textContent=region.freq||'--';
+  /* Explore India shows what you are currently tuned to, above the map */
+  const en=document.getElementById('exploreNow');
+  if(en) en.textContent=(region.freq||'--')+' MHz \u00b7 '+region.name.toUpperCase();
 }
 
 function statusLabel(region,mk){
@@ -5941,7 +6364,12 @@ async function tune(id,opts){
   dismissHint();
   markLive(id);
   markPreset(id);
+  markFreqRow(id);
   scanTo(region.freq);
+  airScene = (region.id===AIR_ID) ? null : region.id;
+  try{ applyVisual(visualFor(region,moodKey,null)); }catch(e){}
+  /* you have tuned; the stage takes over again */
+  try{ TunePanel.close(); }catch(e){}
   document.querySelectorAll('.srow').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
   document.getElementById('mapHint').textContent=region.freq+' MHZ \u00b7 '+region.name.toUpperCase();
   document.getElementById('npIdle').style.display='none';
@@ -6050,6 +6478,7 @@ async function recurate(){
      playing and the bottom bar still owns it, but it is no longer listed - the
      list is purely what comes next, so it never shows a leftover from the mood
      you just left. */
+  try{ applyVisual(visualFor(region,mk,null)); }catch(e){}
   queue = programStation(region,mk,26);
   if(!queue.length) queue = seedFor(region,mk);
   qi = -1;
@@ -6227,6 +6656,17 @@ function trackArtist(t){ return t.realA||t.a; }
 
 function paintTrack(track,searching){
   if(!searching) updateMediaSession(track);
+  /* the place stays; the weather changes with the song */
+  try{ applyVisual(visualFor(current,moodKey,track)); }catch(e){}
+  /* All India Radio is a journey: when it plays a Kerala song the scene drifts
+     towards Kerala, then towards the desert for a Rajasthan song, and so on -
+     crossfaded, never hard-cut. */
+  try{
+    if(current && current.id===AIR_ID && track && track.rid && track.rid!==airScene){
+      const home=byId(track.rid);
+      if(home){ airScene=track.rid; paintBackdrop(home); }
+    }
+  }catch(e){}
   document.getElementById('trackName').textContent=trackTitle(track);
   document.getElementById('trackArtist').textContent=trackArtist(track);
   document.getElementById('trackWhy').textContent=track.w||current.genres;
@@ -6852,6 +7292,7 @@ function enterStation(){
        and the map is the first thing in view */
     document.documentElement.classList.remove('locked');
     document.body.classList.remove('locked');
+    document.body.classList.add('staged');
     pinScroll();
   },620);
   /* This click is the browser's required audio gesture, so it is the right
@@ -6902,6 +7343,131 @@ function enterStation(){
     const b=document.getElementById('fileWarn');
     if(b) b.classList.remove('show');
   });
+})();
+
+/* ---- the frequency dial ---------------------------------------------------
+   One renderer for every station type, because the brief is explicit that regional
+   and curated stations must not have separate implementations. They differ only in
+   which section they are listed under, which is what communicates that a place and
+   a collection are different kinds of radio. */
+function renderFreqList(){
+  const host=document.getElementById('freqList');
+  if(!host) return;
+
+  const air      = REGIONS.filter(function(r){ return r.id===AIR_ID; });
+  const curated  = REGIONS.filter(function(r){ return r.zone==='national' && r.id!==AIR_ID; });
+  const regional = REGIONS.filter(function(r){ return r.zone!=='national'; })
+                          .sort(function(a,b){ return parseFloat(a.freq)-parseFloat(b.freq); });
+
+  function row(r){
+    const b=document.createElement('button');
+    b.className='frow'+(current&&current.id===r.id?' on':'');
+    b.dataset.id=r.id;
+    b.innerHTML='<span class="fdial">'+esc(r.freq)+'</span>'+
+                '<span class="fname">'+esc(r.name)+'</span>'+
+                '<span class="fdesc">'+esc(shortDesc(r))+'</span>';
+    b.addEventListener('click',function(){ buzz(PICK); fire(tune(r.id),'freq list'); });
+    return b;
+  }
+  function section(label,list,extraClass){
+    const h=document.createElement('div');
+    h.className='fsec'+(extraClass?' '+extraClass:'');
+    h.textContent=label;
+    host.appendChild(h);
+    list.forEach(function(r){ host.appendChild(row(r)); });
+  }
+
+  host.innerHTML='';
+  section('All India',air,'first');
+  section('Regional frequencies',regional);
+  section('Curated frequencies',curated);
+  markFreqRow(current?current.id:null);
+}
+
+/* the descriptor is written as three clauses; the list only has room for the first
+   two, and the full line is on the stage anyway */
+function shortDesc(r){
+  const d=r.desc||r.lang||'';
+  const parts=d.split('\u00b7').map(function(x){ return x.trim(); }).filter(Boolean);
+  return parts.slice(0,2).join(' \u00b7 ');
+}
+function markFreqRow(id){
+  document.querySelectorAll('.frow').forEach(function(b){
+    b.classList.toggle('on',b.dataset.id===id);
+  });
+}
+
+/* ---- Stations or The Dial, never both ---- */
+const PanelViews = (function(){
+  const tabs={stations:document.getElementById('tabStations'),
+              dial:document.getElementById('tabDial')};
+  const views={stations:document.getElementById('viewStations'),
+               dial:document.getElementById('viewDial')};
+  const extra=document.getElementById('viewExtra');
+  let showing='stations';
+  function show(which){
+    showing=which;
+    Object.keys(views).forEach(function(k){
+      if(views[k]) views[k].classList.toggle('on',k===which);
+      if(tabs[k]){
+        tabs[k].classList.toggle('on',k===which);
+        tabs[k].setAttribute('aria-selected',k===which?'true':'false');
+      }
+    });
+    /* the queue and the station index belong to the list, not to the map */
+    if(extra) extra.classList.toggle('on',which==='stations');
+    const rule=document.getElementById('dialRule');
+    if(rule) rule.classList.toggle('at-dial',which==='dial');
+    const sc=document.getElementById('panelScroll');
+    if(sc) sc.scrollTop=0;
+    if(which==='dial'){
+      /* labels can only be measured once the map is actually on screen */
+      setTimeout(function(){ try{ if(relabelNow) relabelNow(); }catch(e){} },60);
+    }
+  }
+  if(tabs.stations) tabs.stations.addEventListener('click',function(){ buzz(TAP); show('stations'); });
+  if(tabs.dial)     tabs.dial.addEventListener('click',function(){ buzz(TAP); show('dial'); });
+  return { show:show, showing:function(){ return showing; } };
+})();
+
+/* the frequency list is built here, after the station data and AIR_ID exist */
+renderFreqList();
+
+/* ---- Tune India -----------------------------------------------------------
+   The network slides over the stage rather than extending the page. Choosing a
+   station closes the panel and hands the screen back to the radio, which is the
+   whole point: you tune, then you listen. */
+const TunePanel = (function(){
+  const panel = document.getElementById('tunePanel');
+  const veil  = document.getElementById('panelVeil');
+  const btn   = document.getElementById('tuneBtn');
+  const close = document.getElementById('panelClose');
+  let open = false;
+
+  function set(state){
+    open = state;
+    if(!panel) return;
+    panel.classList.toggle('open',open);
+    panel.setAttribute('aria-hidden',open?'false':'true');
+    if(btn) btn.setAttribute('aria-expanded',open?'true':'false');
+    if(veil){
+      if(open){ veil.hidden=false; requestAnimationFrame(()=>veil.classList.add('show')); }
+      else { veil.classList.remove('show'); setTimeout(()=>{ if(!open) veil.hidden=true; },380); }
+    }
+    if(open){
+      /* Stations is the way in; the map is a deliberate second step */
+      try{ PanelViews.show('stations'); }catch(e){}
+      /* the map only measures correctly once it is actually on screen */
+      setTimeout(function(){ try{ if(relabelNow) relabelNow(); }catch(e){} },420);
+      const first=panel.querySelector('input,button');
+      if(first&&first.focus) setTimeout(()=>{try{first.focus();}catch(e){}},430);
+    }
+  }
+  if(btn)   btn.addEventListener('click',function(){ buzz(TAP); set(!open); });
+  if(close) close.addEventListener('click',function(){ buzz(TAP); set(false); });
+  if(veil)  veil.addEventListener('click',function(){ set(false); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&open) set(false); });
+  return { open:()=>set(true), close:()=>set(false), isOpen:()=>open };
 })();
 
 /* ---- turning the dial -------------------------------------------------------
