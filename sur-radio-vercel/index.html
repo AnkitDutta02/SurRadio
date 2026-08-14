@@ -549,7 +549,7 @@
 
   /* ================= LANDING ============================================= */
   .landing{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;
-    padding:34px 22px;overflow-y:auto;
+    padding:34px 22px;overflow-y:auto;overflow-x:hidden;
     background:
       radial-gradient(1000px 560px at 50% 6%, rgba(232,163,61,.13), transparent 64%),
       radial-gradient(820px 640px at 84% 96%, rgba(148,99,176,.15), transparent 60%),
@@ -6160,6 +6160,18 @@ document.documentElement.classList.add('locked');
 document.body.classList.add('locked');
 
 let entered=false;
+/* Used at every step of entering: unlocking the page, hiding the landing, and after
+   the first render. Resets both axes, because only resetting the vertical one left
+   the horizontal offset in place on iOS. */
+function pinScroll(){
+  try{
+    const el=document.scrollingElement||document.documentElement;
+    if(el){ el.scrollLeft=0; }
+    if(document.body) document.body.scrollLeft=0;
+    window.scrollTo(0,0);
+  }catch(e){}
+}
+
 function enterStation(){
   if(entered) return;
   entered=true;
@@ -6173,13 +6185,23 @@ function enterStation(){
     arr.forEach((t,i)=>setTimeout(()=>t.classList.add('lit'), i*22));
   }
   const l=document.getElementById('landing');
+  /* Let go of the knob before its container disappears, otherwise the browser is
+     left holding focus inside a hidden element. */
+  if(knob&&knob.blur) knob.blur();
   setTimeout(()=>{
-    if(l){ l.classList.add('gone'); setTimeout(()=>{l.style.display='none';},1000); }
+    if(l){
+      l.classList.add('gone');
+      setTimeout(()=>{
+        l.style.display='none';
+        /* the landing is fully out of the way now, so settle the scroll once more */
+        pinScroll();
+      },1000);
+    }
     /* release the page and pin it to the top, so every entry looks identical
        and the map is the first thing in view */
     document.documentElement.classList.remove('locked');
     document.body.classList.remove('locked');
-    window.scrollTo(0,0);
+    pinScroll();
   },620);
   /* This click is the browser's required audio gesture, so it is the right
      moment to actually start playing something. */
@@ -6316,7 +6338,10 @@ function enterStation(){
 document.getElementById('landing').addEventListener('keydown',function(e){
   if(e.key==='Enter'||e.code==='Space'){ e.preventDefault(); enterStation(); }
 });
-setTimeout(()=>{const b=document.getElementById('enterBtn');if(b)b.focus();},300);
+/* The dial used to be focused automatically on load. Focusing an element and then
+   hiding it - which is exactly what entering does - leaves Safari scrolling towards
+   something that is no longer there, and the page ends up offset. Keyboard users can
+   still reach it with Tab, which is the first stop anyway. */
 
 fire(loadMap(),'map load');
 </script>
