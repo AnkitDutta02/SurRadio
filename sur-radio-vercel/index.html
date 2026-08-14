@@ -24,6 +24,19 @@
      out, so the overflow is pinned on html as well as body - hiding it on body
      alone is not enough there. */
   html{overflow-x:hidden;max-width:100%;}
+
+  /* THE structural cause of sideways drift. A flex or grid child defaults to
+     min-width:auto, which means it refuses to shrink below its own content. Any
+     child with white-space:nowrap - a heading, a station name, a status line - then
+     forces its row wider than the screen no matter how much ellipsis it has. Setting
+     min-width:0 on the children of every row lets the ellipsis actually engage.
+     Items that must keep a size use flex:none and are unaffected. */
+  .card-head > *, .head-right > *, .bar-in > *, .bar-info > *,
+  .searchbox > *, .qrow > *, .srow > *, .sres > *, .preset > *,
+  .legend > *, .presets-row > *, .np > *, .deck > *{min-width:0;}
+  /* and nothing inside the page may be wider than the page itself, except the
+     deliberately oversized video behind the record */
+  .shell :not(svg):not(svg *):not(.disc-glow):not(.disc-glow *){max-width:100%;}
   /* I have now chased this drift through several individual elements, so rather than
      keep hardening them one at a time: pan-y tells the browser this page scrolls
      vertically only, so a stray overflow anywhere cannot be panned into view, and
@@ -297,6 +310,7 @@
     /* Transport bar rebuilt for thumbs: one big play, two round skip buttons,
        and a taller progress strip that is actually tappable. */
     .prog{height:5px;}
+    .vol{display:none;}    /* hardware buttons do this on a phone */
     .bar-in{gap:10px;padding:10px calc(14px + env(safe-area-inset-right))
             calc(10px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));}
     .play{width:54px;height:54px;font-size:1.2rem;}
@@ -429,7 +443,16 @@
     color:var(--paper);caret-color:var(--gold);
     font-family:'IBM Plex Sans',sans-serif;font-size:.88rem;letter-spacing:.01em;
     padding:12px 0;}
-  @media (max-width:760px){ .searchbox input,input,textarea,select{font-size:16px;} }
+  /* Safari zooms the page whenever a focused field is under 16px, and it leaves the
+     page offset afterwards. A blanket `input` rule is not enough: .search input and
+     details.settings input are more specific and would win, so every field selector
+     is listed here explicitly. */
+  @media (max-width:760px){
+    input,textarea,select,
+    .search input,
+    .searchbox input,
+    details.settings input{font-size:16px !important;}
+  }
   .searchbox input::placeholder{color:rgba(242,236,217,.38);}
   .searchbox input::-webkit-search-cancel-button,
   .searchbox input::-webkit-search-decoration,
