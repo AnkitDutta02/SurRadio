@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sur Radio — Real music from every state of India</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,8 +29,8 @@
      vertically only, so a stray overflow anywhere cannot be panned into view, and
      overscroll-behavior-x stops the rubber-band that leaves it stuck there. */
   body{touch-action:pan-y;overscroll-behavior-x:none;}
-  /* the fixed transport bar must never contribute to document width */
-  .bar{overflow:hidden;}
+  /* The bar's own text is bounded with min-width:0 and ellipsis, so it does not need
+     clipping - and clipping it hid the scrub time bubble that sits above it. */
   html.locked,body.locked{overflow:hidden;height:100%;}
   body{
     background:transparent;
@@ -40,7 +40,8 @@
   }
   ::selection{background:var(--gold);color:var(--ink);}
   button{font-family:inherit;}
-  .shell{max-width:1400px;margin:0 auto;padding:0 24px 132px;overflow-x:clip;}
+  .shell{max-width:1400px;margin:0 auto;overflow-x:clip;
+    padding:0 calc(24px + env(safe-area-inset-right)) 132px calc(24px + env(safe-area-inset-left));}
 
   header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 14px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:11px;}
@@ -263,7 +264,12 @@
     .prog{height:4px;}
     .proghandle{width:16px;height:16px;margin-left:-8px;transform:translateY(-50%) scale(1);}
   }
-  .bar-in{max-width:1400px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:14px;}
+  /* Respect the home indicator and the rounded corners on both platforms. env()
+     resolves to 0 where there is no inset, so this is inert elsewhere. */
+  .bar-in{max-width:1400px;margin:0 auto;display:flex;align-items:center;gap:14px;
+    padding:9px calc(20px + env(safe-area-inset-right))
+            calc(9px + env(safe-area-inset-bottom))
+            calc(20px + env(safe-area-inset-left));}
   .btn{border:none;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:filter .14s ease,transform .1s ease;}
   .btn:active{transform:translateY(1px);}
   .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
@@ -287,11 +293,12 @@
   @media (max-width:760px){
     .vol{display:none;}
     .moods{gap:6px;}
-    .shell{padding:0 14px 124px;}
+    .shell{padding:0 calc(14px + env(safe-area-inset-right)) 124px calc(14px + env(safe-area-inset-left));}
     /* Transport bar rebuilt for thumbs: one big play, two round skip buttons,
        and a taller progress strip that is actually tappable. */
     .prog{height:5px;}
-    .bar-in{padding:10px 14px;gap:10px;}
+    .bar-in{gap:10px;padding:10px calc(14px + env(safe-area-inset-right))
+            calc(10px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left));}
     .play{width:54px;height:54px;font-size:1.2rem;}
     .ghost{width:44px;height:44px;padding:0;border-radius:50%;font-size:.72rem;letter-spacing:0;flex:none;}
     .ghost .txt{display:none;}
@@ -307,7 +314,8 @@
     .queue,.stnlist{max-height:210px;}
   }
   @media (max-width:380px){
-    .bar-in{gap:8px;padding:9px 11px;}
+    .bar-in{gap:8px;padding:9px calc(11px + env(safe-area-inset-right))
+            calc(9px + env(safe-area-inset-bottom)) calc(11px + env(safe-area-inset-left));}
     .play{width:48px;height:48px;}
     .ghost{width:40px;height:40px;}
   }
@@ -692,7 +700,7 @@
 
   /* ===================== PHONE LAYOUT ==================================== */
   @media (max-width:560px){
-    .shell{padding:0 12px 118px;}
+    .shell{padding:0 calc(12px + env(safe-area-inset-right)) 118px calc(12px + env(safe-area-inset-left));}
     header{padding:14px 0 8px;gap:10px;}
     .brand svg{width:28px;height:28px;}
     .brand-name{font-size:1.12rem;}
