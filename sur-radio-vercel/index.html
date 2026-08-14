@@ -564,7 +564,13 @@
      makes it unreachable - which is exactly how the station name, its frequency and
      its script disappeared. Centring with auto margins keeps the hero centred when
      it fits and scrollable from the top when it does not. */
+  /* The disc was sized from the viewport height (26vh), but the room it actually has
+     is the viewport MINUS the header and the player bar. On a browser window with
+     tabs, bookmarks and a taskbar that gap is large enough that the hero overflowed
+     and the play button ended up behind the bar. Sizing against the stage's own
+     height fixes it at any window size. */
   .stage-main{grid-row:2;min-height:0;display:flex;align-items:flex-start;
+    container-type:size;
     justify-content:center;padding:0 calc(20px + env(safe-area-inset-right)) 12px
     calc(20px + env(safe-area-inset-left));}
   .stage-main .np{margin-top:auto;margin-bottom:auto;}
@@ -586,9 +592,11 @@
     background:var(--gold);transform:translateX(-50%);border-radius:1px;}
 
   /* ===================== TUNE INDIA PANEL ================================ */
+  /* A backdrop-filter on a full-screen fixed layer smears the whole page in Chrome
+     while it fades, which is the odd blur when a region is chosen. The panel itself
+     is still blurred; the veil is now just a darkening. */
   .panel-veil{position:fixed;top:0;left:0;right:0;bottom:var(--player-h);z-index:58;
-    background:rgba(9,11,26,.42);
-    backdrop-filter:blur(3px);opacity:0;transition:opacity .38s ease;}
+    background:rgba(9,11,26,.46);opacity:0;transition:opacity .34s ease;}
   .panel-veil.show{opacity:1;}
   .panel{position:fixed;top:0;right:0;bottom:var(--player-h);z-index:59;width:min(460px,92vw);
     display:flex;flex-direction:column;
@@ -736,7 +744,12 @@
     margin-bottom:2px;}
   .fsec.first{padding-top:6px;}
 
-  .frow{display:grid;grid-template-columns:46px 1fr auto;align-items:baseline;
+  /* The name column was 1fr, which is greedy: grid gave it everything and left the
+     descriptor at min-content, so even "slow radio" came out as "SL...". max-content
+     on the descriptor makes it take the width it needs, and the name - which has an
+     ellipsis and its full form on the stage - yields instead. */
+  .frow{display:grid;grid-template-columns:46px minmax(0,1fr) max-content;
+    align-items:baseline;
     gap:12px;width:100%;text-align:left;background:none;border:none;cursor:pointer;
     padding:11px 4px;border-bottom:1px solid rgba(242,236,217,.055);
     color:var(--paper);transition:background .14s ease;}
@@ -748,7 +761,7 @@
     min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .fdesc{font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.13em;
     text-transform:uppercase;color:var(--dim);text-align:right;white-space:nowrap;
-    max-width:38%;overflow:hidden;text-overflow:ellipsis;}
+    max-width:54%;overflow:hidden;text-overflow:ellipsis;}
   /* the station on air is marked with the dial lit, not with a filled block */
   .frow.on{background:rgba(232,163,61,.09);}
   .frow.on .fdial{color:var(--gold);}
@@ -760,10 +773,11 @@
   /* the drawer sits on top of the radio world rather than replacing it */
   .panel{background:linear-gradient(180deg, rgba(13,16,36,.82), rgba(9,11,26,.90));
     backdrop-filter:blur(18px) saturate(1.1);}
-  .panel-veil{backdrop-filter:blur(2px);}
+
 
   @media (max-width:760px){
-    .frow{grid-template-columns:42px 1fr;gap:10px;padding:12px 4px;}
+    .frow{grid-template-columns:42px minmax(0,1fr);gap:10px;padding:12px 4px;}
+    .mrow{grid-template-columns:22px minmax(0,1fr);}
     .fdesc{grid-column:2;text-align:left;max-width:100%;margin-top:3px;}
     .fname{white-space:normal;}
     .viewtab{font-size:.56rem;}
@@ -776,13 +790,14 @@
     margin:0 4px 4px;}
   .dialrule::before,.dialrule::after{content:"";position:absolute;top:-3px;width:1px;
     height:7px;background:rgba(242,236,217,.14);}
-  .dialrule::before{left:25%;}
-  .dialrule::after{left:75%;}
-  .dialmark{position:absolute;top:-3px;left:25%;width:7px;height:7px;border-radius:50%;
+  .dialrule::before{left:16.6%;}
+  .dialrule::after{left:83.4%;}
+  .dialmark{position:absolute;top:-3px;left:16.6%;width:7px;height:7px;border-radius:50%;
     background:var(--gold);transform:translateX(-50%);
     box-shadow:0 0 0 3px rgba(232,163,61,.16);
     transition:left .34s cubic-bezier(.3,.9,.3,1);}
-  .dialrule.at-dial .dialmark{left:75%;}
+  .dialrule.at-moods .dialmark{left:50%;}
+  .dialrule.at-collections .dialmark{left:83.4%;}
 
   /* ---- Explore India ---- */
   .explore-head{padding:16px 16px 4px;}
@@ -807,6 +822,90 @@
     .np-track{margin-top:6px;min-height:1.4em;-webkit-line-clamp:1;}
     .stage-controls{margin-top:8px;}
   }
+
+  /* where container queries are available, measure the stage itself */
+  /* The fixed parts of the hero - identity, track, controls, hint - come to roughly
+     354px. Whatever is left is the disc's, so the fraction tightens as the stage
+     shrinks and the disc bows out entirely when there is genuinely no room. */
+  @supports (container-type:size){
+    .platter{width:min(268px,72vw,40cqh);}
+    @container (max-height:640px){ .platter{width:min(220px,64vw,26cqh);} }
+    @container (max-height:520px){ .platter{width:min(180px,58vw,20cqh);} }
+    @container (max-height:440px){
+      .deck{display:none;}
+      .np-track{-webkit-line-clamp:1;min-height:1.4em;margin-top:6px;}
+      .tune-hint{margin-top:10px;}
+    }
+  }
+
+
+  /* ---- the primary control: a tuner, not a call to action ---- */
+  .tune-btn{display:inline-flex;align-items:center;gap:11px;cursor:pointer;
+    background:linear-gradient(180deg, rgba(232,163,61,.16), rgba(232,163,61,.09));
+    border:1px solid rgba(232,163,61,.5);border-radius:999px;padding:9px 20px 9px 15px;
+    color:var(--paper);font-family:'IBM Plex Mono',monospace;
+    transition:background .2s ease,border-color .2s ease,box-shadow .2s ease;}
+  .tune-btn:hover{background:linear-gradient(180deg, rgba(232,163,61,.26), rgba(232,163,61,.14));
+    border-color:var(--gold);box-shadow:0 0 0 4px rgba(232,163,61,.10);}
+  .tune-btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+  .tune-btn:active{transform:scale(.98);}
+  .tune-txt{display:flex;flex-direction:column;align-items:flex-start;line-height:1;}
+  .tune-txt{font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600;}
+  .tune-txt small{font-size:.5rem;letter-spacing:.14em;color:var(--dim);
+    margin-top:4px;font-weight:400;}
+  /* the dial reads the frequency; on hover the needle sweeps once, like tuning */
+  .tune-dial{width:17px;height:17px;border-radius:50%;flex:none;position:relative;
+    border:1.5px solid var(--gold);}
+  .tune-dial i{position:absolute;left:50%;top:1.5px;width:1.5px;height:6px;
+    background:var(--gold);border-radius:1px;transform-origin:50% 100%;
+    transform:translateX(-50%) rotate(-32deg);transition:transform .45s ease;}
+  .tune-btn:hover .tune-dial i{transform:translateX(-50%) rotate(34deg);}
+  .tune-dial::after{content:"";position:absolute;left:50%;top:50%;width:3px;height:3px;
+    border-radius:50%;background:var(--gold);transform:translate(-50%,-50%);}
+
+  /* ---- the contextual hint ---- */
+  .tune-hint{display:none;margin:18px auto 0;background:none;border:none;cursor:pointer;
+    font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--dim);padding:7px 2px;
+    position:relative;transition:color .2s ease;}
+  .tune-hint[data-show="1"]{display:block;animation:hintin 1.1s ease both 1.6s;}
+  .tune-hint::after{content:"";position:absolute;left:50%;bottom:2px;width:0;height:1px;
+    background:var(--gold);transform:translateX(-50%);transition:width .25s ease;}
+  .tune-hint:hover{color:var(--gold);}
+  .tune-hint:hover::after{width:78%;}
+  .tune-hint:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px;}
+  @keyframes hintin{from{opacity:0;transform:translateY(4px);}to{opacity:.95;transform:none;}}
+
+  @media (max-width:760px){
+    .tune-btn{padding:8px 15px 8px 12px;gap:9px;}
+    .tune-txt{font-size:.62rem;}
+    .tune-txt small{display:none;}    /* the label carries it on a phone */
+  }
+  @media (max-height:600px){ .tune-hint{margin-top:10px;} }
+
+
+  /* ---- frequencies or the map, inside Places ---- */
+  .subtabs{display:flex;gap:6px;padding:6px 2px 2px;}
+  .subtab{background:none;border:1px solid rgba(242,236,217,.14);border-radius:999px;
+    cursor:pointer;padding:6px 13px;color:var(--dim);
+    font-family:'IBM Plex Mono',monospace;font-size:.52rem;letter-spacing:.14em;
+    text-transform:uppercase;transition:color .16s ease,border-color .16s ease,background .16s ease;}
+  .subtab:hover{color:var(--paper);}
+  .subtab.on{color:var(--gold);border-color:rgba(232,163,61,.5);background:rgba(232,163,61,.08);}
+  .freqlist.hide{display:none;}
+  .mapwrap{display:none;}
+  .mapwrap.on{display:block;}
+
+  /* a mood is a state of the station, so it gets a lamp rather than a dial reading */
+  .mrow{grid-template-columns:24px minmax(0,1fr) max-content;}
+  .mrow .mdot{width:7px;height:7px;border-radius:50%;background:rgba(242,236,217,.22);
+    align-self:center;justify-self:center;}
+  /* the mood the song on air actually belongs to */
+  .mrow.now .mdot{background:rgba(232,163,61,.55);}
+  .mrow.now .fdesc{color:rgba(232,163,61,.7);}
+  .mrow.on .mdot{background:var(--gold);box-shadow:0 0 0 3px rgba(232,163,61,.16);}
+  /* the old grid stays for the stage, hidden inside the drawer */
+  .view .moodcard{display:none;}
 
   /* ===================== SEARCH ========================================== */
   .searchcard{padding:13px 14px;}
@@ -1241,8 +1340,10 @@
       </svg>
       <span class="brand-name">SUR RADIO<small>SHORTWAVE MEMORIES</small></span>
     </div>
-    <button class="tune-btn" id="tuneBtn" aria-expanded="false">
-      <span class="tune-dial"></span>Tune India
+    <button class="tune-btn" id="tuneBtn" aria-expanded="false"
+            aria-label="Tune in to another station">
+      <span class="tune-dial"><i></i></span>
+      <span class="tune-txt">Tune In<small>Explore stations</small></span>
     </button>
   </header>
 
@@ -1296,6 +1397,9 @@
             <button class="btn play" id="playBtn" disabled aria-label="Play or pause"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.2 L18.8 12 L8.5 18.8 Z" fill="currentColor"/></svg></button>
             <button class="btn ghost" id="nextBtn" disabled aria-label="Next song"><span class="txt">Next</span><span class="ico"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 5.6 L13.6 12 L5.5 18.4 Z" fill="currentColor"/><rect x="15.7" y="5.6" width="2.5" height="12.8" rx="1.1" fill="currentColor"/></svg></span></button>
           </div>
+          <!-- A first visit needs to learn that there is somewhere else to go. One
+               line, no modal, no overlay, and it retires once you have tuned. -->
+          <button class="tune-hint" id="tuneHint" hidden>Tune into another place</button>
           <p class="np-why" id="trackWhy">&mdash;</p>
         </div>
     </div>
@@ -1343,26 +1447,24 @@
     <!-- only one of these two is ever on screen -->
     <div class="viewtabs" role="tablist">
       <button class="viewtab on" id="tabStations" role="tab" aria-selected="true">Stations</button>
-      <button class="viewtab" id="tabDial" role="tab" aria-selected="false">Explore</button>
+      <button class="viewtab" id="tabMoods" role="tab" aria-selected="false">Moods</button>
+      <button class="viewtab" id="tabCollections" role="tab" aria-selected="false">Collections</button>
     </div>
     <!-- a tuning scale rather than an underline: the marker slides to the view you
          are on, which is the same gesture as moving along a dial -->
     <div class="dialrule" id="dialRule" aria-hidden="true"><span class="dialmark"></span></div>
 
     <section class="view on" id="viewStations">
-      <div class="freqlist" id="freqList"></div>
-      <div class="card pad moodcard" id="moodCard">
-        <span class="lbl">Tune a frequency within this station</span>
-        <div class="moods" id="moods"></div>
-        <p class="moodnote" id="moodNote">This station is a mood in itself &mdash; tap a state on the map to use moods.</p>
+      <div class="subtabs">
+        <button class="subtab on" id="subList">Frequencies</button>
+        <button class="subtab" id="subMap">Explore the map</button>
       </div>
-    </section>
-
-    <section class="view" id="viewDial">
+      <div class="freqlist" id="freqList"></div>
+      <div class="mapwrap" id="mapWrap">
     <div class="card">
       <div class="explore-head">
         <h2>Explore India</h2>
-        <p class="explore-sub">Tune in by place</p>
+        <p class="explore-sub">Tune into a place</p>
         <p class="explore-now" id="exploreNow">&mdash;</p>
       </div>
       <div class="card-head">
@@ -1403,6 +1505,21 @@
         derived from Survey of India / DataMeet sources. Administrative boundaries are shown for navigation only.
       </p>
     </div>
+      </div>
+    </section>
+
+
+    <section class="view" id="viewMoods">
+      <div class="freqlist" id="moodList"></div>
+      <div class="card pad moodcard" id="moodCard">
+        <span class="lbl">Tune a frequency within this station</span>
+        <div class="moods" id="moods"></div>
+        <p class="moodnote" id="moodNote">This station is a mood in itself &mdash; tap a state on the map to use moods.</p>
+      </div>
+    </section>
+
+    <section class="view" id="viewCollections">
+      <div class="freqlist" id="collectionList"></div>
     </section>
 
     <!-- the queue and the full station index stay with the stations view -->
@@ -6167,6 +6284,7 @@ window.onYouTubeIframeAPIReady=function(){
         if(e.data===YT.PlayerState.PLAYING){
           playing=true;syncPlayBtn();veil(false);startProg();
           playedToken=loadToken;              /* this particular load did start */
+          fire(prefetchAhead(),'prefetch ahead');
           playErrors=0; lastErrIdx=-1;        /* a good play clears the error streak */
         }
         else if(e.data===YT.PlayerState.PAUSED){playing=false;syncPlayBtn();stopProg();}
@@ -6366,6 +6484,7 @@ async function tune(id,opts){
   markPreset(id);
   markFreqRow(id);
   scanTo(region.freq);
+  try{ FirstVisit.offer(); }catch(e){}
   airScene = (region.id===AIR_ID) ? null : region.id;
   try{ applyVisual(visualFor(region,moodKey,null)); }catch(e){}
   /* you have tuned; the stage takes over again */
@@ -6412,7 +6531,8 @@ async function tune(id,opts){
        ever adds rows below what is already on screen. */
     queue=queue.concat(mergeNew(tracks,queue));
     renderQueue(); setQStatus(statusLabel(region,moodKey));
-    fire(hydrateTitles(),'hydrate titles');
+    /* names can fill in a moment later; getting sound out comes first */
+    setTimeout(function(){ fire(hydrateTitles(),'hydrate titles'); },1200);
   }catch(e){
     if(mySeq!==seq) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
@@ -6483,7 +6603,11 @@ async function recurate(){
   if(!queue.length) queue = seedFor(region,mk);
   qi = -1;
   renderQueue();
-  fire(hydrateTitles(),'hydrate titles');
+  /* Choosing a mood used to rebuild the list and leave the previous song playing, so
+     to the listener nothing happened. A mood is a frequency of its own: it goes on
+     air straight away. */
+  if(queue.length) fire(playAt(0,0,true),'mood on air');
+  setTimeout(function(){ fire(hydrateTitles(),'hydrate titles'); },1200);
   setQStatus(region.zone==='national'?statusLabel(region,mk):'Re-curating \u00b7 '+MOODS[mk].n);
 
   try{
@@ -6505,6 +6629,7 @@ async function recurate(){
    position, which physically reordered the list on every single click - the
    reshuffling that kept coming back. */
 async function playPicked(i){
+  try{ FirstVisit.retire(); }catch(e){}
   if(i<0||i>=queue.length) return;
   /* Choosing a song by hand is a fresh start: it should not inherit an error streak
      from earlier attempts, otherwise a few blocked songs leave the player stuck. */
@@ -6553,6 +6678,11 @@ async function playAt(i,depth,manual){
      go through resolveFull so the listener sees the actual song name instead of
      "Bhojpuri song". Real titles keep the name we wrote. */
   let id=track.vid||null;
+  /* a remembered id plays with no round trip at all */
+  if(!id && track.key){
+    const hit=ResolveCache.get(track.key);
+    if(hit){ id=hit.id; track.vid=id; track.alts=hit.alts; track.altI=0; }
+  }
   if(!id){
     /* Every track keeps the other search results as alternates. When YouTube blocks
        the first video from embedding we can try the next upload of the same song
@@ -6563,6 +6693,7 @@ async function playAt(i,depth,manual){
       id=found.id;
       track.alts=found.alts||[id];
       track.altI=0;
+      if(track.key) ResolveCache.put(track.key,id,track.alts);
       if(found.title && (track.g||track.generic||looksDescriptive(track.t))){
         track.realT=found.title;
         if(found.author && looksDescriptive(track.a)) track.realA=found.author;
@@ -6658,6 +6789,7 @@ function paintTrack(track,searching){
   if(!searching) updateMediaSession(track);
   /* the place stays; the weather changes with the song */
   try{ applyVisual(visualFor(current,moodKey,track)); }catch(e){}
+  try{ markPlayingMoods(track); }catch(e){}
   /* All India Radio is a journey: when it plays a Kerala song the scene drifts
      towards Kerala, then towards the desert for a Rajasthan song, and so on -
      crossfaded, never hard-cut. */
@@ -6761,7 +6893,7 @@ function renderQueue(){
   }
   el.scrollTop=scrollWas;      /* never yank the listener back to the top */
 }
-function next(manual){ playErrors=0; lastErrIdx=-1; fire(playAt(qi+1,0,manual===true),'next'); }
+function next(manual){ if(manual===true){try{FirstVisit.retire();}catch(e){}} playErrors=0; lastErrIdx=-1; fire(playAt(qi+1,0,manual===true),'next'); }
 function prev(){ playErrors=0; lastErrIdx=-1; fire(playAt(Math.max(0,qi-1),0,true),'prev'); }
 
 /* ============================ CONTROLS =================================== */
@@ -6771,16 +6903,9 @@ MOOD_KEYS.forEach(function(k){
   const b=document.createElement('button');
   b.className='mood'+(k===moodKey?' on':''); b.dataset.k=k;
   b.innerHTML='<b>'+m.n+'</b><i>'+(k==='mymix'?'the station itself':m.tag+' radio')+'</i>';
-  b.addEventListener('click',function(){
-    buzz(TAP);
-    moodKey=k;
-    document.querySelectorAll('.mood').forEach(x=>x.classList.toggle('on',x.dataset.k===k));
-    if(current){
-      /* no tune() here: that would restart the station from track one */
-      fire(recurate(),'re-curate');
-    }
-    else toast(m.n+' selected. Now pick a state.');
-  });
+  b.dataset.k=k;
+  /* one code path for every mood control */
+  b.addEventListener('click',function(){ buzz(TAP); setMood(k); });
   moodsEl.appendChild(b);
 });
 document.getElementById('playBtn').addEventListener('click',function(){
@@ -7345,43 +7470,190 @@ function enterStation(){
   });
 })();
 
+/* ---- resolution cache -----------------------------------------------------
+   Every track has to be looked up before it can play, and that lookup was happening
+   on every single play - which is why a station took a moment to come on air. Ids are
+   stable, so they are remembered for a month. A station you have heard before starts
+   immediately, and so does anything the prefetcher has already fetched. */
+const ResolveCache = (function(){
+  const KEY='surradio_vids_v1';
+  const TTL=30*24*3600*1000;
+  let map={}, usable=true;
+  try{
+    const raw=localStorage.getItem(KEY);
+    if(raw) map=JSON.parse(raw)||{};
+  }catch(e){ usable=false; }
+  let dirty=false, timer=null;
+  function flush(){
+    if(!usable||!dirty) return;
+    dirty=false;
+    try{ localStorage.setItem(KEY,JSON.stringify(map)); }
+    catch(e){
+      /* full: keep the newest half rather than giving up on caching */
+      try{
+        const keys=Object.keys(map).sort(function(a,b){ return (map[b].at||0)-(map[a].at||0); });
+        const keep={};
+        keys.slice(0,Math.floor(keys.length/2)).forEach(function(k){ keep[k]=map[k]; });
+        map=keep;
+        localStorage.setItem(KEY,JSON.stringify(map));
+      }catch(e2){ usable=false; }
+    }
+  }
+  return {
+    get:function(key){
+      const e=map[key];
+      if(!e) return null;
+      if(Date.now()-(e.at||0)>TTL){ delete map[key]; return null; }
+      return e;
+    },
+    put:function(key,id,alts){
+      if(!key||!id) return;
+      map[key]={id:id,alts:(alts||[id]).slice(0,5),at:Date.now()};
+      dirty=true;
+      clearTimeout(timer); timer=setTimeout(flush,800);
+    },
+    size:function(){ return Object.keys(map).length; }
+  };
+})();
+
+/* Look ahead while the current song plays, so advancing never waits on the network.
+   Two at a time is enough to stay in front of the listener without being greedy. */
+let prefetching=false;
+async function prefetchAhead(){
+  if(prefetching||!current) return;
+  prefetching=true;
+  const region=current;
+  try{
+    const todo=[];
+    for(let i=qi+1;i<queue.length && todo.length<2;i++){
+      const t=queue[i];
+      if(!t||t.vid||t.bad) continue;
+      const hit=t.key&&ResolveCache.get(t.key);
+      if(hit){ t.vid=hit.id; t.alts=hit.alts; t.altI=0; continue; }
+      todo.push(t);
+    }
+    for(const t of todo){
+      if(current!==region) break;
+      try{
+        const found=await resolveFull(searchPhrase(t,region));
+        if(!found) continue;
+        t.vid=found.id;
+        t.alts=found.alts||[found.id];
+        t.altI=0;
+        if(t.key) ResolveCache.put(t.key,found.id,t.alts);
+      }catch(e){}
+    }
+  } finally { prefetching=false; }
+}
+
 /* ---- the frequency dial ---------------------------------------------------
    One renderer for every station type, because the brief is explicit that regional
    and curated stations must not have separate implementations. They differ only in
    which section they are listed under, which is what communicates that a place and
    a collection are different kinds of radio. */
+function stationRow(r){
+  const b=document.createElement('button');
+  b.className='frow'+(current&&current.id===r.id?' on':'');
+  b.dataset.id=r.id;
+  b.innerHTML='<span class="fdial">'+esc(r.freq)+'</span>'+
+              '<span class="fname">'+esc(r.name)+'</span>'+
+              '<span class="fdesc">'+esc(shortDesc(r))+'</span>';
+  b.addEventListener('click',function(){
+    buzz(PICK);
+    try{ FirstVisit.retire(); }catch(e){}
+    fire(tune(r.id),'freq list');
+  });
+  return b;
+}
+function sectionLabel(host,text,first){
+  const h=document.createElement('div');
+  h.className='fsec'+(first?' first':'');
+  h.textContent=text;
+  host.appendChild(h);
+}
+
+/* Places. The map lives here too, behind a toggle, because exploring by geography is
+   another way of answering the same question. */
 function renderFreqList(){
   const host=document.getElementById('freqList');
   if(!host) return;
-
-  const air      = REGIONS.filter(function(r){ return r.id===AIR_ID; });
-  const curated  = REGIONS.filter(function(r){ return r.zone==='national' && r.id!==AIR_ID; });
-  const regional = REGIONS.filter(function(r){ return r.zone!=='national'; })
-                          .sort(function(a,b){ return parseFloat(a.freq)-parseFloat(b.freq); });
-
-  function row(r){
-    const b=document.createElement('button');
-    b.className='frow'+(current&&current.id===r.id?' on':'');
-    b.dataset.id=r.id;
-    b.innerHTML='<span class="fdial">'+esc(r.freq)+'</span>'+
-                '<span class="fname">'+esc(r.name)+'</span>'+
-                '<span class="fdesc">'+esc(shortDesc(r))+'</span>';
-    b.addEventListener('click',function(){ buzz(PICK); fire(tune(r.id),'freq list'); });
-    return b;
-  }
-  function section(label,list,extraClass){
-    const h=document.createElement('div');
-    h.className='fsec'+(extraClass?' '+extraClass:'');
-    h.textContent=label;
-    host.appendChild(h);
-    list.forEach(function(r){ host.appendChild(row(r)); });
-  }
-
   host.innerHTML='';
-  section('All India',air,'first');
-  section('Regional frequencies',regional);
-  section('Curated frequencies',curated);
+  sectionLabel(host,'All India',true);
+  REGIONS.filter(function(r){ return r.id===AIR_ID; }).forEach(function(r){ host.appendChild(stationRow(r)); });
+  sectionLabel(host,'Regional frequencies');
+  REGIONS.filter(function(r){ return r.zone!=='national'; })
+         .sort(function(a,b){ return parseFloat(a.freq)-parseFloat(b.freq); })
+         .forEach(function(r){ host.appendChild(stationRow(r)); });
   markFreqRow(current?current.id:null);
+}
+
+/* Curated transmissions. Same visual language as the places, because they are
+   stations too - they just represent a body of music rather than a place. */
+function renderCollections(){
+  const host=document.getElementById('collectionList');
+  if(!host) return;
+  host.innerHTML='';
+  sectionLabel(host,'Curated frequencies',true);
+  REGIONS.filter(function(r){ return r.zone==='national' && r.id!==AIR_ID; })
+         .forEach(function(r){ host.appendChild(stationRow(r)); });
+  markFreqRow(current?current.id:null);
+}
+
+/* Moods, grouped from the ten the catalogue already has - nothing invented. A mood
+   retunes the station you are on rather than taking you somewhere else, so it says
+   which station it will apply to. */
+const MOOD_GROUPS = [
+  ['The station itself', ['mymix']],
+  ['By feel',            ['chill','party','modern','hits','rap']],
+  ['By tradition',       ['classical','folk','devotional','retro']]
+];
+function renderMoodList(){
+  const host=document.getElementById('moodList');
+  if(!host) return;
+  host.innerHTML='';
+  MOOD_GROUPS.forEach(function(g,gi){
+    sectionLabel(host,g[0],gi===0);
+    g[1].forEach(function(k){
+      const m=MOODS[k];
+      if(!m) return;
+      const b=document.createElement('button');
+      b.className='frow mrow'+(k===moodKey?' on':'');
+      b.dataset.k=k;
+      b.innerHTML='<span class="fdial mdot"></span>'+
+                  '<span class="fname">'+esc(m.n)+'</span>'+
+                  '<span class="fdesc">'+esc(k==='mymix'?'the station itself':m.tag+' radio')+'</span>';
+      b.addEventListener('click',function(){
+        buzz(PICK);
+        try{ FirstVisit.retire(); }catch(e){}
+        setMood(k);
+        try{ TunePanel.close(); }catch(e){}
+      });
+      host.appendChild(b);
+    });
+  });
+}
+function markMoodRow(k){
+  document.querySelectorAll('.mrow').forEach(function(b){ b.classList.toggle('on',b.dataset.k===k); });
+  document.querySelectorAll('.mood').forEach(function(b){ b.classList.toggle('on',b.dataset.k===k); });
+}
+
+/* Which moods the song actually on air belongs to. The selected mood is the filter;
+   this is the truth about what is playing, and a track usually sits in two or three
+   of them. Shown as a quiet lamp so the list always reflects the transmission. */
+function markPlayingMoods(track){
+  const on=(track&&Array.isArray(track.m))?track.m:[];
+  document.querySelectorAll('.mrow').forEach(function(b){
+    b.classList.toggle('now',on.indexOf(b.dataset.k)>-1);
+  });
+}
+
+/* one place where a mood is applied, whichever control asked for it */
+function setMood(k){
+  if(!MOODS[k]) return;
+  moodKey=k;
+  markMoodRow(k);
+  if(current) fire(recurate(),'re-curate');
+  else toast(MOODS[k].n+' selected. Now pick a station.');
 }
 
 /* the descriptor is written as three clauses; the list only has room for the first
@@ -7399,44 +7671,101 @@ function markFreqRow(id){
 
 /* ---- Stations or The Dial, never both ---- */
 const PanelViews = (function(){
+  const NAMES=['stations','moods','collections'];
   const tabs={stations:document.getElementById('tabStations'),
-              dial:document.getElementById('tabDial')};
+              moods:document.getElementById('tabMoods'),
+              collections:document.getElementById('tabCollections')};
   const views={stations:document.getElementById('viewStations'),
-               dial:document.getElementById('viewDial')};
+               moods:document.getElementById('viewMoods'),
+               collections:document.getElementById('viewCollections')};
   const extra=document.getElementById('viewExtra');
   let showing='stations';
   function show(which){
+    if(NAMES.indexOf(which)<0) which='stations';
     showing=which;
-    Object.keys(views).forEach(function(k){
+    NAMES.forEach(function(k){
       if(views[k]) views[k].classList.toggle('on',k===which);
       if(tabs[k]){
         tabs[k].classList.toggle('on',k===which);
         tabs[k].setAttribute('aria-selected',k===which?'true':'false');
       }
     });
-    /* the queue and the station index belong to the list, not to the map */
+    /* the queue and the station index belong with the places */
     if(extra) extra.classList.toggle('on',which==='stations');
     const rule=document.getElementById('dialRule');
-    if(rule) rule.classList.toggle('at-dial',which==='dial');
+    if(rule){
+      rule.classList.toggle('at-moods',which==='moods');
+      rule.classList.toggle('at-collections',which==='collections');
+    }
     const sc=document.getElementById('panelScroll');
     if(sc) sc.scrollTop=0;
-    if(which==='dial'){
-      /* labels can only be measured once the map is actually on screen */
-      setTimeout(function(){ try{ if(relabelNow) relabelNow(); }catch(e){} },60);
-    }
   }
-  if(tabs.stations) tabs.stations.addEventListener('click',function(){ buzz(TAP); show('stations'); });
-  if(tabs.dial)     tabs.dial.addEventListener('click',function(){ buzz(TAP); show('dial'); });
-  return { show:show, showing:function(){ return showing; } };
-})();
+  NAMES.forEach(function(k){
+    if(tabs[k]) tabs[k].addEventListener('click',function(){ buzz(TAP); show(k); });
+  });
 
-/* the frequency list is built here, after the station data and AIR_ID exist */
-renderFreqList();
+  /* frequencies or the map, within Places */
+  const sl=document.getElementById('subList'), sm=document.getElementById('subMap');
+  const fl=document.getElementById('freqList'), mw=document.getElementById('mapWrap');
+  function sub(mapOn){
+    if(fl) fl.classList.toggle('hide',mapOn);
+    if(mw) mw.classList.toggle('on',mapOn);
+    if(sl) sl.classList.toggle('on',!mapOn);
+    if(sm) sm.classList.toggle('on',mapOn);
+    if(mapOn) setTimeout(function(){ try{ if(relabelNow) relabelNow(); }catch(e){} },60);
+  }
+  if(sl) sl.addEventListener('click',function(){ buzz(TAP); sub(false); });
+  if(sm) sm.addEventListener('click',function(){ buzz(TAP); sub(true); });
+
+  return { show:show, showing:function(){ return showing; }, sub:sub };
+})();
 
 /* ---- Tune India -----------------------------------------------------------
    The network slides over the stage rather than extending the page. Choosing a
    station closes the panel and hands the screen back to the radio, which is the
    whole point: you tune, then you listen. */
+/* ---- first visit ----------------------------------------------------------
+   A new listener has no way of knowing there is anywhere else to go. One line under
+   the controls says so, and it retires the moment they do anything that shows they
+   have understood - opening Tune In, choosing a station or a mood, or working the
+   player. It is remembered, so a returning listener never sees it again. */
+const FirstVisit = (function(){
+  const KEY='surradio_tuned_v1';
+  const el=document.getElementById('tuneHint');
+  let retired=true;
+  try{ retired = localStorage.getItem(KEY)==='1'; }catch(e){ retired=false; }
+
+  function retire(){
+    if(retired) return;
+    retired=true;
+    try{ localStorage.setItem(KEY,'1'); }catch(e){}
+    if(el){
+      el.style.transition='opacity .5s ease';
+      el.style.opacity='0';
+      setTimeout(function(){ el.hidden=true; el.removeAttribute('data-show'); },520);
+    }
+  }
+  function offer(){
+    if(retired||!el) return;
+    el.hidden=false;
+    el.setAttribute('data-show','1');
+  }
+  if(el){
+    el.addEventListener('click',function(){
+      buzz(TAP);
+      retire();
+      try{ TunePanel.open(); }catch(e){}
+    });
+  }
+  return { offer:offer, retire:retire, isRetired:function(){ return retired; } };
+})();
+
+/* Places, moods and collections are all built up front, so opening Tune In shows a
+   populated console rather than filling in after a frame. */
+renderFreqList();
+renderCollections();
+renderMoodList();
+
 const TunePanel = (function(){
   const panel = document.getElementById('tunePanel');
   const veil  = document.getElementById('panelVeil');
@@ -7463,7 +7792,7 @@ const TunePanel = (function(){
       if(first&&first.focus) setTimeout(()=>{try{first.focus();}catch(e){}},430);
     }
   }
-  if(btn)   btn.addEventListener('click',function(){ buzz(TAP); set(!open); });
+  if(btn)   btn.addEventListener('click',function(){ buzz(TAP); try{FirstVisit.retire();}catch(e){} set(!open); });
   if(close) close.addEventListener('click',function(){ buzz(TAP); set(false); });
   if(veil)  veil.addEventListener('click',function(){ set(false); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&open) set(false); });
