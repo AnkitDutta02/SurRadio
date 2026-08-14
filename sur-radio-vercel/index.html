@@ -281,7 +281,7 @@
      z-index would have been the right answer. The shell is now a three-row grid
      (header / stage / player) and the player occupies its own reserved row, so
      nothing can be laid over it because nothing shares its space. */
-  .bar{grid-row:3;position:relative;z-index:2;background:rgba(13,16,36,.94);
+  .bar{grid-row:3;position:relative;z-index:4;background:rgba(13,16,36,.94);
     backdrop-filter:blur(14px);border-top:1px solid rgba(242,236,217,.12);}
   /* The bar itself stays thin, but the touch zone around it is 22px tall so a
      thumb can actually grab it. touch-action:none lets us drag without the page
@@ -720,6 +720,16 @@
     justify-content:center;}
   .stage-controls .btn.ghost .txt{display:none;}  /* the arrows say it */
   .stage-controls .btn.ghost .ic{width:18px;height:18px;}
+
+/* Pulse highlight for the central play button when playback is available */
+.btn.play.pulse{animation:play-pulse 1.6s infinite;border-radius:50%;}
+@keyframes play-pulse{0%{box-shadow:0 0 0 0 rgba(232,163,61,0.28);}50%{box-shadow:0 0 0 12px rgba(232,163,61,0.06);}100%{box-shadow:0 0 0 0 rgba(232,163,61,0);}}
+
+/* Subtle pulsing ring around the platter */
+.platter-ring{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(1);pointer-events:none;border-radius:50%;
+  width:92%;height:92%;box-shadow:0 0 0 0 rgba(232,163,61,0);opacity:0;transition:opacity .22s ease;}
+.platter-ring.pulse{opacity:1;animation:platter-pulse 1.8s infinite;}
+@keyframes platter-pulse{0%{box-shadow:0 0 0 0 rgba(232,163,61,0.18);}50%{box-shadow:0 0 0 24px rgba(232,163,61,0.02);}100%{box-shadow:0 0 0 0 rgba(232,163,61,0);}}
 
   /* on a short window the stage stays whole: the record gives up room first, and
      the stage scrolls on its own rather than the document */
@@ -1405,6 +1415,7 @@
           <div class="deck">
             <div class="platter" id="platter">
               <div class="disc-glow"><div id="ytplayer"></div></div>
+              <div class="platter-ring" id="platterRing"></div>
               <div class="vinyl"></div>
               <div class="vlabel" id="vlabel">
                 <b id="vfreq">&mdash;</b><span id="vstate">SUR RADIO</span>
@@ -6519,6 +6530,8 @@ function syncPlayBtn(){
   setSessionState();
   const rt=document.getElementById('rpmText');
   if(rt) rt.textContent=playing?'33\u2153 rpm \u00b7 on air':'Stopped';
+  try{ updateTapHint(); }catch(e){}
+  try{ updatePlayPulse(); }catch(e){}
 }
 function setVol(v){ if(player&&player.setVolume) player.setVolume(Number(v)); }
 function startProg(){
@@ -6538,7 +6551,17 @@ function startProg(){
 function stopProg(){ if(progTimer) clearInterval(progTimer); progTimer=null; }
 function toast(m){
   const el=document.getElementById('toast'); el.textContent=m; el.classList.add('show');
-  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3200);
+  // support sticky toasts that persist until cleared
+  if(el._t){ clearTimeout(el._t); el._t=null; }
+  if(arguments.length>1 && arguments[1]){ el._sticky = true; return; }
+  el._sticky = false;
+  el._t = setTimeout(()=>{ el.classList.remove('show'); el._t=null; },3200);
+}
+
+function clearToast(){
+  const el=document.getElementById('toast'); if(!el) return;
+  if(el._t){ clearTimeout(el._t); el._t=null; }
+  el._sticky = false; el.classList.remove('show');
 }
 function setBar(t,s){ document.getElementById('barTitle').textContent=t; document.getElementById('barSub').textContent=s; }
 /* A preset band is its own mood, so naming a mood beside its song list is noise.
@@ -6587,8 +6610,9 @@ function renderStation(region){
   const pl=document.getElementById('place');
   /* the descriptor is the station's character line; the language list is the fallback */
   if(pl) pl.textContent=region.desc||(region.name+' \u00b7 '+region.lang);
+  /* Do not show the station name on the vinyl label; keep only the frequency there. */
   const vs=document.getElementById('vstate');
-  if(vs) vs.textContent=(region.name||'SUR RADIO').toUpperCase();
+  if(vs) vs.textContent='';
   const vf=document.getElementById('vfreq');
   if(vf) vf.textContent=region.freq||'--';
   /* Explore India shows what you are currently tuned to, above the map */
@@ -6632,7 +6656,6 @@ async function tune(id,opts){
   document.getElementById('npLive').style.display='block';
   renderStation(region);
   document.getElementById('vfreq').textContent=region.freq||'--';
-  document.getElementById('vstate').textContent=region.name;
   const vl=document.getElementById('vlabel');
   if(vl) vl.style.background=ZONES[region.zone].c;
   paintBackdrop(region);
@@ -6641,6 +6664,7 @@ async function tune(id,opts){
   document.getElementById('prevBtn').disabled=false;
   document.getElementById('progFill').style.width='0%';
   tempoFactor=1.7;
+  try{ updatePlayPulse(); }catch(e){}
 
   /* A song picked from search opens the station, so it plays first and the rest
      of the region follows on behind it. */
@@ -6941,6 +6965,7 @@ function paintTrack(track,searching){
   document.getElementById('trackWhy').textContent=track.w||current.genres;
   setBar(searching?'Tuning\u2026':trackTitle(track),
     trackArtist(track)+' \u00b7 '+current.name+' \u00b7 '+MOODS[moodKey].n);
+  try{ updateTapHint(); }catch(e){}
 }
 let uidSeq=0;
 /* Rebuilding this list from scratch is what made choosing a song look like the
@@ -7050,14 +7075,49 @@ MOOD_KEYS.forEach(function(k){
    the bar simply invites a tap, which then plays with no further wait. */
 function offerTapToListen(){
   if(playing) return;
-  const t=document.getElementById('barTitle');
-  const sb=document.getElementById('barSub');
-  if(t) t.textContent='Tap to listen';
-  if(sb&&current) sb.textContent=current.name+' \u00b7 '+(current.freq||'')+' MHz \u00b7 ready';
+  /* Do not overwrite the transport bar with a tap affordance — listeners
+     tap the large play button on the platter. Show a persistent toast until
+     the user taps the main play button. */
+  toast('Tap the big play button to start listening', true);
+}
+
+/* Update the small map tap hint: when music is playing show the current track,
+   otherwise restore the default prompt. Called from playback/track update paths. */
+function updateTapHint(){
+  const h=document.getElementById('tapHint');
+  if(!h) return;
+  try{
+    if(playing && queue && typeof qi==='number' && qi>=0 && queue[qi]){
+      const t=queue[qi];
+      h.innerHTML = '<span class="tapdot"></span>' + esc(trackTitle(t)) + ' \u2014 ' + esc(trackArtist(t));
+      h.style.display = 'flex';
+      h.classList.remove('gone');
+      return;
+    }
+  }catch(e){}
+  /* fallback to default affordance */
+  h.innerHTML = '<span class="tapdot"></span>Tap any state to start listening';
+  h.style.display = 'flex';
+  h.classList.remove('gone');
+}
+
+/* Pulse the main play button when playback is available (station loaded, not playing) */
+function updatePlayPulse(){
+  const btn=document.getElementById('playBtn');
+  if(!btn) return;
+  const should = !!(current && !playing);
+  btn.classList.toggle('pulse', should);
+  try{
+    const pr=document.getElementById('platterRing');
+    if(pr) pr.classList.toggle('pulse', should);
+  }catch(e){}
 }
 
 document.getElementById('playBtn').addEventListener('click',function(){
   buzz(TAP);
+  try{ clearToast(); }catch(e){}
+  try{ document.getElementById('playBtn').classList.remove('pulse'); }catch(e){}
+  try{ document.getElementById('platterRing').classList.remove('pulse'); }catch(e){}
   if(!current){ fire(tune(AIR_ID),'tune'); return; }
   if(!player||!player.playVideo) return;
   if(playing) player.pauseVideo(); else player.playVideo();
