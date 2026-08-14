@@ -386,7 +386,14 @@
   }
 
   /* the mood grid is irrelevant while a preset band is on air */
-  .moodcard.hidden{display:none;}
+  /* Hiding this card with display:none pulled about 200px out of the layout the
+     moment a preset was tapped, so everything below jumped and the page looked like
+     it had shifted. The card now stays exactly where it is and simply goes quiet. */
+  .moodcard.inert .moods{opacity:.28;pointer-events:none;filter:saturate(.35);}
+  .moodcard.inert .lbl{opacity:.5;}
+  .moodnote{display:none;font-family:'IBM Plex Mono',monospace;font-size:.6rem;
+    letter-spacing:.06em;color:var(--gold);margin-top:11px;line-height:1.6;}
+  .moodcard.inert .moodnote{display:block;}
 
   @media (max-width:1040px){
     .presets-row{grid-template-columns:repeat(3,1fr);}
@@ -901,6 +908,7 @@
       <div class="card pad moodcard" id="moodCard">
         <span class="lbl">Mood &mdash; the list refreshes completely</span>
         <div class="moods" id="moods"></div>
+        <p class="moodnote">This band is its own mood &mdash; pick a state on the map to choose one.</p>
       </div>
 
       <div class="card">
@@ -4774,7 +4782,7 @@ function markPreset(id){
     b.setAttribute('aria-pressed',on?'true':'false');
   });
   const card=document.getElementById('moodCard');
-  if(card) card.classList.toggle('hidden',!!nat);
+  if(card) card.classList.toggle('inert',!!nat);
 }
 
 const listEl=document.getElementById('stnlist');
