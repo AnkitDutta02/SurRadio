@@ -692,10 +692,9 @@
     svg#map{max-height:44vh;margin:0 auto;}
     /* the map is physically smaller here, so the type has to be proportionally larger */
     /* Same uniform size, scaled for the smaller rendered map. */
-    /* Thirty-four names at this size cannot fit without crowding, so phones label
-       the ten largest states and leave the rest as dots. Tap any state for its name. */
-    .slabel,.slabel.big{font-size:18px;letter-spacing:.05em;stroke-width:4px;}
-    .slabel.mid,.slabel.tiny{display:none;}
+    /* All names stay on, as short codes. Tap a state for the full name. */
+    .slabel,.slabel.big,.slabel.mid{font-size:19px;letter-spacing:.03em;stroke-width:4px;}
+    .slabel.tiny{font-size:17px;letter-spacing:.01em;stroke-width:3.6px;}
     .state{stroke-width:1.6;fill-opacity:.55;}
     .hub{r:4.6;}
     .isle .isledot{r:5.6;}
@@ -733,7 +732,8 @@
     .brand-name{font-size:1.02rem;}
     /* On the narrowest screens only the largest states stay labelled - anything
        smaller would render under 8px, which is not worth showing. Tap for the name. */
-    .slabel,.slabel.big{font-size:22px;letter-spacing:.02em;stroke-width:4.5px;}
+    .slabel,.slabel.big,.slabel.mid{font-size:23px;letter-spacing:0;stroke-width:4.5px;}
+    .slabel.tiny{font-size:20px;}
     .state{stroke-width:1.8;fill-opacity:.6;}
   }
 
@@ -4542,6 +4542,24 @@ async function loadMap(){
     'Delhi':[-8,3], 'Haryana':[-6,-5], 'Uttarakhand':[5,-3], 'Himachal Pradesh':[-4,-5],
     'Punjab':[-6,2], 'Dadra & Nagar Haveli and Daman & Diu':[-16,4]
   };
+  /* Hiding the smaller labels on a phone removed every eastern and north-eastern
+     name, which is most of the interesting map. Cartographers abbreviate at small
+     scale instead, so narrow screens get short codes and the names stay on. */
+  const CODE={
+    'Jharkhand':'JHK','West Bengal':'W.B.','Odisha':'ODI','Bihar':'BIH','Sikkim':'SKM',
+    'Assam':'ASM','Meghalaya':'MEG','Manipur':'MAN','Nagaland':'NAG','Mizoram':'MIZ',
+    'Tripura':'TRI','Arunachal Pradesh':'ARN','Chhattisgarh':'CGH','Telangana':'TLG',
+    'Andhra Pradesh':'A.P.','Karnataka':'KAR','Kerala':'KER','Tamil Nadu':'T.N.',
+    'Goa':'GOA','Maharashtra':'MAH','Gujarat':'GUJ','Rajasthan':'RAJ','Punjab':'PNB',
+    'Haryana':'HAR','Delhi':'DEL','Chandigarh':'CHD','Uttarakhand':'U.K.',
+    'Himachal Pradesh':'H.P.','Jammu & Kashmir':'J&K','Ladakh':'LDK',
+    'Uttar Pradesh':'U.P.','Madhya Pradesh':'M.P.','Puducherry':'PDY',
+    'Dadra & Nagar Haveli and Daman & Diu':'DNH','Lakshadweep':'LKD',
+    'Andaman & Nicobar Islands':'AND'
+  };
+  const narrow=()=>{ try{ return window.matchMedia('(max-width:560px)').matches; }catch(e){ return false; } };
+  const labelFor=r=>narrow() ? (CODE[r.name]||SHORT[r.name]||r.name) : (SHORT[r.name]||r.name);
+
   const labelNodes=[];
   const labelled=REGIONS.filter(r=>r.cx!=null&&!ISLANDS[r.id]&&r.zone!=='national')
     .sort((a,b)=>b.area-a.area);
@@ -4551,13 +4569,15 @@ async function loadMap(){
     if(tier==='tiny'){
       svg.appendChild(mk('circle',{cx:r.cx,cy:r.cy,r:3.4,class:'hub',fill:ZONES[r.zone].c}));
       const t=mk('text',{x:(r.cx+nd[0]).toFixed(1),y:(r.cy-6+nd[1]).toFixed(1),class:'slabel tiny'});
-      t.textContent=SHORT[r.name]||r.name;
+      t.dataset.region=r.id;
+      t.textContent=labelFor(r);
       svg.appendChild(t);
       labelNodes.push(t);
       return;
     }
     const t=mk('text',{x:(r.cx+nd[0]).toFixed(1),y:(r.cy+4+nd[1]).toFixed(1),class:'slabel '+tier});
-    t.textContent = SHORT[r.name]||r.name;      /* one treatment for every state */
+    t.dataset.region=r.id;
+    t.textContent = labelFor(r);                /* one treatment for every state */
     svg.appendChild(t);
     labelNodes.push(t);
   });
@@ -4607,10 +4627,21 @@ async function loadMap(){
     document.fonts.ready.then(function(){ try{ deOverlap(); }catch(e){} });
   }
   /* label sizes change at the phone breakpoints, so re-measure after a resize */
-  let deTimer=null;
+  let deTimer=null, wasNarrow=narrow();
+  function relabel(){
+    const n=narrow();
+    if(n!==wasNarrow){
+      wasNarrow=n;
+      labelNodes.forEach(function(t){
+        const r=byId(t.dataset.region);
+        if(r) t.textContent=labelFor(r);
+      });
+    }
+    try{ deOverlap(); }catch(e){}
+  }
   window.addEventListener('resize',function(){
     clearTimeout(deTimer);
-    deTimer=setTimeout(function(){ try{ deOverlap(); }catch(e){} },220);
+    deTimer=setTimeout(relabel,220);
   });
 
   /* the two island UTs, placed in open water and clearly labelled */
@@ -4774,6 +4805,66 @@ function anyOf(promises,deadline){
     },()=>{ if(--pending===0&&!settled){settled=true;clearTimeout(timer);rej(new Error('all sources failed'));} }));
   });
 }
+/* The build-time flag missed a lot of descriptive rows, so decide at play time.
+   Strip out the words that only describe a language, region or genre; if nothing
+   distinctive is left ("Bhojpuri song"), or only one distinctive word is left and
+   the title trails off into a label ("Rouf song"), then the row is a description
+   rather than a song name and the real YouTube title is the better thing to show.
+   A genuine title like "Habba Khatoon songs" keeps its own name. */
+const LABEL_WORDS = (
+ 'song songs geet lokgeet geete geetalu hit hits superhit music recital bhajan kirtan '+
+ 'anthem beat beats dance number melody cypher rap hiphop drill trap remix set choir '+
+ 'chant folk classical devotional romantic wedding new old best of live unplugged pop '+
+ 'band crew fusion street club dj modern retro slow party gospel ballad duet solo '+
+ 'medley theme instrumental version raga raag khayal thumri padam pada katha nach '+
+ 'indie sufi rock metal trance edm bass lounge acoustic cover mix playlist album '+
+ 'nritya the and a in for full official audio video lyrical'
+).split(' ');
+const PLACE_WORDS = (
+ 'hindi bengali bangla punjabi tamil telugu malayalam kannada marathi gujarati odia '+
+ 'assamese bhojpuri maithili magahi angika nepali konkani kashmiri dogri rajasthani '+
+ 'marwadi haryanvi himachali pahari garhwali kumaoni khasi garo mizo naga nagamese '+
+ 'manipuri meitei tripuri kokborok santhali nagpuri kurukh chhattisgarhi sambalpuri '+
+ 'koshli ladakhi tulu awadhi braj bundeli malwi nimadi warli jeseri nicobarese urdu '+
+ 'english sanskrit tibetan bodo mishing kutchi goan india indian north south east west '+
+ 'delhi mumbai kolkata chennai hyderabad bengaluru shillong imphal aizawl kohima '+
+ 'dimapur agartala itanagar gangtok leh silvassa daman panaji puducherry pondy '+
+ 'varanasi banaras lucknow patna ranchi raipur bhopal indore gwalior jaipur jodhpur '+
+ 'ahmedabad surat chandigarh mohali shimla kangra dehradun haldwani cuttack '+
+ 'bhubaneswar guwahati northeast island deccan valley jammu purvanchal bilaspur '+
+ 'kanpur amdavadi hyderabadi bihari sikkimese arunachal meghalaya mizoram nagaland '+
+ 'manipur chhattisgarh andhra goa punjab bihar assam odisha kerala karnataka '+
+ 'rajasthan gujarat maharashtra telangana ladakh sikkim tripura andaman lakshadweep '+
+ 'uttarakhand haryana jharkhand himachal bollywood'
+).split(' ');
+const IS_LABEL={}; LABEL_WORDS.forEach(w=>{IS_LABEL[w]=1;}); PLACE_WORDS.forEach(w=>{IS_LABEL[w]=1;});
+
+function looksDescriptive(title){
+  const words=String(title||'').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  if(!words.length) return true;
+  const distinct=words.filter(w=>!IS_LABEL[w]);
+  if(distinct.length===0) return true;                    /* purely a description */
+  if(distinct.length===1 && IS_LABEL[words[words.length-1]]) return true;
+  return false;
+}
+
+/* Indian music uploads are usually titled "Song | Film or Singer | Label | Full Video".
+   The first segment is the song, and the second is very often the singer or the film,
+   which is far more useful than "Assamese music" as an artist line. */
+function cleanYtMeta(raw){
+  const NOISE=/official|video|audio|lyric|lyrical|full|hd|4k|remaster|reprise|out now|song|songs|new|latest|status|shorts|trailer|jukebox|records|music|entertainment|films?|movies?/i;
+  const parts=String(raw||'').split(/[|\u2013\u2014\u00b7]/).map(x=>x.trim()).filter(Boolean);
+  const title=cleanYtTitle(parts[0]||raw);
+  let who='';
+  for(let i=1;i<parts.length;i++){
+    const p=parts[i].replace(/\(.*?\)/g,'').trim();
+    if(!p||p.length<3||p.length>44) continue;
+    if(NOISE.test(p)) continue;
+    who=p; break;
+  }
+  return {title:title, who:who};
+}
+
 /* Cleans a YouTube title down to something that reads like a song name.
    Uploads are full of "| Full Video | 4K | Official Lyrical" noise. */
 function cleanYtTitle(raw){
@@ -4790,10 +4881,54 @@ function cleanYtTitle(raw){
    many catalogue rows written as a description rather than a song name. */
 async function resolveFull(query){
   const list=await searchYouTube(query);
-  if(list&&list.length) return {id:list[0].id,title:cleanYtTitle(list[0].title),
-    author:list[0].author||'', alts:list.map(r=>r.id)};
+  if(list&&list.length){
+    const m=cleanYtMeta(list[0].title);
+    return {id:list[0].id,title:m.title,author:m.who||list[0].author||'',
+            alts:list.map(r=>r.id)};
+  }
   const id=await resolve(query);
   return id?{id:id,title:'',author:'',alts:[id]}:null;
+}
+
+/* Fills in real names for the rows on screen without waiting for them to be played.
+   Descriptive rows like "Assamese music" are looked up a few at a time, so the list
+   reads as songs and artists rather than as categories. */
+let hydrating=false;
+async function hydrateTitles(){
+  if(hydrating||!current) return;
+  hydrating=true;
+  const region=current, mk=moodKey;
+  try{
+    const todo=[];
+    for(let i=0;i<queue.length && todo.length<10;i++){
+      const t=queue[i];
+      if(t.realT) continue;
+      if(!(t.g||t.generic||looksDescriptive(t.t))) continue;
+      todo.push(t);
+    }
+    /* three at a time: fills the visible rows quickly without hammering the API,
+       and every lookup is CDN-cached so repeat visits cost nothing */
+    for(let i=0;i<todo.length;i+=3){
+      if(current!==region||moodKey!==mk) break;
+      const slice=todo.slice(i,i+3);
+      await Promise.all(slice.map(async function(t){
+        try{
+          const list=await searchYouTube(searchPhrase(t,region));
+          if(!list||!list.length) return;
+          const m=cleanYtMeta(list[0].title);
+          if(m.title) t.realT=m.title;
+          /* only fill in the artist if ours is a category rather than a name, so a
+             real credit like "Sharda Sinha" is never replaced by a channel name */
+          if((m.who||list[0].author) && looksDescriptive(t.a)) t.realA=m.who||list[0].author;
+          t.alts=list.map(r=>r.id);
+          if(t.altI==null) t.altI=0;
+          if(!t.vid) t.vid=list[0].id;
+        }catch(e){}
+      }));
+      if(current!==region||moodKey!==mk) break;
+      renderQueue();
+    }
+  } finally { hydrating=false; }
 }
 
 async function resolve(query){
@@ -5156,6 +5291,7 @@ async function tune(id,opts){
   /* playAt renders immediately below, so painting the list here as well would
      show it twice in quick succession. Just set the status. */
   setQStatus(opts.first?'Requested \u00b7 then '+region.name:statusLabel(region,moodKey));
+  fire(hydrateTitles(),'hydrate titles');
   veil(true,'Finding the song...');
   setBar('Tuning in...',region.name);
   fire(playAt(0),'first track');
@@ -5169,6 +5305,7 @@ async function tune(id,opts){
        ever adds rows below what is already on screen. */
     queue=queue.concat(mergeNew(tracks,queue));
     renderQueue(); setQStatus(statusLabel(region,moodKey));
+    fire(hydrateTitles(),'hydrate titles');
   }catch(e){
     if(mySeq!==seq) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
@@ -5237,6 +5374,7 @@ async function recurate(){
   queue = seedFor(region,mk);
   qi = -1;
   renderQueue();
+  fire(hydrateTitles(),'hydrate titles');
   setQStatus(region.zone==='national'?statusLabel(region,mk):'Re-curating \u00b7 '+MOODS[mk].n);
 
   try{
@@ -5245,6 +5383,7 @@ async function recurate(){
     /* the mood list is already on screen; the AI batch joins the end of it */
     queue=queue.concat(mergeNew(tracks,queue));
     renderQueue(); setQStatus(statusLabel(region,mk));
+    fire(hydrateTitles(),'hydrate titles');
   }catch(e){
     if(my!==cseq||current!==region) return;
     console.warn('[Sur Radio] AI curation unavailable:',e);
@@ -5315,12 +5454,12 @@ async function playAt(i,depth){
       id=found.id;
       track.alts=found.alts||[id];
       track.altI=0;
-      if(track.g||track.generic){
-        if(found.title){
-          track.realT=found.title;
-          if(found.author) track.realA=found.author;
-        }
+      if(found.title && (track.g||track.generic||looksDescriptive(track.t))){
+        track.realT=found.title;
+        if(found.author && looksDescriptive(track.a)) track.realA=found.author;
       }
+      /* and fill in the rest of the visible list behind it */
+      fire(hydrateTitles(),'hydrate titles');
     }
   }
   if(mySeq!==seq) return;
@@ -6004,6 +6143,18 @@ function enterStation(){
      moment to actually start playing something. */
   setTimeout(()=>fire(tune(pick(REGIONS).id),'tune from landing'),520);
 }
+/* Scrolling the list asks for the next batch of names, so lookups stay in proportion
+   to what is actually being looked at rather than resolving hundreds of rows up front. */
+(function(){
+  const q=document.getElementById('queue');
+  if(!q) return;
+  let t=null;
+  q.addEventListener('scroll',function(){
+    clearTimeout(t);
+    t=setTimeout(function(){ fire(hydrateTitles(),'hydrate on scroll'); },260);
+  });
+})();
+
 (function(){
   const c=document.getElementById('fwClose');
   if(c) c.addEventListener('click',function(){
