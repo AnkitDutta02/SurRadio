@@ -34,9 +34,10 @@
   .card-head > *, .head-right > *, .bar-in > *, .bar-info > *,
   .searchbox > *, .qrow > *, .srow > *, .sres > *, .preset > *,
   .legend > *, .presets-row > *, .np > *, .deck > *{min-width:0;}
-  /* and nothing inside the page may be wider than the page itself, except the
-     deliberately oversized video behind the record */
-  .shell :not(svg):not(svg *):not(.disc-glow):not(.disc-glow *){max-width:100%;}
+  /* A blanket max-width guard used to live here. It outranked every deliberate
+     max-width in the stylesheet - the tagline's 46ch among them - and stretched
+     things that were meant to be narrow. The min-width:0 sweep above plus
+     overflow-x on html already prevent sideways overflow, so it is not needed. */
   /* I have now chased this drift through several individual elements, so rather than
      keep hardening them one at a time: pan-y tells the browser this page scrolls
      vertically only, so a stray overflow anywhere cannot be panned into view, and
@@ -56,12 +57,16 @@
   .shell{max-width:1400px;margin:0 auto;overflow-x:clip;
     padding:0 calc(24px + env(safe-area-inset-right)) 132px calc(24px + env(safe-area-inset-left));}
 
-  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 14px;flex-wrap:wrap;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 10px;flex-wrap:wrap;}
   .brand{display:flex;align-items:center;gap:11px;}
   .brand svg{width:32px;height:32px;flex:none;}
   .brand-name{font-family:'Fraunces',serif;font-weight:700;font-size:1.3rem;line-height:1;}
   .brand-name small{display:block;font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:.55rem;letter-spacing:.17em;color:var(--dim);margin-top:4px;}
-  .tagline{font-size:.86rem;color:var(--dim);max-width:46ch;line-height:1.5;}
+  /* Sits under the header as its own line, left-aligned with the brand, rather than
+     drifting to the far right of a wide screen. */
+  .tagline{font-size:.84rem;color:var(--dim);max-width:62ch;line-height:1.55;
+    margin:-4px 0 16px;}
+  .tagline b{color:var(--paper);font-weight:600;}
 
   .grid{display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
   @media (max-width:1040px){
@@ -238,7 +243,16 @@
   .srow:hover,.srow.on{background:var(--ink-3);}
   .srow i{width:7px;height:7px;border-radius:50%;flex:none;}
   .srow .n{font-size:.85rem;flex:1;}
-  .srow .sub{display:block;font-size:.68rem;color:var(--dim);margin-top:1px;}
+  .srow .sub{display:block;font-family:'IBM Plex Mono',monospace;font-size:.55rem;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-top:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  /* the frequency sits on the right of the card, the way a preset button is labelled */
+  .srow-freq{margin-left:auto;flex:none;font-family:'IBM Plex Mono',monospace;
+    font-size:.72rem;font-weight:600;color:rgba(232,163,61,.8);letter-spacing:.02em;
+    display:flex;align-items:baseline;gap:3px;}
+  .srow-freq em{font-style:normal;font-size:.5rem;letter-spacing:.1em;color:var(--dim);}
+  .srow.on .srow-freq{color:var(--gold);}
+  @media (max-width:560px){ .srow-freq{font-size:.66rem;} }
   .zonehead{font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:10px 9px 4px;}
 
   details.settings{padding:0 18px 16px;}
@@ -424,6 +438,57 @@
     .preset .num{font-size:.46rem;right:7px;top:6px;}
   }
 
+
+  /* ===================== STATION HERO ==================================== */
+  /* The station is the headline. The frequency, the descriptor and the on-air lamp
+     are the small technical marks around it, the way a receiver labels a band. */
+  .onair-row{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+  .onair-dot{width:7px;height:7px;border-radius:50%;background:#5b6080;flex:none;
+    transition:background .3s ease, box-shadow .3s ease;}
+  .on-air .onair-dot{background:var(--madder);
+    box-shadow:0 0 0 0 rgba(200,80,67,.7);animation:onairpulse 2s ease-out infinite;}
+  @keyframes onairpulse{0%{box-shadow:0 0 0 0 rgba(200,80,67,.6);}
+    70%{box-shadow:0 0 0 8px rgba(200,80,67,0);}100%{box-shadow:0 0 0 0 rgba(200,80,67,0);}}
+  .onair-txt{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dim);}
+  .on-air .onair-txt{color:var(--madder);}
+  .onair-net{font-family:'IBM Plex Mono',monospace;font-size:.52rem;letter-spacing:.18em;
+    color:rgba(154,154,184,.55);margin-left:auto;text-transform:uppercase;}
+  /* signal bars: only alive while sound is actually coming out */
+  .sig{display:inline-flex;align-items:flex-end;gap:2px;height:11px;}
+  .sig i{width:2px;height:3px;background:rgba(242,236,217,.3);border-radius:1px;}
+  .on-air .sig i{background:var(--gold);animation:sigbar 1.1s ease-in-out infinite;}
+  .on-air .sig i:nth-child(2){animation-delay:.15s;}
+  .on-air .sig i:nth-child(3){animation-delay:.3s;}
+  .on-air .sig i:nth-child(4){animation-delay:.45s;}
+  .on-air .sig i:nth-child(5){animation-delay:.6s;}
+  @keyframes sigbar{0%,100%{height:3px;}50%{height:11px;}}
+
+  .station-name{font-family:'Fraunces',serif;font-weight:600;font-size:2.5rem;
+    line-height:1.02;letter-spacing:-.02em;margin:0 0 7px;color:var(--paper);}
+  .station-sub{display:flex;align-items:baseline;gap:7px;margin-bottom:10px;flex-wrap:wrap;}
+  .station-freq{font-family:'IBM Plex Mono',monospace;font-size:1.02rem;font-weight:600;
+    color:var(--gold);letter-spacing:.02em;}
+  .station-mhz{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.16em;
+    color:var(--dim);text-transform:uppercase;}
+  .station-script{margin-left:auto;font-size:.95rem;color:rgba(242,236,217,.35);
+    letter-spacing:.02em;}
+  /* the descriptor line, in small caps like a band label */
+  .np-place{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.17em;
+    text-transform:uppercase;color:rgba(242,236,217,.62);margin:0 0 15px;line-height:1.7;}
+
+  /* the frequency ticking while a station is being found */
+  .station-freq.scanning{color:var(--paper);opacity:.75;}
+
+  @media (max-width:760px){
+    .station-name{font-size:2.1rem;}
+    .station-script{font-size:.85rem;}
+    .np-place{font-size:.55rem;letter-spacing:.14em;}
+  }
+  @media (max-width:380px){
+    .station-name{font-size:1.85rem;}
+  }
+
   /* ===================== SEARCH ========================================== */
   .searchcard{padding:13px 14px;}
   /* An inset tuner-style field: darker than the card so it reads as something
@@ -508,7 +573,7 @@
   .bd-layer.on{opacity:1;}
   .bd-layer svg{position:absolute;inset:0;width:100%;height:100%;}
   .bd-scrim{position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:linear-gradient(to bottom, rgba(13,16,36,.86) 0%, rgba(13,16,36,.58) 42%, rgba(13,16,36,.90) 100%);}
+    background:linear-gradient(to bottom, rgba(13,16,36,.90) 0%, rgba(13,16,36,.60) 44%, rgba(13,16,36,.92) 100%);}
   .bd-grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
     background-image:radial-gradient(rgba(255,255,255,.09) .5px, transparent .5px);background-size:3px 3px;}
 
@@ -642,6 +707,12 @@
     display:flex;align-items:flex-start;justify-content:center;}
   .knob-notch{width:3.5px;height:26%;margin-top:9%;border-radius:2px;background:var(--gold);
     box-shadow:0 0 10px rgba(232,163,61,.85);}
+  /* The first screen should say what is about to come out of the speaker. */
+  .land-station{margin:15px 0 0;text-align:center;}
+  .land-station b{display:block;font-family:'IBM Plex Mono',monospace;font-size:.64rem;
+    letter-spacing:.24em;color:var(--gold);font-weight:600;}
+  .land-station span{display:block;font-family:'IBM Plex Mono',monospace;font-size:.55rem;
+    letter-spacing:.13em;color:var(--dim);margin-top:5px;text-transform:uppercase;}
   .knob-cap{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.26em;
     text-transform:uppercase;color:var(--dim);margin:0;transition:color .3s ease;}
   .knob:hover ~ .knob-cap{color:var(--paper);}
@@ -735,7 +806,7 @@
     .brand svg{width:28px;height:28px;}
     .brand-name{font-size:1.12rem;}
     .brand-name small{font-size:.5rem;letter-spacing:.14em;}
-    .tagline{font-size:.78rem;line-height:1.5;}
+    .tagline{font-size:.78rem;line-height:1.5;margin:-2px 0 12px;max-width:100%;}
 
     .grid{gap:14px;}
     .card-head{padding:13px 13px 0;}
@@ -819,6 +890,7 @@
         </span>
       </button>
       <p class="knob-cap">Turn the dial</p>
+      <p class="land-station"><b>ALL INDIA RADIO</b><span>88.0 MHz &middot; every tongue</span></p>
     </div>
   </div>
 </div>
@@ -836,20 +908,20 @@
       </svg>
       <span class="brand-name">SUR RADIO<small>SHORTWAVE MEMORIES</small></span>
     </div>
-    <p class="tagline">Thirty-six states, thirty-six frequencies. Tap one and the needle drops itself &mdash; change the mood and the whole region retunes around it.</p>
   </header>
+  <p class="tagline">Every state is a station. Tap the map, or leave it running.</p>
 
   <div class="grid">
     <div class="card">
       <div class="card-head">
-        <h2>The Sur Network</h2>
+        <h2>Tune India</h2>
         <div class="head-right">
-          <span class="onair" id="mapHint">Tap any state</span>
-          <button class="shuffle" id="shuffleBtn" title="Play a random station">
+          <span class="onair" id="mapHint">Tap any state to tune</span>
+          <button class="shuffle" id="shuffleBtn" title="Tune All India Radio">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h4l3 4M20 7h-4l-8 10H4M20 17h-4"
               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
               <path d="M17 4l3 3-3 3M17 14l3 3-3 3" fill="none" stroke="currentColor"
-              stroke-width="2" stroke-linecap="round"/></svg>Shuffle
+              stroke-width="2" stroke-linecap="round"/></svg>All India
           </button>
         </div>
       </div>
@@ -898,7 +970,17 @@
           <button class="btn ghost" id="randomBtn" style="width:100%;justify-content:center;">Tune me somewhere</button>
         </div>
         <div id="npLive" style="display:none;">
-          <div class="np-freq"><b id="freq">&mdash;</b><em>MHZ</em></div>
+          <div class="onair-row">
+            <span class="onair-dot" id="onAirDot"></span>
+            <span class="onair-txt" id="onAirTxt">ON AIR</span>
+            <span class="sig" id="sigBars"><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="onair-net">SUR NETWORK</span>
+          </div>
+          <h2 class="station-name" id="stationName">&mdash;</h2>
+          <div class="station-sub">
+            <span class="station-freq" id="freq">&mdash;</span><span class="station-mhz">MHz</span>
+            <span class="station-script" id="stationScript"></span>
+          </div>
           <p class="np-place" id="place">&mdash;</p>
           <div class="deck">
             <div class="platter" id="platter">
@@ -929,7 +1011,7 @@
       </div>
 
       <div class="card pad moodcard" id="moodCard">
-        <span class="lbl">Mood &mdash; the list refreshes completely</span>
+        <span class="lbl">Tune a frequency within this station</span>
         <div class="moods" id="moods"></div>
         <p class="moodnote" id="moodNote">This station is a mood in itself &mdash; tap a state on the map to use moods.</p>
       </div>
@@ -1039,7 +1121,7 @@ const MOODS = {
    --------------------------------------------------------------------------- */
 const REGIONS = [
 /* ---------------- NORTH ---------------- */
-{id:'jk',name:'Jammu & Kashmir',zone:'north',alias:['Jammu and Kashmir','Jammu & Kashmir','Jammu Kashmir'],
+{id:'jk',name:'Jammu & Kashmir',lon:75.0,desc:'CHINAR · KASHMIRI · SNOWLINE',script:'कश्मीर',zone:'north',alias:['Jammu and Kashmir','Jammu & Kashmir','Jammu Kashmir'],
  lang:'Kashmiri, Dogri',genres:'Sufiana Kalam, santoor, chakri and Dogri folk',
  seed:[
   {t:'Bhumbro',a:'Mission Kashmir',m:['retro','folk','party','mymix','hits']},
@@ -1074,7 +1156,7 @@ const REGIONS = [
   {t:'Jammu rap',a:'Dogri hip hop',m:['rap','party'],g:1},
   {t:'Kashmiri street rap',a:'Kashmiri hip hop',m:['rap','modern'],g:1},
   {t:'Kashmiri trap',a:'Kashmiri hip hop',m:['rap','party'],g:1}]},
-{id:'ladakh',name:'Ladakh',zone:'north',alias:['Ladakh'],
+{id:'ladakh',name:'Ladakh',lon:77.6,desc:'HIGH DESERT · LADAKHI · THIN AIR',script:'ལ་དྲགས',zone:'north',alias:['Ladakh'],
  lang:'Ladakhi, Tibetan',genres:'monastic chant, Ladakhi folk and lute songs',
  seed:[
   {t:'Buddhist monastery chanting',a:'Ladakh monastic chant',m:['devotional','chill','mymix']},
@@ -1101,7 +1183,7 @@ const REGIONS = [
   {t:'Ladakhi rap cypher',a:'Ladakhi hip hop',m:['rap','party'],g:1},
   {t:'Ladakhi trap',a:'Ladakhi hip hop',m:['rap','party'],g:1},
   {t:'Ladakhi street rap',a:'Ladakhi hip hop',m:['rap','modern'],g:1}]},
-{id:'hp',name:'Himachal Pradesh',zone:'north',alias:['Himachal Pradesh'],
+{id:'hp',name:'Himachal Pradesh',lon:77.2,desc:'DEODAR · PAHARI · NATI',script:'हिमाल',zone:'north',alias:['Himachal Pradesh'],
  lang:'Pahari, Hindi',genres:'Nati, Pahari folk and Kinnauri songs',
  seed:[
   {t:'Chamba Kitni Door',a:'Himachali Pahari folk',m:['folk','retro','chill','mymix','hits']},
@@ -1160,7 +1242,7 @@ const REGIONS = [
   {t:'Himachali trap',a:'Himachali hip hop',m:['rap','party'],g:1},
   {t:'Nati rap fusion',a:'Himachali hip hop',m:['rap','folk']},
   {t:'Himachal street rap',a:'Himachali hip hop',m:['rap','modern']}]},
-{id:'punjab',name:'Punjab',zone:'north',alias:['Punjab'],
+{id:'punjab',name:'Punjab',lon:75.4,desc:'FIVE RIVERS · PUNJABI · DHOL',script:'ਪੰਜਾਬ',zone:'north',alias:['Punjab'],
  lang:'Punjabi',genres:'Bhangra, Punjabi pop, Sufi and Gurbani kirtan',
  seed:[
   {t:'Ki Banu Duniya Da',a:'Gurdas Maan',m:['retro','folk']},
@@ -1324,7 +1406,7 @@ const REGIONS = [
   {t:'Sammi Meri Waar',a:'Coke Studio',m:['mymix','folk']},
   {t:'Kangna',a:'Fareed Ayaz',m:['mymix','party']},
   {t:'Coke Studio Punjabi classics',a:'Coke Studio',m:['mymix','folk']}]},
-{id:'haryana',name:'Haryana',zone:'north',alias:['Haryana'],
+{id:'haryana',name:'Haryana',lon:76.2,desc:'WHEAT BELT · HARYANVI · RAGNI',script:'हरियाणा',zone:'north',alias:['Haryana'],
  lang:'Haryanvi',genres:'Ragni, saang theatre and Haryanvi pop',
  seed:[
   {t:'Haryanvi Ragni',a:'Pandit Lakhmi Chand',m:['folk','retro','mymix','hits']},
@@ -1357,7 +1439,7 @@ const REGIONS = [
   {t:'Haryana street rap',a:'Haryanvi hip hop',m:['rap','modern'],g:1},
   {t:'Ragni rap fusion',a:'Haryanvi hip hop',m:['rap','folk']},
   {t:'Haryanvi gully rap',a:'Haryanvi hip hop',m:['rap','modern']}]},
-{id:'uttarakhand',name:'Uttarakhand',zone:'north',alias:['Uttarakhand','Uttaranchal'],
+{id:'uttarakhand',name:'Uttarakhand',lon:79.3,desc:'CHAR DHAM · GARHWALI · PINE',script:'उत्तराखंड',zone:'north',alias:['Uttarakhand','Uttaranchal'],
  lang:'Garhwali, Kumaoni',genres:'Garhwali and Kumaoni folk, jagar ritual songs',
  seed:[
   {t:'Bedu Pako Baro Masa',a:'Kumaoni folk',m:['folk','retro','mymix']},
@@ -1393,7 +1475,7 @@ const REGIONS = [
   {t:'Uttarakhand trap',a:'Garhwali hip hop',m:['rap','party'],g:1},
   {t:'Pahari street rap',a:'Garhwali hip hop',m:['rap','modern'],g:1},
   {t:'Haldwani rap',a:'Kumaoni hip hop',m:['rap','modern'],g:1}]},
-{id:'delhi',name:'Delhi',zone:'north',alias:['Delhi','NCT of Delhi','National Capital Territory of Delhi'],
+{id:'delhi',name:'Delhi',lon:77.1,desc:'QAWWALI · URDU · GULLY',script:'دہلۂ',zone:'north',alias:['Delhi','NCT of Delhi','National Capital Territory of Delhi'],
  lang:'Hindi, Urdu',genres:'film mainstream, Hindi hip-hop, qawwali and indie',
  seed:[
   {t:'Dilli Wali Girlfriend',a:'Yeh Jawaani Hai Deewani',m:['party','modern','hits']},
@@ -1489,7 +1571,7 @@ const REGIONS = [
   {t:'Delhi cypher',a:'Delhi hip hop',m:['rap','party'],g:1},
   {t:'Machayenge',a:'Emiway Bantai',m:['rap','party']},
   {t:'Haq Se',a:'Delhi hip hop',m:['rap','modern']}]},
-{id:'chandigarh',name:'Chandigarh',zone:'north',alias:['Chandigarh'],
+{id:'chandigarh',name:'Chandigarh',lon:76.8,desc:'GRID CITY · PUNJABI · EVENING',script:'ਜ਼ੰਦੀਗੜ੍ਹ',zone:'north',alias:['Chandigarh'],
  lang:'Punjabi, Hindi',genres:'Punjabi pop and the city indie scene',
  seed:[
   {t:'Chandigarh song',a:'Punjabi pop',m:['modern','party','mymix','hits'],g:1},
@@ -1520,7 +1602,7 @@ const REGIONS = [
   {t:'Mohali rap',a:'Punjabi hip hop',m:['rap','party'],g:1},
   {t:'Panchkula rap',a:'Punjabi hip hop',m:['rap','modern'],g:1}]},
 /* ---------------- WEST ---------------- */
-{id:'rajasthan',name:'Rajasthan',zone:'west',alias:['Rajasthan'],
+{id:'rajasthan',name:'Rajasthan',lon:73.8,desc:'THAR · MARWARI · DUSK',script:'राजस्थान',zone:'west',alias:['Rajasthan'],
  lang:'Rajasthani, Marwari',genres:'Manganiyar and Langa folk, Maand, desert Sufi',
  seed:[
   {t:'Kesariya Balam',a:'Allah Jilai Bai',m:['retro','folk','hits']},
@@ -1645,7 +1727,7 @@ const REGIONS = [
   {t:'Jodhpur rap',a:'Rajasthani hip hop',m:['rap','modern'],g:1},
   {t:'Rajasthani trap',a:'Rajasthani hip hop',m:['rap','party'],g:1},
   {t:'Marwadi street rap',a:'Rajasthani hip hop',m:['rap','modern'],g:1}]},
-{id:'gujarat',name:'Gujarat',zone:'west',alias:['Gujarat'],
+{id:'gujarat',name:'Gujarat',lon:71.6,desc:'GARBA · GUJARATI · SALT FLAT',script:'ગુજરાત',zone:'west',alias:['Gujarat'],
  lang:'Gujarati, Kutchi',genres:'garba, dandiya raas, bhajan and Kutchi folk',
  seed:[
   {t:'Nagada Sang Dhol',a:'Goliyon Ki Raasleela Ram Leela',m:['party','modern','hits']},
@@ -1736,7 +1818,7 @@ const REGIONS = [
   {t:'Gujarati trap',a:'Gujarati hip hop',m:['rap','party'],g:1},
   {t:'Amdavadi rap',a:'Gujarati hip hop',m:['rap','modern'],g:1},
   {t:'Gujarati street rap',a:'Gujarati hip hop',m:['rap','modern'],g:1}]},
-{id:'maharashtra',name:'Maharashtra',zone:'west',alias:['Maharashtra'],
+{id:'maharashtra',name:'Maharashtra',lon:76.3,desc:'ABHANG · MARATHI · MONSOON',script:'महाराष्ट्र',zone:'west',alias:['Maharashtra'],
  lang:'Marathi',genres:'lavani, abhang, khayal classical and film score',
  seed:[
   {t:'Zingaat',a:'Sairat Ajay Atul',m:['party','modern','hits']},
@@ -1834,7 +1916,7 @@ const REGIONS = [
   {t:'Insaan',a:'MC Stan',m:['rap','chill']},
   {t:'Machayenge',a:'Emiway Bantai',m:['rap','party']},
   {t:'Firse Machayenge',a:'Emiway Bantai',m:['rap','party']}]},
-{id:'goa',name:'Goa',zone:'west',alias:['Goa'],
+{id:'goa',name:'Goa',lon:74.0,desc:'MANDO · KONKANI · LOW TIDE',script:'गोंय',zone:'west',alias:['Goa'],
  lang:'Konkani',genres:'Konkani folk, mando, dulpod and Goa trance',
  seed:[
   {t:'Bebdo',a:'Lorna Cordeiro',m:['retro','folk','party','mymix','hits']},
@@ -1885,7 +1967,7 @@ const REGIONS = [
   {t:'Goan street rap',a:'Konkani hip hop',m:['rap','modern'],g:1},
   {t:'Goa trance rap fusion',a:'Goan hip hop',m:['rap','party']},
   {t:'Konkani hip hop crew',a:'Konkani hip hop',m:['rap','party'],g:1}]},
-{id:'dnhdd',name:'Dadra & Nagar Haveli and Daman & Diu',zone:'west',
+{id:'dnhdd',name:'Dadra & Nagar Haveli and Daman & Diu',lon:73.0,desc:'WARLI · GUJARATI · COAST',script:'दमण',zone:'west',
  alias:['Dadra and Nagar Haveli and Daman and Diu','Dadra & Nagar Haveli and Daman & Diu','Daman and Diu','Dadra and Nagar Haveli'],
  lang:'Gujarati, Konkani, Warli',genres:'Warli tribal folk and Gujarati coastal songs',
  seed:[
@@ -1908,7 +1990,7 @@ const REGIONS = [
   {t:'Daman rap',a:'Gujarati hip hop',m:['rap','party'],g:1},
   {t:'Marathi rap',a:'Marathi hip hop',m:['rap','party'],g:1}]},
 /* ---------------- CENTRAL ---------------- */
-{id:'up',name:'Uttar Pradesh',zone:'central',alias:['Uttar Pradesh'],
+{id:'up',name:'Uttar Pradesh',lon:80.6,desc:'GANGA · AWADHI · THUMRI',script:'उत्तर प्रदेश',zone:'central',alias:['Uttar Pradesh'],
  lang:'Hindi, Awadhi, Bhojpuri, Braj',genres:'thumri, dhrupad, kajri, qawwali and Bhojpuri folk',
  seed:[
   {t:'Babul Mora Naihar Chhooto Jaye',a:'thumri',m:['classical','chill','mymix']},
@@ -2008,7 +2090,7 @@ const REGIONS = [
   {t:'UP gully rap',a:'Hindi hip hop',m:['rap','modern']},
   {t:'Bhojpuri trap',a:'Bhojpuri hip hop',m:['rap','party'],g:1},
   {t:'Purvanchal rap',a:'Hindi hip hop',m:['rap','party'],g:1}]},
-{id:'mp',name:'Madhya Pradesh',zone:'central',alias:['Madhya Pradesh'],
+{id:'mp',name:'Madhya Pradesh',lon:78.5,desc:'NARMADA · MALWI · KABIR',script:'मध्य प्रदेश',zone:'central',alias:['Madhya Pradesh'],
  lang:'Hindi, Malwi, Bundeli',genres:'Malwi folk, nirguni bhajan, Kabir songs and Gond music',
  seed:[
   {t:'Kabir Nirguni Bhajan',a:'Kumar Gandharva',m:['classical','devotional','chill','mymix']},
@@ -2041,7 +2123,7 @@ const REGIONS = [
   {t:'Malwi rap',a:'Hindi hip hop',m:['rap','folk'],g:1},
   {t:'MP trap',a:'Hindi hip hop',m:['rap','party'],g:1},
   {t:'Gwalior rap',a:'Hindi hip hop',m:['rap','party'],g:1}]},
-{id:'chhattisgarh',name:'Chhattisgarh',zone:'central',alias:['Chhattisgarh','Chattisgarh'],
+{id:'chhattisgarh',name:'Chhattisgarh',lon:82.0,desc:'PANDWANI · CHHATTISGARHI · FOREST',script:'स्त्तीसगढ़',zone:'central',alias:['Chhattisgarh','Chattisgarh'],
  lang:'Chhattisgarhi',genres:'Pandwani, panthi, sua nach and tribal percussion',
  seed:[
   {t:'Pandwani',a:'Teejan Bai',m:['folk','devotional','mymix','hits']},
@@ -2074,7 +2156,7 @@ const REGIONS = [
   {t:'CG street rap',a:'Chhattisgarhi hip hop',m:['rap','modern'],g:1},
   {t:'Chhattisgarhi hip hop crew',a:'Chhattisgarhi hip hop',m:['rap','party'],g:1}]},
 /* ---------------- EAST ---------------- */
-{id:'bihar',name:'Bihar',zone:'east',alias:['Bihar'],
+{id:'bihar',name:'Bihar',lon:85.8,desc:'CHHATH · BHOJPURI · RIVER',script:'बिहार',zone:'east',alias:['Bihar'],
  lang:'Bhojpuri, Maithili, Magahi',genres:'Chhath devotional, Bhojpuri folk and Maithili songs',
  seed:[
   {t:'Kaanch Hi Bans Ke Bahangi',a:'Sharda Sinha',m:['devotional','folk','mymix']},
@@ -2162,7 +2244,7 @@ const REGIONS = [
   {t:'Bihari gully rap',a:'Bihar hip hop',m:['rap','modern']},
   {t:'Bhojpuri trap',a:'Bhojpuri hip hop',m:['rap','party'],g:1},
   {t:'Bihar street rap',a:'Bihar hip hop',m:['rap','party'],g:1}]},
-{id:'jharkhand',name:'Jharkhand',zone:'east',alias:['Jharkhand'],
+{id:'jharkhand',name:'Jharkhand',lon:85.3,desc:'SAL FOREST · NAGPURI · JHUMAR',script:'झारखंड',zone:'east',alias:['Jharkhand'],
  lang:'Santhali, Nagpuri, Kurukh',genres:'Santhali folk, Nagpuri jhumar and mandar drumming',
  seed:[
   {t:'Santhali folk song',a:'Santhali traditional',m:['folk','chill','mymix'],g:1},
@@ -2194,7 +2276,7 @@ const REGIONS = [
   {t:'Nagpuri trap',a:'Nagpuri hip hop',m:['rap','party'],g:1},
   {t:'Jharkhand street rap',a:'Nagpuri hip hop',m:['rap','modern'],g:1},
   {t:'Tribal rap fusion',a:'Jharkhand hip hop',m:['rap','folk']}]},
-{id:'wb',name:'West Bengal',zone:'east',alias:['West Bengal'],
+{id:'wb',name:'West Bengal',lon:87.9,desc:'ADDA · BANGLA · MONSOON',script:'পশ্চিমবঙ্গ',zone:'east',alias:['West Bengal'],
  lang:'Bengali',genres:'Rabindra Sangeet, Baul mystic folk, Bangla rock and adhunik',
  seed:[
   {t:'Ekla Chalo Re',a:'Rabindra Sangeet',m:['retro','devotional','chill','hits']},
@@ -2352,7 +2434,7 @@ const REGIONS = [
   {t:'Cactus best of',a:'Cactus',m:['mymix','party']},
   {t:'Anupam Roy best of',a:'Anupam Roy',m:['mymix','chill']},
   {t:'Bengali band unplugged',a:'Bengali band',m:['mymix','chill'],g:1}]},
-{id:'odisha',name:'Odisha',zone:'east',alias:['Odisha','Orissa'],
+{id:'odisha',name:'Odisha',lon:84.8,desc:'JAGANNATH · ODIA · SANDSTONE',script:'ଓଡିଶା',zone:'east',alias:['Odisha','Orissa'],
  lang:'Odia, Sambalpuri',genres:'Odissi classical, Sambalpuri folk and Jagannath bhajan',
  seed:[
   {t:'Rangabati',a:'Jitendra Haripal Krishna Patel',m:['folk','party','retro','hits']},
@@ -2429,7 +2511,7 @@ const REGIONS = [
   {t:'Odia street rap',a:'Odia hip hop',m:['rap','modern'],g:1},
   {t:'Koshli rap',a:'Sambalpuri hip hop',m:['rap','folk'],g:1}]},
 /* ---------------- NORTHEAST ---------------- */
-{id:'assam',name:'Assam',zone:'northeast',alias:['Assam'],
+{id:'assam',name:'Assam',lon:92.8,desc:'BRAHMAPUTRA · ASSAMESE · BIHU',script:'অসম',zone:'northeast',alias:['Assam'],
  lang:'Assamese, Bodo',genres:'Bihu folk, Borgeet, Zubeen-era Assamese pop',
  seed:[
   {t:'Bistirno Parore',a:'Bhupen Hazarika',m:['retro','folk','chill','mymix','hits']},
@@ -2506,7 +2588,7 @@ const REGIONS = [
   {t:'Assamese trap',a:'Assamese hip hop',m:['rap','party'],g:1},
   {t:'Assam street rap',a:'Assamese hip hop',m:['rap','modern'],g:1},
   {t:'Bodo rap',a:'Bodo hip hop',m:['rap','party'],g:1}]},
-{id:'meghalaya',name:'Meghalaya',zone:'northeast',alias:['Meghalaya'],
+{id:'meghalaya',name:'Meghalaya',lon:91.3,desc:'LIVING ROOT · KHASI · RAIN',script:'मेघालय',zone:'northeast',alias:['Meghalaya'],
  lang:'Khasi, Garo',genres:'Khasi indie rock, gospel choir and Garo folk',
  seed:[
   {t:'Set Me Free',a:'Soulmate',m:['modern','party','mymix']},
@@ -2535,7 +2617,7 @@ const REGIONS = [
   {t:'Meghalaya trap',a:'Khasi hip hop',m:['rap','party'],g:1},
   {t:'Khasi street rap',a:'Khasi hip hop',m:['rap','modern'],g:1},
   {t:'Shillong hip hop crew',a:'Khasi hip hop',m:['rap','party'],g:1}]},
-{id:'manipur',name:'Manipur',zone:'northeast',alias:['Manipur'],
+{id:'manipur',name:'Manipur',lon:93.9,desc:'LOKTAK · MEITEI · PENA',script:'মণিপুর',zone:'northeast',alias:['Manipur'],
  lang:'Meiteilon (Manipuri)',genres:'pena ballads, Nat Sankirtana and alt-rock',
  seed:[
   {t:'Pena Manipuri folk instrument',a:'Manipuri pena',m:['folk','classical','chill','mymix']},
@@ -2564,7 +2646,7 @@ const REGIONS = [
   {t:'Manipuri trap',a:'Manipuri hip hop',m:['rap','party'],g:1},
   {t:'Manipuri street rap',a:'Manipuri hip hop',m:['rap','modern'],g:1},
   {t:'Imphal hip hop crew',a:'Manipuri hip hop',m:['rap','party'],g:1}]},
-{id:'nagaland',name:'Nagaland',zone:'northeast',alias:['Nagaland'],
+{id:'nagaland',name:'Nagaland',lon:94.4,desc:'HORNBILL · NAGA · HILLS',script:'NAGALAND',zone:'northeast',alias:['Nagaland'],
  lang:'Nagamese, Ao, Angami',genres:'Naga polyphonic folk, gospel and rock',
  seed:[
   {t:'Naga traditional song',a:'Naga folk',m:['folk','retro','mymix']},
@@ -2593,7 +2675,7 @@ const REGIONS = [
   {t:'Naga trap',a:'Naga hip hop',m:['rap','party'],g:1},
   {t:'Naga street rap',a:'Naga hip hop',m:['rap','modern'],g:1},
   {t:'Nagamese rap',a:'Naga hip hop',m:['rap','party'],g:1}]},
-{id:'mizoram',name:'Mizoram',zone:'northeast',alias:['Mizoram'],
+{id:'mizoram',name:'Mizoram',lon:92.8,desc:'BLUE HILLS · MIZO · CHOIR',script:'MIZORAM',zone:'northeast',alias:['Mizoram'],
  lang:'Mizo',genres:'Mizo hla, gospel harmony and chheihlam',
  seed:[
   {t:'Chheihlam',a:'Mizo folk',m:['folk','party','mymix','hits']},
@@ -2619,7 +2701,7 @@ const REGIONS = [
   {t:'Mizo street rap',a:'Mizo hip hop',m:['rap','modern'],g:1},
   {t:'Mizo hip hop crew',a:'Mizo hip hop',m:['rap','party'],g:1},
   {t:'Mizo gospel rap',a:'Mizo hip hop',m:['rap','devotional','mymix'],g:1}]},
-{id:'tripura',name:'Tripura',zone:'northeast',alias:['Tripura'],
+{id:'tripura',name:'Tripura',lon:91.7,desc:'BAMBOO · KOKBOROK · HOJAGIRI',script:'ত্রিপুরা',zone:'northeast',alias:['Tripura'],
  lang:'Kokborok, Bengali',genres:'Hojagiri songs, Kokborok folk and Bengali music',
  seed:[
   {t:'Sun Mere Bandhu Re',a:'S D Burman',m:['retro','chill','mymix']},
@@ -2649,7 +2731,7 @@ const REGIONS = [
   {t:'Tripura street rap',a:'Tripura hip hop',m:['rap','modern'],g:1},
   {t:'Bengali rap',a:'Bengali hip hop',m:['rap','party'],g:1},
   {t:'Kokborok hip hop crew',a:'Tripuri hip hop',m:['rap','party'],g:1}]},
-{id:'arunachal',name:'Arunachal Pradesh',zone:'northeast',alias:['Arunachal Pradesh'],
+{id:'arunachal',name:'Arunachal Pradesh',lon:94.4,desc:'FIRST LIGHT · NYISHI · RIDGE',script:'अरुणाचल',zone:'northeast',alias:['Arunachal Pradesh'],
  lang:'Nyishi, Adi, Monpa',genres:'tribal folk, Buddhist chant and new indie',
  seed:[
   {t:'Walk With Me',a:'Taba Chake',m:['modern','chill','mymix']},
@@ -2679,7 +2761,7 @@ const REGIONS = [
   {t:'Arunachal street rap',a:'Arunachal hip hop',m:['rap','modern'],g:1},
   {t:'Adi rap',a:'Arunachal hip hop',m:['rap','party'],g:1},
   {t:'Arunachal hip hop crew',a:'Arunachal hip hop',m:['rap','party'],g:1}]},
-{id:'sikkim',name:'Sikkim',zone:'northeast',alias:['Sikkim'],
+{id:'sikkim',name:'Sikkim',lon:88.5,desc:'KANCHENJUNGA · NEPALI · CLOUD',script:'सिक्किम',zone:'northeast',alias:['Sikkim'],
  lang:'Nepali, Bhutia, Lepcha',genres:'Nepali folk, Lepcha songs and monastic chant',
  seed:[
   {t:'Nepali folk song',a:'Nepali traditional',m:['folk','chill','mymix'],g:1},
@@ -2708,7 +2790,7 @@ const REGIONS = [
   {t:'Lepcha rap',a:'Sikkim hip hop',m:['rap','party'],g:1},
   {t:'Nepali hip hop crew',a:'Nepali hip hop',m:['rap','party'],g:1}]},
 /* ---------------- SOUTH ---------------- */
-{id:'karnataka',name:'Karnataka',zone:'south',alias:['Karnataka'],
+{id:'karnataka',name:'Karnataka',lon:76.0,desc:'YAKSHAGANA · KANNADA · DECCAN',script:'ಕನ್ನಡ',zone:'south',alias:['Karnataka'],
  lang:'Kannada, Tulu',genres:'Carnatic, Haridasa keerthane, bhavageethe and film music',
  seed:[
   {t:'Bhagyada Lakshmi Baramma',a:'Purandara Dasa keerthane',m:['devotional','classical','mymix']},
@@ -2792,7 +2874,7 @@ const REGIONS = [
   {t:'Kannada trap',a:'Kannada hip hop',m:['rap','party'],g:1},
   {t:'Karnataka street rap',a:'Kannada hip hop',m:['rap','modern'],g:1},
   {t:'Kannada rap battle',a:'Kannada hip hop',m:['rap','party']}]},
-{id:'kerala',name:'Kerala',zone:'south',alias:['Kerala'],
+{id:'kerala',name:'Kerala',lon:76.4,desc:'MONSOON · MALAYALAM · BACKWATER',script:'കേരളം',zone:'south',alias:['Kerala'],
  lang:'Malayalam',genres:'sopana sangeetham, chenda melam, Mappila and film melody',
  seed:[
   {t:'Harivarasanam',a:'K J Yesudas',m:['devotional','retro','chill','mymix','hits']},
@@ -2891,7 +2973,7 @@ const REGIONS = [
   {t:'Malayalam rap cypher',a:'Malayalam hip hop',m:['rap','party'],g:1},
   {t:'Mappila rap fusion',a:'Malayalam hip hop',m:['rap','folk']},
   {t:'Kerala street rap',a:'Malayalam hip hop',m:['rap','modern'],g:1}]},
-{id:'tn',name:'Tamil Nadu',zone:'south',alias:['Tamil Nadu'],
+{id:'tn',name:'Tamil Nadu',lon:78.4,desc:'CARNATIC · TAMIL · GOPURAM',script:'தமிழ்',zone:'south',alias:['Tamil Nadu'],
  lang:'Tamil',genres:'Carnatic, nadaswaram, gaana, Kollywood and Thevaram',
  seed:[
   {t:'Enjoy Enjaami',a:'Dhee and Arivu',m:['modern','folk','party','hits']},
@@ -3004,7 +3086,7 @@ const REGIONS = [
   {t:'Madras Gig rap',a:'Tamil hip hop',m:['rap','party']},
   {t:'Vaathi Coming rap',a:'Master Anirudh',m:['rap','party']},
   {t:'Tamil rap cypher',a:'Tamil hip hop',m:['rap','party'],g:1}]},
-{id:'ap',name:'Andhra Pradesh',zone:'south',alias:['Andhra Pradesh'],
+{id:'ap',name:'Andhra Pradesh',lon:79.7,desc:'ANNAMAYYA · TELUGU · COAST',script:'ఆంధ్ర',zone:'south',alias:['Andhra Pradesh'],
  lang:'Telugu',genres:'Annamacharya keerthana, Kuchipudi, janapadam and Telugu film',
  seed:[
   {t:'Annamacharya Keerthana',a:'Annamayya',m:['devotional','classical','mymix']},
@@ -3081,7 +3163,7 @@ const REGIONS = [
   {t:'Telugu street rap',a:'Telugu hip hop',m:['rap','modern'],g:1},
   {t:'Andhra rap',a:'Telugu hip hop',m:['rap','party'],g:1},
   {t:'Telugu trap',a:'Telugu hip hop',m:['rap','party'],g:1}]},
-{id:'telangana',name:'Telangana',zone:'south',alias:['Telangana'],
+{id:'telangana',name:'Telangana',lon:79.0,desc:'BATHUKAMMA · TELUGU · GRANITE',script:'తెలంగాణ',zone:'south',alias:['Telangana'],
  lang:'Telugu, Urdu',genres:'Bathukamma folk, Oggu katha, qawwali and Tollywood',
  seed:[
   {t:'Naatu Naatu',a:'RRR M M Keeravani',m:['party','modern','hits']},
@@ -3164,7 +3246,7 @@ const REGIONS = [
   {t:'Hyderabadi Hindi rap',a:'Hyderabadi hip hop',m:['rap','party'],g:1},
   {t:'Telangana cypher',a:'Telangana hip hop',m:['rap','party'],g:1},
   {t:'Telugu trap',a:'Telugu hip hop',m:['rap','party'],g:1}]},
-{id:'puducherry',name:'Puducherry',zone:'south',alias:['Puducherry','Pondicherry'],
+{id:'puducherry',name:'Puducherry',lon:79.8,desc:'BOULEVARD · TAMIL · SEA WALL',script:'புதுவை',zone:'south',alias:['Puducherry','Pondicherry'],
  lang:'Tamil, French, Malayalam',genres:'Tamil film music, Carnatic and Bharatanatyam',
  seed:[
   {t:'Tamil film song',a:'Tamil cinema',m:['modern','party','mymix']},
@@ -3193,7 +3275,7 @@ const REGIONS = [
   {t:'Gaana rap',a:'Tamil hip hop',m:['rap','folk','mymix']},
   {t:'Tamil hip hop crew',a:'Tamil hip hop',m:['rap','party'],g:1},
   {t:'Pondy drill',a:'Tamil hip hop',m:['rap','party'],g:1}]},
-{id:'lakshadweep',name:'Lakshadweep',zone:'south',alias:['Lakshadweep'],
+{id:'lakshadweep',name:'Lakshadweep',lon:72.6,desc:'ATOLL · JESERI · LAGOON',script:'ലക്ഷദ്വീപ്',zone:'south',alias:['Lakshadweep'],
  lang:'Jeseri (Malayalam), Mahl',genres:'Parichakali, Lava dance and Mappila-linked song',
  seed:[
   {t:'Lakshadweep folk song',a:'Lakshadweep traditional',m:['folk','chill','mymix'],g:1},
@@ -3215,7 +3297,7 @@ const REGIONS = [
   {t:'Jeseri rap',a:'Lakshadweep hip hop',m:['rap','party'],g:1},
   {t:'Mappila rap',a:'Malayalam hip hop',m:['rap','folk']},
   {t:'Island trap',a:'Lakshadweep hip hop',m:['rap','party'],g:1}]},
-{id:'andaman',name:'Andaman & Nicobar Islands',zone:'south',
+{id:'andaman',name:'Andaman & Nicobar Islands',lon:92.75,desc:'ISLAND CHAIN · MANY TONGUES · REEF',script:'अंडमान',zone:'south',
  alias:['Andaman and Nicobar Islands','Andaman & Nicobar Islands','Andaman and Nicobar'],
  lang:'Hindi, Bengali, Tamil, Nicobarese',genres:'Nicobarese folk plus the settler mix of Bengali, Tamil and Hindi song',
  seed:[
@@ -3235,7 +3317,11 @@ const REGIONS = [
   {t:'Hindi rap',a:'Hindi hip hop',m:['rap','party'],g:1},
   {t:'Andaman street rap',a:'Andaman hip hop',m:['rap','modern'],g:1}]},
 /* ---------------- NATIONAL ---------------- */
-{id:'bollywood',name:'Hindi Film',zone:'national',alias:[],freq:'100.0',
+{id:'air',name:'All India Radio',desc:'ALL INDIA · EVERY TONGUE · DUSK TILL DAWN',script:'आकाशवाणी',zone:'national',alias:[],freq:'88.0',
+ lang:'All Indian languages',
+ genres:'the whole country on one frequency \u2014 programmed across every state',
+ seed:[]},
+{id:'bollywood',name:'Hindi Film',desc:'FILM CITY · HINDI · PLAYBACK',script:'हिन्दी सिनेमा',zone:'national',alias:[],freq:'100.0',
  lang:'Hindi, Urdu',genres:'Hindi film music from the golden era to today',
  seed:[
   {t:'Lag Ja Gale',a:'Lata Mangeshkar',m:['retro','chill','mymix']},
@@ -3430,7 +3516,7 @@ const REGIONS = [
   {t:'KK best of',a:'KK',m:['mymix','chill']},
   {t:'Mora Saiyaan',a:'Fuzon',m:['mymix','chill']},
   {t:'Afreen Afreen',a:'Nusrat Fateh Ali Khan',m:['mymix','devotional']}]},
-{id:'indie',name:'Hindi Indie',zone:'national',alias:[],freq:'101.5',
+{id:'indie',name:'Hindi Indie',desc:'BEDROOM TAPES · HINDI · LATE',script:'इंडी',zone:'national',alias:[],freq:'101.5',
  lang:'Hindi, Urdu',genres:'Hindi indie, fusion rock and the independent scene',
  seed:[
   {t:'Ghir Ghir',a:'Advaita',m:['classical','chill','mymix']},
@@ -3574,7 +3660,7 @@ const REGIONS = [
   {t:'Coke Studio India best of',a:'Coke Studio India',m:['mymix','folk']},
   {t:'Coke Studio Sufi classics',a:'Coke Studio',m:['mymix','devotional']},
   {t:'Coke Studio unplugged classics',a:'Coke Studio',m:['mymix','chill']}]},
-{id:'bengalirock',name:'Bengali Classics',zone:'national',alias:[],freq:'102.4',
+{id:'bengalirock',name:'Bengali Classics',desc:'PARA ROCK · BANGLA · ADDA',script:'বাংলা',zone:'national',alias:[],freq:'102.4',
  lang:'Bengali',genres:'Bangla band rock and the Bengali golden classics',
  seed:[
   {t:'Ekla Ghar',a:'Fossils',m:['party','mymix','hits']},
@@ -3661,7 +3747,7 @@ const REGIONS = [
   {t:'Ek Palake Ektu Dekha',a:'Kishore Kumar',m:['retro','chill','mymix']},
   {t:'Tare Ami Chokhe Dekhini',a:'Kishore Kumar',m:['retro','chill','mymix']},
   {t:'Se Jeno Amar Pashe',a:'Kishore Kumar',m:['retro','chill','mymix']}]},
-{id:'hindiclassics',name:'Hindi Classics',zone:'national',alias:[],freq:'103.6',
+{id:'hindiclassics',name:'Hindi Classics',desc:'RAGA · GHARANA · DAWN',script:'शास्त्रीय',zone:'national',alias:[],freq:'103.6',
  lang:'Hindi, Urdu',genres:'Hindustani classical and raga-based Hindi classics',
  seed:[
   {t:'Raga Miyan Ki Todi',a:'Bhimsen Joshi',m:['classical','mymix']},
@@ -3702,7 +3788,7 @@ const REGIONS = [
   {t:'Hindi classical new recital',a:'Hindustani classical',m:['modern'],g:1},
   {t:'Hindi semi classical',a:'Hindustani',m:['classical','hits']},
   {t:'Classical fusion',a:'Indian fusion',m:['classical','rap'],g:1}]},
-{id:'englishclassics',name:'English Classics',zone:'national',alias:[],freq:'104.8',
+{id:'englishclassics',name:'English Classics',desc:'LONG PLAY · ENGLISH · HIGHWAY',script:'CLASSICS',zone:'national',alias:[],freq:'104.8',
  lang:'English',genres:'classic rock, folk and singer-songwriter classics',
  seed:[
   {t:'Blowin in the Wind',a:'Bob Dylan',m:['retro','folk','mymix','hits']},
@@ -3750,7 +3836,7 @@ const REGIONS = [
   {t:'Classic rock live anthem',a:'Classic rock',m:['party','hits']},
   {t:'Old school hip hop classic',a:'Classic hip hop',m:['rap','party']},
   {t:'Classic rock new remaster',a:'Classic rock',m:['modern','chill']}]},
-{id:'shaadi',name:'Shaadi Season',zone:'national',alias:[],freq:'105.9',
+{id:'shaadi',name:'Shaadi Season',desc:'SANGEET · DHOL · ALL NIGHT',script:'शादी',zone:'national',alias:[],freq:'105.9',
  lang:'Hindi, Punjabi',genres:'the sangeet, the baraat and every floor-filler in between',
  seed:[
   {t:'Gallan Goodiyaan',a:'Dil Dhadakne Do',m:['party','hits','mymix']},
@@ -3841,6 +3927,7 @@ const VISUAL = {
   hindiclassics: {pal:['#2a2216','#8a6b3a','#f0dfb4'], terrain:'temple'},
   englishclassics:{pal:['#161c26','#4a6178','#dfe3e8'], terrain:'hills'},
   shaadi:        {pal:['#33121f','#a8425f','#f2cf9e'], terrain:'city'},
+  air:           {pal:['#141b2c','#c08a3e','#f4e3bd'], terrain:'hills'},
   jk:        {pal:['#12213d','#3d6b96','#c9d8e6'], terrain:'himalaya'},
   ladakh:    {pal:['#1b1c33','#6b5f7e','#d8c3a5'], terrain:'coldDesert'},
   hp:        {pal:['#14263f','#3f7a72','#cfe0d8'], terrain:'himalaya'},
@@ -4016,7 +4103,7 @@ function mReeds(c){          /* tribal flute + reed cluster */
 const MOTIF = {
   bollywood:['mic',0],  indie:['guitar',0],
   bengalirock:['guitar',1], hindiclassics:['strings',1], englishclassics:['guitar',0],
-  shaadi:['drum',1],
+  shaadi:['drum',1], air:['mic',1],
   jk:['strings',1],       ladakh:['stupa',1],      hp:['drum',0],        punjab:['drum',1],
   haryana:['drum',0],     uttarakhand:['flute',0], delhi:['mic',0],      chandigarh:['mic',0],
   rajasthan:['bowed',0],  gujarat:['dancer',1],    maharashtra:['dancer',0], goa:['guitar',0],
@@ -4274,7 +4361,7 @@ function paintBackdrop(region){
 
 /* ============================ STATE ====================================== */
 let player=null, ytReady=false, playing=false, scrubbing=false;
-let current=null, moodKey='modern', queue=[], qi=-1, seq=0, progTimer=null, pendingVid=null;
+let current=null, moodKey='mymix', queue=[], qi=-1, seq=0, progTimer=null, pendingVid=null;
 let geoReady=false, trains=[], ring=null, tempoFactor=1, ringPulse=0;
 let cseq=0;   /* curation generation, deliberately separate from playback seq */
 
@@ -4495,8 +4582,7 @@ async function loadMap(){
       path.addEventListener('click',()=>fire(tune(region.id),'tune'));
       path.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();fire(tune(region.id),'tune');}});
       region.cx=best?best.x:null; region.cy=best?best.y:null; region.area=bestArea;
-      /* dial frequency comes from the real centroid longitude */
-      if(best) region.freq=(minLon+(best.x-offX)/s).toFixed(1);
+      /* the dial is assigned up front now, so the map only supplies geometry */
       /* keep the shape so the backdrop can float the state's real outline behind
          the art, scaled to a consistent size whatever the state's actual area */
       region.pathD=d;
@@ -4529,6 +4615,7 @@ async function loadMap(){
     bollywood:      {lon:69.6,lat:19.4,side:'right'},
     hindiclassics:  {lon:68.6,lat:15.4,side:'right'},
     shaadi:         {lon:69.6,lat:11.8,side:'right'},
+    air:            {lon:78.9,lat:20.4,side:'right'}   /* centre of the country */,
     indie:          {lon:91.4,lat:15.2,side:'left'},
     bengalirock:    {lon:90.4,lat:12.2,side:'left'},
     englishclassics:{lon:85.4,lat:9.0, side:'left'}
@@ -4832,8 +4919,11 @@ function renderList(filter){
     rows.sort((a,b)=>a.name.localeCompare(b.name)).forEach(r=>{
       const b=document.createElement('button');
       b.className='srow'+(current&&current.id===r.id?' on':''); b.dataset.id=r.id;
+      /* a station card, not a playlist row: name, its frequency, its character line */
       b.innerHTML='<i style="background:'+ZONES[r.zone].c+'"></i>'+
-        '<span class="n">'+esc(r.name)+'<span class="sub">'+esc(r.lang)+'</span></span>';
+        '<span class="n">'+esc(r.name)+
+          '<span class="sub">'+esc(r.desc||r.lang)+'</span></span>'+
+        '<span class="srow-freq">'+esc(r.freq||'')+'<em>MHz</em></span>';
       b.addEventListener('click',()=>fire(tune(r.id),'tune'));
       listEl.appendChild(b);
     });
@@ -5160,6 +5250,395 @@ async function curate(region,mKey,avoid){
   return parsed.tracks.filter(t=>t&&t.t&&t.a).slice(0,18);
 }
 function shuffled(a){ return a.slice().sort(()=>Math.random()-0.5); }
+const AIR_ID = 'air';
+
+/* ---- the dial ------------------------------------------------------------
+   Frequencies used to be read off the map centroid, which meant a station had no
+   frequency until the boundary data arrived and could collide with a preset. They
+   are assigned once, here, spread across the FM band and ordered west to east so
+   moving across the country moves along the dial. Sur Radio frequencies, not a
+   claim about any real broadcaster. */
+(function assignDial(){
+  const taken = {};
+  REGIONS.filter(function(r){ return r.zone==='national'; })
+         .forEach(function(r){ taken[r.freq]=1; });
+
+  const states = REGIONS.filter(function(r){ return r.zone!=='national' && r.lon!=null; })
+                        .sort(function(a,b){ return a.lon-b.lon; });
+  let f = 88.2;
+  states.forEach(function(r){
+    while(taken[f.toFixed(1)] || f>107.9){ f += 0.2; if(f>107.9) f = 88.2; }
+    r.freq = f.toFixed(1);
+    taken[r.freq] = 1;
+    f += 0.5;
+  });
+  /* anything without a longitude still gets a stable number */
+  REGIONS.forEach(function(r){ if(!r.freq) r.freq='87.9'; });
+})();
+
+
+/* ==========================================================================
+   RADIO ENGINE
+   The catalogue only ever stored a title, an artist string and mood tags. A radio
+   station needs more than that to program a sequence, so the extra metadata is
+   *derived* at load rather than authored - nothing here invents a song, an artist
+   or a URL, it only reads what is already in the row.
+   ========================================================================== */
+
+/* Artists whose work a general listener is likely to recognise. Used only to weight
+   selection; nothing is added to or removed from the catalogue because of it. */
+const FAMOUS = ('lata mangeshkar|mohammed rafi|kishore kumar|asha bhosle|manna dey|'+
+ 'hemanta|geeta dutt|mukesh|talat|s d burman|r d burman|a r rahman|arijit singh|'+
+ 'shreya ghoshal|sonu nigam|kk|udit narayan|kumar sanu|alka yagnik|sunidhi chauhan|'+
+ 'atif aslam|rahat fateh ali khan|nusrat fateh ali khan|jagjit singh|ghulam ali|'+
+ 'begum akhtar|bhimsen joshi|kishori amonkar|ravi shankar|bismillah khan|zakir hussain|'+
+ 'hariprasad chaurasia|shivkumar sharma|amjad ali khan|m s subbulakshmi|k j yesudas|'+
+ 'ilaiyaraaja|anirudh|harris jayaraj|sid sriram|s p balasubrahmanyam|ghantasala|'+
+ 'bhupen hazarika|zubeen garg|papon|sharda sinha|gurdas maan|diljit dosanjh|'+
+ 'sidhu moose wala|ap dhillon|karan aujla|badshah|divine|mc stan|seedhe maut|'+
+ 'prateek kuhad|anuv jain|the local train|indian ocean|kabir cafe|fossils|cactus|'+
+ 'chandrabindoo|anupam roy|anjan dutt|mohiner ghoraguli|rabindra sangeet|lalon|'+
+ 'teejan bai|mame khan|falguni pathak|kailash kher|jubin nautiyal|b praak|'+
+ 'bob dylan|john denver|pink floyd|john lennon|the beatles|eagles|queen|'+
+ 'led zeppelin|simon and garfunkel|dire straits|eric clapton|leonard cohen|'+
+ 'scorpions|creedence|neil young|cat stevens|coke studio|ritviz|nucleya|'+
+ 'euphoria|silk route|colonial cousins|raghu dixit|swarathma|tetseo|soulmate'
+).split('|');
+
+/* Words in the artist field that describe a film, label or format rather than a
+   performer. Stripped before comparing two rows for "same artist". */
+const NOT_A_NAME = ('folk|modern|retro|classical|devotional|traditional|film|cinema|'+
+ 'hip|hop|band|choir|gospel|geet|sangeet|geeti|pattu|padam|kirtan|bhajan|qawwali|'+
+ 'selection|music|song|songs|hit|new|old|best|of|live|the|and|a|in|for'
+).split('|');
+
+const NOISE_W = {};
+NOT_A_NAME.forEach(function(w){ NOISE_W[w]=1; });
+
+function trackKey(t){ return norm(t.t)+'|'+norm(t.a); }
+
+/* One pass over the catalogue, at load. Adds only derived fields. */
+(function enrichCatalogue(){
+  REGIONS.filter(function(r){ return r.id!==AIR_ID; }).forEach(function(r){
+    const langs = r.lang.split(',').map(function(x){ return x.trim().toLowerCase(); });
+    r.seed.forEach(function(t){
+      t.key   = trackKey(t);
+      t.rid   = r.id;
+      t.lang  = langs[0] || '';
+
+      /* artist signature: the distinctive words of the artist field, so
+         "Baiju Bawra Mohammed Rafi" and "Mohammed Rafi" are recognised as related */
+      const words = norm(t.a).split(' ').filter(function(w){ return w && !NOISE_W[w]; });
+      t.akey = words.slice(0,3).join(' ') || norm(t.a);
+      t.sig  = norm(t.a);                       /* exact field, for a stricter gap */
+
+      const famous = FAMOUS.some(function(f){ return t.sig.indexOf(f)>-1; });
+
+      /* Popularity is a weighting hint, not a claim of chart position. Tags the
+         catalogue already carries are the evidence: a row tagged Hits is by
+         definition one of the better known ones for its station. */
+      let p = 0.30;
+      if(t.m.indexOf('hits')>-1)   p += 0.30;
+      if(t.m.indexOf('mymix')>-1)  p += 0.14;
+      if(t.m.indexOf('party')>-1)  p += 0.06;
+      if(t.m.indexOf('retro')>-1)  p += 0.05;
+      if(t.m.indexOf('modern')>-1) p += 0.04;
+      if(famous)                   p += 0.22;
+      if(t.g)                      p -= 0.22;   /* a described row, not a named song */
+      t.pop = Math.max(0.05, Math.min(1, p));
+
+      /* era, used to avoid five decades-old songs in a row and vice versa */
+      t.era = (t.m.indexOf('retro')>-1 || t.m.indexOf('classical')>-1) ? 'classic'
+            : (t.m.indexOf('modern')>-1 || t.m.indexOf('rap')>-1)      ? 'now'
+            : 'mid';
+    });
+  });
+})();
+
+/* ---- memory ---------------------------------------------------------------
+   What was heard, and when. Kept in localStorage where available; a blob-URL
+   iframe (how the React wrapper loads this file) has an opaque origin and throws
+   on access, so an in-memory copy backs it up and the app never depends on it. */
+const MEM_KEY = 'surradio_history_v1';
+const RadioMemory = (function(){
+  let mem = {days:{}, recent:[], counts:{}};
+  let usable = true;
+  try{
+    const raw = localStorage.getItem(MEM_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.days) mem = parsed;
+    }
+  }catch(e){ usable = false; }
+
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function save(){
+    if(!usable) return;
+    try{ localStorage.setItem(MEM_KEY, JSON.stringify(mem)); }
+    catch(e){ usable = false; }         /* quota or opaque origin: carry on in memory */
+  }
+  function prune(){
+    /* three days of day-buckets is enough to make "yesterday" mean something */
+    const keep = {};
+    const days = Object.keys(mem.days).sort().slice(-3);
+    days.forEach(function(d){ keep[d]=mem.days[d]; });
+    mem.days = keep;
+    if(mem.recent.length > 400) mem.recent = mem.recent.slice(-400);
+  }
+  return {
+    today: today,
+    /* every key heard today for this station+mood */
+    playedToday: function(stationKey){
+      const d = mem.days[today()];
+      return (d && d[stationKey]) ? d[stationKey] : [];
+    },
+    playedYesterday: function(stationKey){
+      const days = Object.keys(mem.days).sort();
+      const prev = days[days.indexOf(today())-1] || days[days.length-2];
+      const d = prev ? mem.days[prev] : null;
+      return (d && d[stationKey]) ? d[stationKey] : [];
+    },
+    recentKeys: function(n){
+      return mem.recent.slice(-(n||120)).map(function(x){ return x.k; });
+    },
+    playCount: function(key){ return mem.counts[key]||0; },
+    record: function(stationKey, key){
+      if(!key) return;
+      const d = today();
+      mem.days[d] = mem.days[d] || {};
+      mem.days[d][stationKey] = mem.days[d][stationKey] || [];
+      if(mem.days[d][stationKey].indexOf(key)<0) mem.days[d][stationKey].push(key);
+      mem.recent.push({k:key, at:Date.now()});
+      mem.counts[key] = (mem.counts[key]||0)+1;
+      prune(); save();
+    },
+    persistent: function(){ return usable; }
+  };
+})();
+
+/* ---- deterministic daily randomness --------------------------------------
+   The same station on the same day should feel like the same station; tomorrow it
+   should not. A seed built from station + mood + date gives exactly that, and it
+   means a page refresh does not reshuffle everything from scratch. */
+function hashSeed(str){
+  let h = 2166136261;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function rngFrom(seedStr){
+  let a = hashSeed(seedStr);
+  return function(){
+    a += 0x6D2B79F5;
+    let t = a;
+    t = Math.imul(t ^ (t>>>15), t | 1);
+    t ^= t + Math.imul(t ^ (t>>>7), t | 61);
+    return ((t ^ (t>>>14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- the pool a station draws from ---------------------------------------
+   Three kinds of station, one pool builder.
+     Radio Mix   - the whole region, weighted towards its better known songs
+     a mood       - strictly that mood, widened only if it is too small to rotate
+     All India    - the recognisable end of every mapped region
+   Documented exception (there is no way round it): a region+mood with fewer than
+   15 songs cannot rotate on its own. Those widen into the closest related moods of
+   the *same region*, which slightly relaxes the strict mood separation, and the row
+   says so in the player. Regions with no tradition in a mood at all - Ladakh has no
+   classical repertoire - fall back to a live search as before. */
+const MOOD_NEIGHBOURS = {
+  classical:['devotional','retro','folk'],
+  retro:['classical','folk','chill','hits'],
+  folk:['devotional','retro','party'],
+  devotional:['classical','folk','chill'],
+  modern:['hits','party','chill','rap'],
+  party:['hits','modern','folk'],
+  chill:['retro','modern','devotional'],
+  hits:['party','modern','retro'],
+  rap:['modern','party','hits'],
+  mymix:[]
+};
+const ROTATION_FLOOR = 15;
+
+/* Some stations are cities or island groups rather than musical regions of their own.
+   Chandigarh's music *is* Punjabi; Puducherry's is Tamil; Lakshadweep's is Malabar
+   Malayalam. Widening those into their parent region is more honest than either
+   inventing local songs or leaving the station unable to rotate. Documented as an
+   exception because it does cross a regional boundary. */
+const PARENT_REGION = {
+  chandigarh:'punjab', delhi:'up', puducherry:'tn', lakshadweep:'kerala',
+  andaman:'tn', dnhdd:'gujarat', ladakh:'jk', sikkim:'wb',
+  haryana:'up', uttarakhand:'up', goa:'maharashtra', tripura:'wb',
+  meghalaya:'assam', nagaland:'assam', mizoram:'assam', arunachal:'assam',
+  manipur:'assam', jharkhand:'bihar', chhattisgarh:'mp'
+};
+
+function poolFor(region, mKey){
+  if(region.id === AIR_ID) return airPool();
+
+  /* Radio Mix and the preset bands are the station itself, so the pool is the
+     whole catalogue for that station and the programming does the shaping. */
+  if(mKey === 'mymix' || region.zone === 'national'){
+    return region.seed.slice();
+  }
+
+  const strict = region.seed.filter(function(t){ return t.m.indexOf(mKey)>-1; });
+  if(strict.length >= ROTATION_FLOOR) return strict;
+
+  const out = strict.slice();
+  const have = {};
+  out.forEach(function(t){ have[t.key]=1; });
+  /* first widen within the station's own catalogue */
+  (MOOD_NEIGHBOURS[mKey]||[]).forEach(function(alt){
+    region.seed.forEach(function(t){
+      if(out.length >= ROTATION_FLOOR) return;
+      if(t.m.indexOf(alt)<0 || have[t.key]) return;
+      have[t.key]=1;
+      const copy = Object.create(t);
+      copy.widened = MOODS[alt] ? MOODS[alt].n : alt;
+      out.push(copy);
+    });
+  });
+
+  /* still short, and this station has a parent musical region: draw on it, on-mood */
+  const parent = PARENT_REGION[region.id] && byId(PARENT_REGION[region.id]);
+  if(out.length < ROTATION_FLOOR && parent){
+    parent.seed.forEach(function(t){
+      if(out.length >= ROTATION_FLOOR) return;
+      if(t.m.indexOf(mKey)<0 || have[t.key]) return;
+      have[t.key]=1;
+      const copy = Object.create(t);
+      copy.widened = parent.name;
+      out.push(copy);
+    });
+  }
+  return out;
+}
+
+/* All India Radio: the songs across the mapped states that a general listener is
+   most likely to enjoy, not one token track per state. */
+function airPool(){
+  const out = [];
+  REGIONS.filter(function(r){ return r.zone!=='national'; }).forEach(function(r){
+    r.seed.forEach(function(t){
+      if(t.pop >= 0.5 || t.m.indexOf('hits')>-1 || t.m.indexOf('mymix')>-1) out.push(t);
+    });
+  });
+  return out;
+}
+
+/* ---- scoring --------------------------------------------------------------
+   Weighted, not random. Popularity pulls up, having been heard recently pushes
+   down hard, and the daily seed provides the variation that makes tomorrow differ
+   from today without making a refresh feel like a different station. */
+function scoreTracks(pool, ctx){
+  const recent   = {}; ctx.recent.forEach(function(k,i){ recent[k]=i; });
+  const today    = {}; ctx.today.forEach(function(k){ today[k]=1; });
+  const yest     = {}; ctx.yesterday.forEach(function(k){ yest[k]=1; });
+  const rnd      = ctx.rnd;
+  const nRecent  = ctx.recent.length || 1;
+
+  return pool.map(function(t){
+    let sc = 0.95 * t.pop;
+    sc += 0.55 * rnd();                                  /* today's rotation */
+
+    /* an underplayed song earns a nudge, so the catalogue actually gets used */
+    const plays = RadioMemory.playCount(t.key);
+    sc += 0.30 / (1 + plays);
+
+    if(today[t.key])  sc -= 1.70;                        /* already heard today */
+    if(yest[t.key])   sc -= 0.85;                        /* yesterday sounded like this */
+    if(recent[t.key]!=null){
+      const howRecent = 1 - (recent[t.key]/nRecent);     /* 1 = just played */
+      sc -= 1.30 * howRecent;
+    }
+    if(t.bad) sc -= 3;                                   /* known unplayable */
+    return {t:t, sc:sc};
+  }).sort(function(a,b){ return b.sc - a.sc; });
+}
+
+/* ---- sequencing -----------------------------------------------------------
+   Scores alone would still cluster: three songs by one artist, five from one film,
+   ten of the same mood. This lays the run out with the separation a programmer
+   would keep, relaxing the rules only if the catalogue is too small to honour them. */
+function sequence(scored, ctx, count){
+  const out = [];
+  const used = {};
+  const ARTIST_GAP = 3, FILM_GAP = 3, REGION_GAP = 3, LANG_GAP = 2;
+
+  function conflicts(cand, relax){
+    if(relax >= 3) return false;
+    const back = out.slice(-Math.max(ARTIST_GAP, REGION_GAP));
+    for(let i=0;i<back.length;i++){
+      const prev = back[back.length-1-i];
+      const gap = i+1;
+      if(relax < 1){
+        if(gap <= ARTIST_GAP && prev.akey && prev.akey === cand.akey) return true;
+        if(gap <= FILM_GAP  && prev.sig  && prev.sig  === cand.sig)  return true;
+      }
+      if(ctx.isAir){
+        if(gap <= REGION_GAP && prev.rid === cand.rid) return true;
+        if(relax < 1 && gap <= LANG_GAP && prev.lang && prev.lang === cand.lang) return true;
+      }
+      /* Radio Mix should move around emotionally rather than sit in one mood */
+      if(relax < 2 && ctx.isMix && gap <= 2){
+        const shared = (prev.m||[]).filter(function(x){ return (cand.m||[]).indexOf(x)>-1; });
+        if(shared.length >= 2 && prev.era === cand.era) return true;
+      }
+    }
+    return false;
+  }
+
+  for(let relax=0; relax<=3 && out.length<count; relax++){
+    for(let i=0; i<scored.length && out.length<count; i++){
+      const cand = scored[i].t;
+      if(used[cand.key]) continue;
+      if(conflicts(cand, relax)) continue;
+      used[cand.key] = 1;
+      out.push(cand);
+    }
+  }
+  return out;
+}
+
+/* Weighted pick among the strongest candidates, so the opening of a station is
+   reliably good without being identical every time. */
+function programStation(region, mKey, count){
+  const stationKey = region.id + '/' + mKey;
+  const pool = poolFor(region, mKey);
+  if(!pool.length) return [];
+
+  const ctx = {
+    rnd: rngFrom(stationKey + '/' + RadioMemory.today()),
+    recent: RadioMemory.recentKeys(140),
+    today: RadioMemory.playedToday(stationKey),
+    yesterday: RadioMemory.playedYesterday(stationKey),
+    isAir: region.id === AIR_ID,
+    isMix: mKey === 'mymix' || region.zone === 'national'
+  };
+
+  const scored = scoreTracks(pool, ctx);
+  /* shuffle the top slice with the daily seed so the first song varies by day */
+  const head = scored.slice(0, Math.min(14, scored.length));
+  for(let i=head.length-1;i>0;i--){
+    const j = Math.floor(ctx.rnd()*(i+1));
+    const tmp = head[i]; head[i]=head[j]; head[j]=tmp;
+  }
+  const ordered = head.concat(scored.slice(head.length));
+
+  return sequence(ordered, ctx, count || 24).map(function(t){
+    return {
+      t: t.t, a: t.a, g: t.g, key: t.key, rid: t.rid, akey: t.akey, sig: t.sig,
+      pop: t.pop, era: t.era, m: t.m, lang: t.lang,
+      w: t.widened ? (MOODS[mKey] && t.widened===MOODS[mKey].n
+                        ? ''
+                        : 'Widened from ' + t.widened + ' \u2014 this station\u2019s ' +
+                          (MOODS[mKey]?MOODS[mKey].n:mKey) + ' list is small')
+                   : (ctx.isAir ? (byId(t.rid) ? byId(t.rid).name : '') : '')
+    };
+  });
+}
+
 function seedFor(region,mKey){
   /* A preset band is already a mood - Shaadi Season is party, Hindi Classics is
      classical - so filtering it again by mood would gut the list. Use everything. */
@@ -5322,6 +5801,11 @@ function syncPlayBtn(){
      about what you are hearing. */
   const pl=document.getElementById('platter');
   if(pl) pl.classList.toggle('spinning',playing);
+  /* the lamp and the signal bars mean sound is genuinely coming out */
+  const np=document.getElementById('npLive');
+  if(np) np.classList.toggle('on-air',playing);
+  const oat=document.getElementById('onAirTxt');
+  if(oat) oat.textContent = playing ? 'ON AIR' : 'STANDBY';
   setSessionState();
   const rt=document.getElementById('rpmText');
   if(rt) rt.textContent=playing?'33\u2153 rpm \u00b7 on air':'Stopped';
@@ -5349,6 +5833,31 @@ function toast(m){
 function setBar(t,s){ document.getElementById('barTitle').textContent=t; document.getElementById('barSub').textContent=s; }
 /* A preset band is its own mood, so naming a mood beside its song list is noise.
    Mapped states still show which mood is loaded. */
+/* Tuning a real receiver walks the dial. This runs the frequency up or down to the
+   new station over about half a second - enough to read as tuning, short enough not
+   to get in the way. */
+let scanTimer=null;
+function scanTo(target){
+  const el=document.getElementById('freq');
+  if(!el||!target) return;
+  clearInterval(scanTimer);
+  const to=parseFloat(target);
+  let from=parseFloat(el.textContent);
+  if(!isFinite(from)) from=to-1.4;
+  if(Math.abs(to-from)<0.05){ el.textContent=to.toFixed(1); return; }
+  const steps=9, step=(to-from)/steps;
+  let i=0;
+  el.classList.add('scanning');
+  scanTimer=setInterval(function(){
+    i++;
+    el.textContent = (i>=steps ? to : from+step*i).toFixed(1);
+    if(i>=steps){
+      clearInterval(scanTimer);
+      el.classList.remove('scanning');
+    }
+  },52);
+}
+
 function statusLabel(region,mk){
   const n=queue.length+(queue.length===1?' song':' songs');
   if(region&&region.zone==='national') return n;
@@ -5370,12 +5879,16 @@ async function tune(id,opts){
   dismissHint();
   markLive(id);
   markPreset(id);
+  scanTo(region.freq);
   document.querySelectorAll('.srow').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
-  document.getElementById('mapHint').textContent='NOW ON AIR: '+region.name.toUpperCase();
+  document.getElementById('mapHint').textContent=region.freq+' MHZ \u00b7 '+region.name.toUpperCase();
   document.getElementById('npIdle').style.display='none';
   document.getElementById('npLive').style.display='block';
   document.getElementById('freq').textContent=region.freq||'--';
-  document.getElementById('place').textContent=region.name+' \u00b7 '+region.lang;
+  document.getElementById('stationName').textContent=region.name;
+  document.getElementById('stationScript').textContent=region.script||'';
+  /* the descriptor is the station's character line; the language list is the fallback */
+  document.getElementById('place').textContent=region.desc||(region.name+' \u00b7 '+region.lang);
   document.getElementById('vfreq').textContent=region.freq||'--';
   document.getElementById('vstate').textContent=region.name;
   const vl=document.getElementById('vlabel');
@@ -5389,7 +5902,9 @@ async function tune(id,opts){
 
   /* A song picked from search opens the station, so it plays first and the rest
      of the region follows on behind it. */
-  queue=seedFor(region,moodKey);
+  /* the radio engine programs the run, rather than shuffling a mood list */
+  queue=programStation(region,moodKey,26);
+  if(!queue.length) queue=seedFor(region,moodKey);      /* nothing eligible: fall back */
   if(opts.first){
     queue=[opts.first].concat(mergeNew(queue,[opts.first]));
   }
@@ -5437,7 +5952,7 @@ async function topUp(){
     let fresh=[];
     try{ fresh=mergeNew(await curate(region,mk,queue.map(t=>t.t)),queue); }
     catch(e){ console.warn('[Sur Radio] top-up curation failed:',e); }
-    if(!fresh.length) fresh=mergeNew(seedFor(region,mk),queue);   /* built-ins as backstop */
+    if(!fresh.length) fresh=mergeNew(programStation(region,mk,18),queue);   /* engine tops up */
 
     /* Pool exhausted. Recycle it rather than re-tuning the station: a re-tune
        rebuilds the queue from scratch and reshuffles everything the listener can
@@ -5450,7 +5965,7 @@ async function topUp(){
          against everything still upcoming rather than against all history. */
       const upcoming={};
       queue.slice(Math.max(qi,0)).forEach(t=>{ upcoming[titleKey(t)]=1; });
-      fresh=shuffled(seedFor(region,mk)).filter(t=>!upcoming[titleKey(t)]);
+      fresh=programStation(region,mk,18).filter(t=>!upcoming[titleKey(t)]);
       playedVids.clear();          /* a full pass is done, repeats are fine now */
       dupSkips=0;
     }
@@ -5477,7 +5992,8 @@ async function recurate(){
      playing and the bottom bar still owns it, but it is no longer listed - the
      list is purely what comes next, so it never shows a leftover from the mood
      you just left. */
-  queue = seedFor(region,mk);
+  queue = programStation(region,mk,26);
+  if(!queue.length) queue = seedFor(region,mk);
   qi = -1;
   renderQueue();
   fire(hydrateTitles(),'hydrate titles');
@@ -5594,6 +6110,9 @@ async function playAt(i,depth,manual){
   }
   dupSkips=0;
   playedVids.add(id);
+  /* remember it, so tomorrow does not sound like today and a refresh does not
+     replay the same opening */
+  try{ RadioMemory.record(current.id+'/'+moodKey, track.key||titleKey(track)); }catch(e){}
   if(playedVids.size>400) playedVids.clear();
 
   track.vid=id; loadVideo(id); paintTrack(track,false);
@@ -5753,7 +6272,7 @@ MOOD_KEYS.forEach(function(k){
   const m=MOODS[k];
   const b=document.createElement('button');
   b.className='mood'+(k===moodKey?' on':''); b.dataset.k=k;
-  b.innerHTML='<b>'+m.n+'</b><i>'+m.tag+'</i>';
+  b.innerHTML='<b>'+m.n+'</b><i>'+(k==='mymix'?'the station itself':m.tag+' radio')+'</i>';
   b.addEventListener('click',function(){
     buzz(TAP);
     moodKey=k;
@@ -5768,17 +6287,18 @@ MOOD_KEYS.forEach(function(k){
 });
 document.getElementById('playBtn').addEventListener('click',function(){
   buzz(TAP);
-  if(!current){ fire(tune(pick(REGIONS).id),'tune'); return; }
+  if(!current){ fire(tune(AIR_ID),'tune'); return; }
   if(!player||!player.playVideo) return;
   if(playing) player.pauseVideo(); else player.playVideo();
 });
 document.getElementById('nextBtn').addEventListener('click',function(){buzz(TAP);next(true);});
 document.getElementById('prevBtn').addEventListener('click',function(){buzz(TAP);prev();});
-document.getElementById('randomBtn').addEventListener('click',()=>fire(tune(pick(REGIONS).id),'tune'));
+document.getElementById('randomBtn').addEventListener('click',()=>fire(tune(AIR_ID),'tune'));
+/* Shuffle used to mean pick(REGIONS), which is exactly the "playlist" feeling this
+   is meant to avoid. The button is now the national station. */
 document.getElementById('shuffleBtn').addEventListener('click',function(){
   buzz(CONFIRM);
-  const pool=REGIONS.filter(r=>!current||r.id!==current.id);
-  fire(tune(pick(pool).id),'shuffle');
+  fire(tune(AIR_ID),'all india radio');
 });
 document.getElementById('vol').addEventListener('input',e=>setVol(e.target.value));
 /* ---- seeking by touch ----------------------------------------------------
@@ -6278,7 +6798,9 @@ function enterStation(){
   },620);
   /* This click is the browser's required audio gesture, so it is the right
      moment to actually start playing something. */
-  setTimeout(()=>fire(tune(pick(REGIONS).id),'tune from landing'),520);
+  /* You turned on a radio: the national station is already on the dial, so nothing
+     has to be chosen before there is music. */
+  setTimeout(()=>fire(tune(AIR_ID),'tune from landing'),520);
 }
 /* Scrolling the list asks for the next batch of names, so lookups stay in proportion
    to what is actually being looked at rather than resolving hundreds of rows up front. */
