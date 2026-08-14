@@ -89,13 +89,17 @@
   /* Printed maps set region names in letter-spaced small capitals rather than a
      monospace face - it reads as cartography instead of code, and the wider
      tracking keeps short names legible at this size. */
-  .slabel{font-family:'IBM Plex Sans','Helvetica Neue',sans-serif;font-size:9.5px;
-    font-weight:600;letter-spacing:.13em;text-transform:uppercase;
-    fill:rgba(242,236,217,.9);pointer-events:none;text-anchor:middle;
-    paint-order:stroke;stroke:rgba(9,11,26,.7);stroke-width:2.4px;stroke-linejoin:round;}
-  .slabel.big,.slabel.mid,.slabel.tiny{font-size:9.5px;font-weight:600;
-    letter-spacing:.13em;fill:rgba(242,236,217,.9);stroke-width:2.4px;}
-  .slabel.tiny{fill:rgba(242,236,217,.8);letter-spacing:.1em;}
+  /* Fraunces in letter-spaced capitals - the same face as the headings, so the map
+     belongs to the rest of the page, and the small-caps treatment printed atlases
+     use for region names. Tighter tracking than before, which also narrows the
+     labels and keeps neighbours like Jharkhand and W. Bengal clear of each other. */
+  .slabel{font-family:'Fraunces',Georgia,serif;font-size:8.8px;font-weight:600;
+    letter-spacing:.085em;text-transform:uppercase;
+    fill:rgba(242,236,217,.92);pointer-events:none;text-anchor:middle;
+    paint-order:stroke;stroke:rgba(9,11,26,.74);stroke-width:2.3px;stroke-linejoin:round;}
+  .slabel.big,.slabel.mid,.slabel.tiny{font-size:8.8px;font-weight:600;
+    letter-spacing:.085em;fill:rgba(242,236,217,.92);stroke-width:2.3px;}
+  .slabel.tiny{fill:rgba(242,236,217,.82);letter-spacing:.06em;}
   .isle{cursor:pointer;}
   .isle .isledot{stroke:var(--ink);stroke-width:1.6;transition:r .16s ease;}
   .isle:hover .isledot{r:6.4;}
@@ -119,7 +123,7 @@
   .natstn .natarc{fill:none;stroke:var(--gold);stroke-width:1;opacity:.34;
     animation:natpulse 3.2s ease-out infinite;}
   @keyframes natpulse{0%{opacity:.5;}70%{opacity:0;}100%{opacity:0;}}
-  .natstn .natlabel{font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:8.5px;fill:var(--paper);
+  .natstn .natlabel{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:8.4px;fill:var(--paper);
     letter-spacing:.06em;pointer-events:none;font-weight:600;}
   .natstn .natfreq{font-family:'IBM Plex Mono',monospace;font-size:7.5px;
     fill:rgba(242,236,217,.6);letter-spacing:.08em;pointer-events:none;}
@@ -688,8 +692,10 @@
     svg#map{max-height:44vh;margin:0 auto;}
     /* the map is physically smaller here, so the type has to be proportionally larger */
     /* Same uniform size, scaled for the smaller rendered map. */
-    .slabel,.slabel.big,.slabel.mid{font-size:20px;letter-spacing:.07em;stroke-width:4.2px;}
-    .slabel.tiny{display:none;}          /* dots only; tap to see the name */
+    /* Thirty-four names at this size cannot fit without crowding, so phones label
+       the ten largest states and leave the rest as dots. Tap any state for its name. */
+    .slabel,.slabel.big{font-size:18px;letter-spacing:.05em;stroke-width:4px;}
+    .slabel.mid,.slabel.tiny{display:none;}
     .state{stroke-width:1.6;fill-opacity:.55;}
     .hub{r:4.6;}
     .isle .isledot{r:5.6;}
@@ -727,8 +733,7 @@
     .brand-name{font-size:1.02rem;}
     /* On the narrowest screens only the largest states stay labelled - anything
        smaller would render under 8px, which is not worth showing. Tap for the name. */
-    .slabel,.slabel.big{font-size:23px;letter-spacing:.05em;stroke-width:4.6px;}
-    .slabel.mid{display:none;}
+    .slabel,.slabel.big{font-size:22px;letter-spacing:.02em;stroke-width:4.5px;}
     .state{stroke-width:1.8;fill-opacity:.6;}
   }
 
@@ -4526,20 +4531,86 @@ async function loadMap(){
     'Chhattisgarh':'Chhattisgarh','Puducherry':'Puducherry','Lakshadweep':'Lakshadweep'};
   /* Preset bands get a centroid assigned by the mast code above, so they must be
      excluded here or every band ends up labelled twice. */
+  /* A centroid is a poor label anchor for an L-shaped or wrapped state: West Bengal's
+     falls right against the Jharkhand border, which is why those two names collided.
+     These nudges move a handful of labels to where the state actually reads. */
+  const NUDGE={
+    'West Bengal':[9,16], 'Jharkhand':[-5,-4], 'Odisha':[0,4], 'Bihar':[2,-4],
+    'Sikkim':[-6,-8], 'Meghalaya':[0,6], 'Assam':[6,-4], 'Manipur':[6,2],
+    'Nagaland':[7,-3], 'Tripura':[-5,5], 'Mizoram':[4,7], 'Arunachal Pradesh':[8,-7],
+    'Goa':[-9,2], 'Kerala':[-7,4], 'Puducherry':[9,3], 'Chandigarh':[-9,-3],
+    'Delhi':[-8,3], 'Haryana':[-6,-5], 'Uttarakhand':[5,-3], 'Himachal Pradesh':[-4,-5],
+    'Punjab':[-6,2], 'Dadra & Nagar Haveli and Daman & Diu':[-16,4]
+  };
+  const labelNodes=[];
   const labelled=REGIONS.filter(r=>r.cx!=null&&!ISLANDS[r.id]&&r.zone!=='national')
     .sort((a,b)=>b.area-a.area);
   labelled.forEach(function(r,i){
     const tier = i<10 ? 'big' : (i<20 ? 'mid' : 'tiny');
+    const nd=NUDGE[r.name]||[0,0];
     if(tier==='tiny'){
       svg.appendChild(mk('circle',{cx:r.cx,cy:r.cy,r:3.4,class:'hub',fill:ZONES[r.zone].c}));
-      const t=mk('text',{x:r.cx.toFixed(1),y:(r.cy-6).toFixed(1),class:'slabel tiny'});
+      const t=mk('text',{x:(r.cx+nd[0]).toFixed(1),y:(r.cy-6+nd[1]).toFixed(1),class:'slabel tiny'});
       t.textContent=SHORT[r.name]||r.name;
       svg.appendChild(t);
+      labelNodes.push(t);
       return;
     }
-    const t=mk('text',{x:r.cx.toFixed(1),y:(r.cy+4).toFixed(1),class:'slabel '+tier});
+    const t=mk('text',{x:(r.cx+nd[0]).toFixed(1),y:(r.cy+4+nd[1]).toFixed(1),class:'slabel '+tier});
     t.textContent = SHORT[r.name]||r.name;      /* one treatment for every state */
     svg.appendChild(t);
+    labelNodes.push(t);
+  });
+
+  /* Nudges are a starting point, not a guarantee: the real widths depend on the font
+     once it loads. Measure the rendered boxes and push any that still touch apart,
+     smaller states giving way first. Runs again after the webfont settles. */
+  function deOverlap(){
+    let boxes;
+    try{
+      boxes=labelNodes.map(function(n){
+        /* Always start from where the label was originally placed, so running this
+           again after a font load or a resize cannot drift labels away from their
+           states one pass at a time. */
+        if(n.dataset.y0==null) n.dataset.y0=n.getAttribute('y');
+        else n.setAttribute('y',n.dataset.y0);
+        return n;
+      }).filter(function(n){ return n.getBBox && getComputedStyle(n).display!=='none'; })
+        .map(function(n){
+          const b=n.getBBox();
+          return {n:n,x:b.x,y:b.y,w:b.width,h:b.height};
+        });
+    }catch(e){ return; }                      /* getBBox unavailable, leave as placed */
+    for(let pass=0;pass<3;pass++){
+      let moved=false;
+      for(let i=0;i<boxes.length;i++){
+        for(let j=i+1;j<boxes.length;j++){
+          const a=boxes[i], b=boxes[j];
+          const ox=Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x);
+          const oy=Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y);
+          if(ox>0&&oy>0){
+            /* later in the list means a smaller state, so that one yields */
+            const push=Math.ceil(oy/2)+1.5;
+            const dir=(b.y>a.y)?1:-1;
+            const t=b.n;
+            t.setAttribute('y',(parseFloat(t.getAttribute('y'))+dir*push).toFixed(1));
+            b.y+=dir*push;
+            moved=true;
+          }
+        }
+      }
+      if(!moved) break;
+    }
+  }
+  deOverlap();
+  if(document.fonts&&document.fonts.ready&&document.fonts.ready.then){
+    document.fonts.ready.then(function(){ try{ deOverlap(); }catch(e){} });
+  }
+  /* label sizes change at the phone breakpoints, so re-measure after a resize */
+  let deTimer=null;
+  window.addEventListener('resize',function(){
+    clearTimeout(deTimer);
+    deTimer=setTimeout(function(){ try{ deOverlap(); }catch(e){} },220);
   });
 
   /* the two island UTs, placed in open water and clearly labelled */
