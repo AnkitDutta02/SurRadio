@@ -6,6 +6,28 @@
  * guessing one for them. Same tier order as /api/resolve: official key first if
  * configured, then public mirrors, raced so one slow host cannot stall typing.
  */
+
+/**
+ * YouTube's public oEmbed endpoint answers 401/403 for a video whose owner has
+ * disabled embedding, and 404 if it is gone. That lets us drop those candidates
+ * before they ever reach the player, which is the difference between a song that
+ * plays and the "blocked from embedding" dead end.
+ */
+async function embeddable(id, ms = 2500) {
+  const c = new AbortController();
+  const t = setTimeout(() => c.abort(), ms);
+  try {
+    const r = await fetch(
+      'https://www.youtube.com/oembed?format=json&url=' +
+      encodeURIComponent('https://www.youtube.com/watch?v=' + id),
+      { signal: c.signal }
+    );
+    return r.status === 200;
+  } catch (e) {
+    return true;          // network hiccup: do not discard a possibly good video
+  } finally { clearTimeout(t); }
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(204).end();
@@ -86,6 +108,16 @@ module.exports = async (req, res) => {
     catch (e) { results = []; }
   }
 
+  /* Verify the top candidates so the client is only ever handed videos it can
+     actually embed. Checked in parallel and capped, to keep the response quick. */
+  let out = (results || []).slice(0, MAX);
+  if (out.length) {
+    const head = out.slice(0, 6);
+    const flags = await Promise.all(head.map(r => embeddable(r.id)));
+    const good = head.filter((r, i) => flags[i]);
+    out = good.length ? good.concat(out.slice(6)) : out;
+  }
+
   res.setHeader('Cache-Control', 's-maxage=604800, stale-while-revalidate=2592000');
-  return res.status(200).json({ results: (results || []).slice(0, MAX) });
+  return res.status(200).json({ results: out.slice(0, MAX) });
 };
