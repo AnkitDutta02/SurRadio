@@ -1685,6 +1685,14 @@
     .knob{width:112px;height:112px;--tick-radius:72px;}   /* 112/2 + 16 */
     .knob-wrap{gap:30px;}
   }
+
+  /* The tick ring overhangs the dial by 16px on every side. The gap BELOW it already
+     allowed for that; the gap above did not, so "Travel through music" sat 2px from
+     the ring on a phone. Both sides now clear it by the same amount. */
+  .land-sub{margin-bottom:34px;}
+  @media (max-width:560px){
+    .land-sub{margin-bottom:30px;}
+  }
 </style>
 </head>
 <body>
