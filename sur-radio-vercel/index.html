@@ -281,7 +281,7 @@
      z-index would have been the right answer. The shell is now a three-row grid
      (header / stage / player) and the player occupies its own reserved row, so
      nothing can be laid over it because nothing shares its space. */
-  .bar{grid-row:3;position:relative;z-index:4;background:rgba(13,16,36,.94);
+  .bar{flex:0 0 var(--player-h);height:var(--player-h);position:relative;z-index:20;background:rgba(13,16,36,.94);
     backdrop-filter:blur(14px);border-top:1px solid rgba(242,236,217,.12);}
   /* The bar itself stays thin, but the touch zone around it is 22px tall so a
      thumb can actually grab it. touch-action:none lets us drag without the page
@@ -552,16 +552,22 @@
   /* The viewport IS the radio. The document does not scroll during normal use:
      the artwork, the station and the controls all stay put, and everything that
      used to make the page longer now lives in a panel that scrolls on its own. */
-  html,body{height:100%;}
-  body.staged{overflow:hidden;}
-  /* while the drawer is open nothing behind it may move */
-  body.drawer-open{overflow:hidden;touch-action:none;}
-  /* one height for the player, referenced by the shell and by the panel, so the two
-     can never disagree about where the protected region begins */
-  :root{--player-h:86px;}
-  .shell{max-width:none;margin:0;padding:0;overflow:hidden;
-    height:100dvh;display:grid;
-    grid-template-rows:auto minmax(0,1fr) auto;}
+    html,body{height:100%;}
+    body.staged{overflow:hidden;}
+    /* while the drawer is open nothing behind it may move */
+    body.drawer-open{overflow:hidden;touch-action:none;}
+    /* one height for the player, referenced by the shell and by the panel, so the two
+      can never disagree about where the protected region begins */
+    :root{--player-h:84px;}
+
+    /* Global viewport lock — the document must not scroll. The app shell handles
+      its own internal layout and any panel scrolling. */
+    html,body,#root{width:100%;height:100%;margin:0;padding:0;overflow:hidden;}
+
+    /* App shell: column flex layout where the radio stage consumes remaining
+      space and the persistent player occupies the bottom fixed row. */
+    .shell{max-width:none;margin:0;padding:0;overflow:hidden;
+     height:100dvh;width:100%;display:flex;flex-direction:column;}
   /* 100dvh rather than 100vh, so mobile browser chrome cannot cut the stage off */
   @supports not (height:100dvh){ .shell{height:100vh;} }
 
@@ -576,10 +582,11 @@
      tabs, bookmarks and a taskbar that gap is large enough that the hero overflowed
      and the play button ended up behind the bar. Sizing against the stage's own
      height fixes it at any window size. */
-  .stage-main{grid-row:2;min-height:0;display:flex;align-items:flex-start;
-    container-type:size;
+  .stage-main{min-height:0;display:flex;align-items:flex-start;container-type:size;
     justify-content:center;padding:0 calc(20px + env(safe-area-inset-right)) calc(var(--player-h) + 18px)
-    calc(20px + env(safe-area-inset-left));}
+    calc(20px + env(safe-area-inset-left));
+    /* radio stage takes the remaining viewport space above the persistent player */
+    flex:1 1 auto;position:relative;overflow:hidden;}
   .stage-main .np{margin-top:auto;margin-bottom:auto;}
   /* the hero is no longer a card; it is the stage itself */
   .stage-main .np{background:none;border:none;box-shadow:none;padding:0;
@@ -734,6 +741,24 @@
   width:92%;height:92%;box-shadow:0 0 0 0 rgba(232,163,61,0);opacity:0;transition:opacity .22s ease;}
 .platter-ring.pulse{opacity:1;animation:platter-pulse 1.8s infinite;}
 @keyframes platter-pulse{0%{box-shadow:0 0 0 0 rgba(232,163,61,0.18);}50%{box-shadow:0 0 0 24px rgba(232,163,61,0.02);}100%{box-shadow:0 0 0 0 rgba(232,163,61,0);}}
+
+/* Desktop: use a centered two-column stage where left is station info and
+   right is the vinyl/turntable. The stage content fills the stage height. */
+@media (min-width:1024px){
+  .stage-main .np{height:100%;display:grid;grid-template-columns:1.2fr 1fr;align-items:center;justify-items:center;padding:32px 64px;gap:32px;box-sizing:border-box;width:100%;max-width:1200px;margin:0 auto;}
+  .stage-main .np .station-head{grid-column:1;justify-self:start;align-self:center;text-align:left;max-width:680px;padding-left:12px;}
+  .stage-main .np .deck{grid-column:2;justify-self:center;align-self:center;}
+  .stage-main .np .stage-controls{grid-column:2;justify-self:center;}
+  /* Vinyl scales with viewport rather than hard desktop sizes */
+  .platter .vinyl{width:clamp(220px,28vmin,420px);aspect-ratio:1;flex-shrink:0;}
+}
+
+/* Tablet / Mobile: vertical stacking of the stage content */
+@media (max-width:1023px){
+  .stage-main .np{display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%;padding:16px;gap:12px;box-sizing:border-box;width:100%;}
+  .platter .vinyl{width:clamp(160px,34vmin,320px);aspect-ratio:1;}
+  .stage-controls{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:20px;}
+}
 
   /* on a short window the stage stays whole: the record gives up room first, and
      the stage scrolls on its own rather than the document */
