@@ -32,7 +32,7 @@
      min-width:0 on the children of every row lets the ellipsis actually engage.
      Items that must keep a size use flex:none and are unaffected. */
   .card-head > *, .head-right > *, .bar-in > *, .bar-info > *,
-  .searchbox > *, .qrow > *, .srow > *, .sres > *, .preset > *,
+  .searchbox > *, .qrow > *, .sres > *, .preset > *,
   .legend > *, .presets-row > *, .np > *, .deck > *{min-width:0;}
   /* A blanket max-width guard used to live here. It outranked every deliberate
      max-width in the stylesheet - the tagline's 46ch among them - and stretched
@@ -198,12 +198,18 @@
      reserved height: a long title wraps elegantly instead of pushing the controls. */
   /* Titles run to 40 characters and artist lines to 47, so both reserve their space:
      a long title wraps within its own box instead of pushing the controls down. */
+  /* The title reserved two lines. A one-line song then left the lower half of that
+     box empty, so the gap under the title looked twice the gap above it. The box now
+     fits its text and the column's single gap does the spacing, which makes the three
+     intervals identical. */
   .np-track{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;
-    line-height:1.3;margin:13px 0 3px;min-height:2.6em;
+    position:relative;z-index:1;
+    line-height:1.3;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
     text-wrap:balance;}
   .np-artist{font-size:.85rem;color:var(--paper);opacity:.8;margin:0 0 7px;
-    line-height:1.35;min-height:1.35em;
+    position:relative;z-index:1;
+    line-height:1.35;
     display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;}
   .np-why{font-size:.8rem;color:var(--dim);line-height:1.5;margin:0;}
   .np-idle{text-align:center;padding:10px 4px 4px;}
@@ -230,8 +236,8 @@
   .mood.on b,.mood.on i{color:var(--ink);}
 
   .queue{max-height:230px;overflow-y:auto;padding:0 18px 16px;display:flex;flex-direction:column;gap:1px;}
-  .queue::-webkit-scrollbar,.stnlist::-webkit-scrollbar{width:6px;}
-  .queue::-webkit-scrollbar-thumb,.stnlist::-webkit-scrollbar-thumb{background:rgba(242,236,217,.16);border-radius:3px;}
+  .queue::-webkit-scrollbar{width:6px;}
+  .queue::-webkit-scrollbar-thumb{background:rgba(242,236,217,.16);border-radius:3px;}
   .qrow{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:7px;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;color:var(--paper);transition:background .14s ease;}
   .qrow:hover,.qrow.on{background:var(--ink-3);}
   .qrow .num{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);width:16px;flex:none;}
@@ -247,26 +253,7 @@
   .qrow.dead{opacity:.42;}   /* still tappable, so a failed song can be retried */
   .qrow.dead:hover{background:rgba(242,236,217,.05);}
   .qrow.dead .tt{text-decoration:line-through;text-decoration-thickness:1px;}
-
-  .search{margin:0 18px 10px;}
-  .search input{width:100%;background:var(--ink-3);border:1px solid rgba(242,236,217,.14);border-radius:8px;padding:9px 12px;color:var(--paper);font-family:'IBM Plex Sans';font-size:.84rem;outline:none;}
-  .search input:focus{border-color:var(--gold);}
-  .stnlist{max-height:250px;overflow-y:auto;padding:0 18px 16px;display:flex;flex-direction:column;gap:1px;}
-  .srow{display:flex;align-items:center;gap:10px;padding:8px 9px;border-radius:7px;cursor:pointer;background:transparent;border:none;width:100%;text-align:left;color:var(--paper);}
-  .srow:hover,.srow.on{background:var(--ink-3);}
-  .srow i{width:7px;height:7px;border-radius:50%;flex:none;}
-  .srow .n{font-size:.85rem;flex:1;}
-  .srow .sub{display:block;font-family:'IBM Plex Mono',monospace;font-size:.55rem;
-    letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-top:3px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   /* the frequency sits on the right of the card, the way a preset button is labelled */
-  .srow-freq{margin-left:auto;flex:none;font-family:'IBM Plex Mono',monospace;
-    font-size:.72rem;font-weight:600;color:rgba(232,163,61,.8);letter-spacing:.02em;
-    display:flex;align-items:baseline;gap:3px;}
-  .srow-freq em{font-style:normal;font-size:.5rem;letter-spacing:.1em;color:var(--dim);}
-  .srow.on .srow-freq{color:var(--gold);}
-  @media (max-width:560px){ .srow-freq{font-size:.66rem;} }
-  .zonehead{font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:10px 9px 4px;}
 
   details.settings{padding:0 18px 16px;}
   details.settings summary{font-family:'IBM Plex Mono',monospace;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);cursor:pointer;padding:6px 0;}
@@ -352,13 +339,12 @@
     .ghost .ico{display:inline;opacity:.85;}
     .bar-info .t{font-size:.82rem;}
     .bar-info .s{font-size:.6rem;}
-    .platter{width:min(240px,66vw,24vh);}
     .mood{padding:8px 3px;min-height:52px;}
     .mood b{font-size:.67rem;}
     .mood i{font-size:.5rem;}
     .np{padding:15px;}
     .np-freq b{font-size:2.1rem;}
-    .queue,.stnlist{max-height:210px;}
+    .queue{max-height:210px;}
   }
   @media (max-width:380px){
     .bar-in{gap:8px;padding:9px calc(11px + env(safe-area-inset-right))
@@ -576,11 +562,9 @@
      tabs, bookmarks and a taskbar that gap is large enough that the hero overflowed
      and the play button ended up behind the bar. Sizing against the stage's own
      height fixes it at any window size. */
-  .stage-main{grid-row:2;min-height:0;display:flex;align-items:flex-start;
-    container-type:size;
-    justify-content:center;padding:0 calc(20px + env(safe-area-inset-right)) calc(var(--player-h) + 18px)
+  .stage-main{grid-row:2;min-height:0;display:grid;
+    grid-template-columns:minmax(0,1fr);align-items:stretch;justify-items:center;padding:6px calc(20px + env(safe-area-inset-right)) 10px
     calc(20px + env(safe-area-inset-left));}
-  .stage-main .np{margin-top:auto;margin-bottom:auto;}
   /* the hero is no longer a card; it is the stage itself */
   .stage-main .np{background:none;border:none;box-shadow:none;padding:0;
     width:100%;max-width:520px;text-align:left;}
@@ -627,7 +611,7 @@
   .panel-scroll::-webkit-scrollbar-thumb{background:rgba(242,236,217,.16);border-radius:4px;}
   .panel-scroll > .card{margin:0;}
   /* inside the panel the lists size themselves to the panel, not the viewport */
-  .panel-scroll .queue,.panel-scroll .stnlist{max-height:none;}
+  .panel-scroll .queue{max-height:none;}
   .panel-scroll svg#map{max-height:none;}
   /* The dial should read as a map, not as a labelled diagram: only the largest
      states keep a permanent name, the rest are quiet dots you touch. The masts and
@@ -643,7 +627,8 @@
   @media (max-width:760px){
     .shell > header{padding:14px calc(14px + env(safe-area-inset-right)) 8px
       calc(14px + env(safe-area-inset-left));}
-    .stage-main{padding:0 calc(16px + env(safe-area-inset-right)) 104px
+    /* the player is a row of its own now, so the stage no longer reserves 104px for it */
+    .stage-main{padding:4px calc(16px + env(safe-area-inset-right)) 8px
       calc(16px + env(safe-area-inset-left));}
     /* a sheet from the bottom reads better than a side drawer on a phone */
     /* On a phone this is a full-screen overlay, not a sheet attached to the page.
@@ -712,8 +697,7 @@
   .stage-main .np-track,.stage-main .np-artist{text-align:center;}
 
   /* the transport belongs with the record, not in a separate strip below it */
-  .stage-controls{display:flex;align-items:center;justify-content:center;gap:20px;
-    margin-top:16px;}
+  .stage-controls{display:flex;align-items:center;justify-content:center;gap:20px;}
   .stage-controls .btn.play{width:62px;height:62px;border-radius:50%;}
   .stage-controls .btn.play .ic{width:23px;height:23px;}
   .stage-controls .btn.ghost{width:46px;height:46px;border-radius:50%;padding:0;
@@ -741,13 +725,11 @@
 
   @media (max-height:700px){
     .station-head{min-height:104px;}
-    .np-track{margin-top:8px;}
-    .stage-controls{margin-top:10px;gap:16px;}
   }
 
 
   @media (max-width:760px){
-    .stage-controls{gap:16px;margin-top:12px;}
+    .stage-controls{gap:16px;}
     .stage-controls .btn.play{width:58px;height:58px;}
     .stage-controls .btn.ghost{width:44px;height:44px;}
   }
@@ -849,28 +831,15 @@
      the controls are what matter, so the disc steps aside rather than pushing the
      name off the top of the screen. */
   @media (max-height:600px){
-    .deck{display:none;}
     .station-head{min-height:96px;}
     .station-name{font-size:1.5rem;}
     .station-script{font-size:.82rem;margin-bottom:4px;}
-    .np-track{margin-top:6px;min-height:1.4em;-webkit-line-clamp:1;}
-    .stage-controls{margin-top:8px;}
   }
 
   /* where container queries are available, measure the stage itself */
   /* The fixed parts of the hero - identity, track, controls, hint - come to roughly
      354px. Whatever is left is the disc's, so the fraction tightens as the stage
      shrinks and the disc bows out entirely when there is genuinely no room. */
-  @supports (container-type:size){
-    .platter{width:min(268px,72vw,40cqh);}
-    @container (max-height:640px){ .platter{width:min(220px,64vw,26cqh);} }
-    @container (max-height:520px){ .platter{width:min(180px,58vw,20cqh);} }
-    @container (max-height:440px){
-      .deck{display:none;}
-      .np-track{-webkit-line-clamp:1;min-height:1.4em;margin-top:6px;}
-      .tune-hint{margin-top:10px;}
-    }
-  }
 
 
   /* ---- the primary control: a tuner, not a call to action ---- */
@@ -941,6 +910,78 @@
   /* the old grid stays for the stage, hidden inside the drawer */
   .view .moodcard{display:none;}
 
+
+  /* ===================== TWO FIXED REGIONS ===============================
+     The stage is one region and the player is the other, and the play button must
+     never end up behind the player. Centring the hero and hoping it fits could not
+     guarantee that: on a browser window with tabs and a taskbar the column was simply
+     taller than the space, so the bottom of it - the controls - went under the bar.
+
+     The hero is now a grid whose ROW FOR THE RECORD is the only flexible one. Every
+     other row is auto: the station, the track, the controls and the hint always get
+     the height they need, and the record takes whatever is left, down to nothing.
+     The controls cannot be pushed out because there is nothing left to push them. */
+  /* The hero is ALWAYS laid out. It used to be hidden until a class arrived, which
+     made one thrown exception - or, as it turned out, a hard-coded inline
+     display:none in the markup - enough to leave the whole stage blank. Nothing that
+     must be seen should depend on something that might not run. */
+  /* A flex column with a gap, not a grid of fixed rows. Grid rows plus size
+     containment kept collapsing and letting the text land on top of the record; a
+     column simply stacks, and the gap is the spacing scale. Nothing here can overlap
+     anything else. */
+  #npLive{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    flex:1 1 auto;min-height:0;gap:clamp(6px,1.5vh,16px);width:100%;}
+  /* the hero grows to fill the stage rather than asking for 100% of it, so no
+     percentage-height chain has to hold for the record to appear */
+  /* a grid item stretches to its row, so the hero is full height without a
+     percentage-height chain and without depending on flex stretch */
+  .stage-main .np{width:100%;max-width:560px;min-height:0;
+    display:flex;flex-direction:column;justify-self:center;}
+
+  /* the record fills the flexible row and stays a circle */
+
+
+
+  /* One spacing scale for the stage. The record and the song title had ended up
+     almost touching because this block tightened .np-track to 6px, overriding the
+     13px it was authored with. The gaps are now stated once, here, so there is a
+     single place to read them. */
+  .deck{padding:10px 0 0;}
+  .rpm{margin:0;}
+
+  .tune-hint{margin:12px auto 0;}
+  /* the station's genres sit under the controls, with room to breathe */
+  .np-why{margin:14px 0 0;font-size:.72rem;line-height:1.5;opacity:.75;
+    max-width:46ch;margin-left:auto;margin-right:auto;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+
+  @media (max-width:760px){
+    .stage-main .np{max-width:none;}
+    .np-why{font-size:.66rem;margin-top:11px;}
+  }
+
+
+  /* ---- the persistent player -------------------------------------------
+     Always visible, never overlapping the stage: it is the second of the two fixed
+     regions, so it owns its height and the stage owns the rest. */
+  .bar-chip{flex:none;width:38px;height:38px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%, #2a2f52 0%, #14172f 70%);
+    box-shadow:inset 0 0 0 1px rgba(242,236,217,.14), 0 2px 8px rgba(0,0,0,.4);
+    position:relative;}
+  .bar-chip::after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;
+    background:rgba(242,236,217,.5);}
+  .bar-chip span{font-family:'IBM Plex Mono',monospace;font-size:.5rem;font-weight:600;
+    color:rgba(232,163,61,.9);position:absolute;bottom:4px;letter-spacing:.02em;}
+  .bar-times{flex:none;display:flex;align-items:baseline;gap:5px;
+    font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);
+    letter-spacing:.04em;}
+  .bar-dash{opacity:.5;}
+  @media (max-width:760px){
+    .bar-times{display:none;}          /* the line itself is the timing on a phone */
+    .bar-chip{width:32px;height:32px;}
+  }
+
   /* ===================== SEARCH ========================================== */
   .searchcard{padding:13px 14px;}
   /* An inset tuner-style field: darker than the card so it reads as something
@@ -966,9 +1007,6 @@
      is listed here explicitly. */
   @media (max-width:760px){
     input,textarea,select,
-    .search input,
-    .searchbox input,
-    details.settings input{font-size:16px !important;}
   }
   .searchbox input::placeholder{color:rgba(242,236,217,.38);}
   .searchbox input::-webkit-search-cancel-button,
@@ -1041,11 +1079,34 @@
     background-image:radial-gradient(rgba(255,255,255,.09) .5px, transparent .5px);background-size:3px 3px;}
 
   /* ================= VINYL DECK ========================================== */
-  .deck{position:relative;padding:6px 0 2px;display:flex;justify-content:center;}
+  /* This rule is authored later than the stage layout, so it used to win on equal
+     specificity and quietly undo it. It now carries the stage behaviour itself. */
+  /* the deck is the only part of the column that gives up room */
+  .deck{position:relative;z-index:0;flex:1 1 auto;min-height:90px;
+    display:flex;align-items:center;justify-content:center;}
   /* one expression rather than a ladder of height breakpoints: the record is always
      the thing that gives up room first, so the station identity above it survives */
-  .platter{position:relative;container-type:inline-size;
-    width:min(268px,72vw,26vh);aspect-ratio:1;border-radius:50%;
+  /* the record no longer sets its own height from the viewport: it fills the one
+     flexible row of the stage, so it is always exactly the space left over */
+  /* The record takes its size from the viewport - which always resolves, unlike a
+     percentage-height chain - and max-height caps it to the row it is given, so it
+     is large when there is room and yields when there is not. */
+  /* The glow behind the vinyl is a blurred copy of the video. overflow:hidden on the
+     glow clips its CHILDREN, but the blur is applied afterwards and spreads outside
+     the box - which is why a pale wash reached past the record and washed out the
+     song title behind it. Clipping here, on the record itself, contains the blur to
+     the disc, which is the effect that was intended anyway. */
+  /* Height alone is set - from the viewport, so it always resolves - and
+     aspect-ratio supplies the width. One constrained dimension means it can never be
+     flattened, and the 78vw term keeps it inside a narrow screen. */
+  /* Sizing from the viewport ignored how much room the words needed, so the station
+     name went off the top and the controls off the bottom. The record now takes the
+     space the column has left over, capped so it never dominates. Only the height is
+     constrained - height and max-height are the same axis - so aspect-ratio still
+     governs the width and it can never flatten. */
+  .platter{position:relative;container-type:inline-size;overflow:hidden;
+    height:100%;min-height:120px;max-height:min(300px,78vw);width:auto;
+    aspect-ratio:1;border-radius:50%;
     background:radial-gradient(circle at 50% 50%, #2a2f52 0 6%, #14162c 6% 100%);
     box-shadow:0 22px 44px -18px rgba(0,0,0,.85), inset 0 0 0 1px rgba(242,236,217,.07);
     display:flex;align-items:center;justify-content:center;}
@@ -1070,22 +1131,31 @@
      units, so it stays proportional from a phone to a desktop rather than being a
      desktop font that overwhelms a small disc. The MHz is not repeated - the dial
      reading above the record already says it. */
+  /* A pressed label, and a real circle. It was width:32% with aspect-ratio:1, but
+     aspect-ratio yields to content: two lines of station name made it taller than it
+     was wide, so it rendered as an ellipse with the name clipped. Setting both axes
+     from the record's width keeps it round whatever it contains, and the type is
+     sized from the record so it stays proportional on a phone and a desktop alike. */
+  /* The label as the mock has it: a clean pressed disc with the spindle at its
+     centre and no type at all. The frequency and the station are already stated in
+     full above the record, so repeating them here only created the problems - an
+     ellipse when two lines of name forced the height, and "ALL INDI..." when they
+     did not fit. A blank label is also what a real record looks like from this
+     distance. Both axes are set so it stays perfectly round whatever it contains. */
   .vlabel{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;
-    width:32%;aspect-ratio:1;border-radius:50%;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;padding:11% 9% 13%;box-sizing:border-box;overflow:hidden;
-    background:radial-gradient(circle at 50% 42%, #f4ead2 0%, #e7d9ba 72%, #d6c69f 100%);
-    color:#2a2233;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16), 0 1px 5px rgba(0,0,0,.4);}
-  .vlabel b{font-family:'Fraunces',serif;font-weight:700;line-height:.95;
-    font-size:clamp(9px, 30cqw, 21px);letter-spacing:-.01em;}
-  .vlabel span{font-family:'IBM Plex Mono',monospace;font-weight:600;
-    font-size:clamp(4.5px, 11cqw, 8px);letter-spacing:.1em;line-height:1.25;
-    text-transform:uppercase;margin-top:9%;opacity:.72;
-    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-  /* the centre hole belongs to the record, not to the text: it sits under the label
-     copy so the two never collide */
+    width:31%;height:31%;border-radius:50%;overflow:hidden;
+    background:radial-gradient(circle at 50% 38%, #f6eed9 0%, #e9dcbe 68%, #d6c69f 100%);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.2), 0 1px 6px rgba(0,0,0,.45);}
+  /* the type is kept in the DOM for assistive tech but is not drawn on the record */
+  .vlabel b,.vlabel span{position:absolute;width:1px;height:1px;overflow:hidden;
+    clip-path:inset(50%);white-space:nowrap;}
+  /* One place the record is sized, with its breakpoints kept together so a rule
+     authored earlier in the file cannot silently outrank them. */
+  @media (max-width:760px){ .platter{max-height:min(260px,74vw);} }
+  @media (max-width:560px){ .platter{max-height:min(230px,72vw);} }
+
   .spindle{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4;
-    width:7px;height:7px;border-radius:50%;background:#0d1024;z-index:4;box-shadow:0 0 0 2px rgba(242,236,217,.18);}
+    width:7%;height:7%;max-width:11px;max-height:11px;border-radius:50%;background:#0d1024;z-index:4;box-shadow:0 0 0 2px rgba(242,236,217,.18);}
   .tonearm{position:absolute;top:5%;right:-2%;width:47%;height:6px;z-index:5;
     transform-origin:calc(100% - 9px) 50%;transform:rotate(-32deg);
     transition:transform 1.1s cubic-bezier(.4,.1,.3,1);pointer-events:none;}
@@ -1096,7 +1166,12 @@
     background:radial-gradient(circle at 40% 35%,#4a5079,#1d2140);box-shadow:inset 0 0 0 1px rgba(242,236,217,.2);}
   .tonearm .head{position:absolute;left:0;top:-4px;width:15px;height:11px;border-radius:2px;
     background:#e8e2cd;transform:rotate(18deg);box-shadow:0 1px 4px rgba(0,0,0,.5);}
-  .deck-meta{text-align:center;margin-top:12px;}
+  /* the words always sit above the artwork, whatever the disc is doing */
+  /* The reference keeps the stage to the record, the song and the controls. The RPM
+     strip and the station's genre line are noise there; both still exist for the
+     station list and the player bar. */
+  .deck-meta{display:none;}
+  .stage-main .np-why{display:none;}
   .rpm{display:inline-flex;gap:8px;align-items:center;font-family:'IBM Plex Mono',monospace;
     font-size:.55rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;}
   .rpm b{width:5px;height:5px;border-radius:50%;background:#5b6080;}
@@ -1105,11 +1180,15 @@
   .srcstrip{margin-top:12px;border-radius:8px;overflow:hidden;background:var(--ink-3);position:relative;}
   .srcstrip .caption{font-family:'IBM Plex Mono',monospace;font-size:.5rem;letter-spacing:.13em;
     color:var(--dim);text-transform:uppercase;padding:6px 9px 0;display:block;}
+  /* the message scales with the record, so it stays readable whether the disc is
+     110px on a short window or 268px on a tall one */
   .disc-veil{position:absolute;inset:5%;border-radius:50%;z-index:4;
     display:flex;align-items:center;justify-content:center;text-align:center;padding:16%;
     background:radial-gradient(circle at 50% 50%, rgba(13,16,36,.94) 0 62%, rgba(13,16,36,.72) 100%);
-    font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.09em;color:var(--dim);
-    transition:opacity .5s ease;}
+    font-family:'IBM Plex Mono',monospace;letter-spacing:.09em;color:var(--dim);
+    transition:opacity .5s ease;
+    font-size:clamp(7px, 7.5cqw, 12px);line-height:1.35;padding:14%;
+    text-wrap:balance;}
   .disc-veil.gone{opacity:0;pointer-events:none;}
 
   /* ================= LANDING ============================================= */
@@ -1208,6 +1287,7 @@
   .shuffle:active{transform:translateY(0) scale(.97);}
 
   /* the hint sits over the map, pulses gently, and vanishes on first tap */
+  .taphint.hide{display:none;}
   .taphint{position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:3;
     display:flex;align-items:center;gap:9px;pointer-events:none;
     background:rgba(13,16,36,.86);backdrop-filter:blur(6px);
@@ -1241,9 +1321,8 @@
   }
 
   /* every tappable thing reacts instantly to a press */
-  .btn:active,.mood:active,.preset:active,.shuffle:active,.srow:active,.qrow:active,.sres:active{
+  .btn:active,.mood:active,.preset:active,.shuffle:active,.qrow:active,.sres:active{
     transform:scale(.96);}
-  .srow:active,.qrow:active,.sres:active{background:rgba(232,163,61,.16);}
   .knob:active .knob-body{filter:brightness(1.15);}
   .state{transition:fill-opacity .18s ease;}
   .natstn:active .natmast{fill:var(--paper);}
@@ -1253,24 +1332,22 @@
   .card:hover{border-color:rgba(242,236,217,.16);}
   .mood{position:relative;overflow:hidden;}
   .mood:active{transform:scale(.97);}
-  .srow,.qrow,.sres{position:relative;}
   /* a thin gold marker on the live rows, instead of only a colour change */
-  .qrow.on::before,.srow.on::before{content:"";position:absolute;left:0;top:14%;bottom:14%;
+  .qrow.on::before{content:"";position:absolute;left:0;top:14%;bottom:14%;
     width:2px;border-radius:2px;background:var(--gold);}
   .np-freq b{text-shadow:0 2px 18px rgba(232,163,61,.22);}
   .legend{align-items:center;}
-  .stnlist,.queue,.sresults{scrollbar-width:thin;scrollbar-color:rgba(242,236,217,.2) transparent;}
   ::-webkit-scrollbar{width:8px;height:8px;}
   ::-webkit-scrollbar-track{background:transparent;}
   ::-webkit-scrollbar-thumb{background:rgba(242,236,217,.14);border-radius:4px;}
   ::-webkit-scrollbar-thumb:hover{background:rgba(242,236,217,.26);}
   /* generous touch targets and no accidental text selection on controls */
-  .mood,.srow,.qrow,.sres,.preset,.btn{-webkit-tap-highlight-color:transparent;user-select:none;}
+  .mood,.qrow,.sres,.preset,.btn{-webkit-tap-highlight-color:transparent;user-select:none;}
   @media (max-width:760px){
     .card-head h2{letter-spacing:-.01em;}
     .lbl{font-size:.58rem;}
     .np-place{font-size:.66rem;}
-    .qrow,.srow{padding:10px 9px;}      /* easier to hit with a thumb */
+    .qrow{padding:10px 9px;}      /* easier to hit with a thumb */
     .sres{padding:10px 9px;}
     .legend{font-size:.58rem;gap:7px 11px;}
   }
@@ -1305,7 +1382,6 @@
     .np{padding:14px;}
     .np-freq b{font-size:2rem;}
     .np-place{font-size:.62rem;letter-spacing:.09em;}
-    .platter{width:min(210px,60vw,23vh);}
     .np-track{font-size:1rem;}
     .pad{padding:13px 13px 14px;}
     .moods{grid-template-columns:repeat(4,1fr);gap:6px;}
@@ -1318,8 +1394,6 @@
        without changing how the field looks much. */
     .searchbox input{font-size:16px;padding:11px 0;}
     .queue{max-height:196px;padding:0 13px 13px;}
-    .stnlist{max-height:210px;padding:0 13px 13px;}
-    .search{margin:0 13px 9px;}
     .sresults.open{max-height:260px;}
     details.settings{padding:0 13px 13px;}
     .srcnote{padding:2px 13px 12px;font-size:.52rem;}
@@ -1343,6 +1417,78 @@
   @media (prefers-reduced-motion:reduce){
     *{animation:none!important;}
     .bd-layer{transform:scale(1.06);}
+  }
+
+  /* ---- STAGE SPACING -----------------------------------------------------
+     The column's gap is the whole spacing scale now, so there is one number to read
+     rather than margins scattered across five rules. */
+  #npLive{gap:clamp(6px,1.5vh,16px);}
+  .np-track{margin:0;}
+  .np-artist{margin:0;}
+  .tune-hint{margin:clamp(2px,0.8vh,10px) auto 0;}
+
+  /* ===================== DESKTOP: TWO COLUMNS ===========================
+     A wide screen has width to spare and height to save. Stacking seven things in
+     one column is what pushed the station name off the top and the controls off the
+     bottom; side by side, the tallest column is barely half as tall. The identity
+     sits on the left, the record and its transport on the right, exactly as the
+     reference. Below 1100px it returns to the single column, which suits a phone. */
+  @media (min-width:1100px){
+    /* A zero row gap here is what undid the equal spacing: the single gap governs
+       the phone, but on desktop the rows had none at all, so the record, the title,
+       the artist and the transport were pressed together. The same interval now
+       applies in both layouts. The columns are sized to their content and centred,
+       so the identity and the record sit as a pair rather than drifting apart. */
+    #npLive{display:grid;align-content:center;justify-items:center;
+      justify-content:center;
+      grid-template-columns:minmax(0,auto) minmax(0,auto);
+      grid-template-rows:auto auto minmax(0,1fr) auto auto auto;
+      column-gap:clamp(28px,4vw,72px);
+      row-gap:clamp(8px,1.6vh,18px);}
+    .stage-main .np{max-width:1180px;}
+
+    /* left: who is on air */
+    .onair-row{grid-column:1;grid-row:1;justify-self:end;}
+    .station-head{grid-column:1;grid-row:2;justify-self:end;align-items:flex-end;
+      text-align:right;min-height:0;}
+    .stage-main .station-head{align-items:flex-end;}
+    .stage-main .onair-row{justify-content:flex-end;}
+    .stage-main .station-sub{justify-content:flex-end;}
+    .stage-main .np-place{text-align:right;}
+    .station-script{text-align:right;}
+
+    /* right: the record and what it is playing */
+    /* align-self:center made this content-height, and the record's height:100% then
+       resolved against nothing - so the disc vanished. Stretching gives the deck the
+       definite height of the rows it spans, which is what the record measures. */
+    .deck{grid-column:2;grid-row:1 / span 3;align-self:stretch;width:100%;
+      min-height:200px;}
+    /* the identity sits with the record's centre line rather than its top */
+    .onair-row{align-self:end;}
+    .station-head{align-self:start;}
+    .np-track{grid-column:2;grid-row:4;}
+    .np-artist{grid-column:2;grid-row:5;}
+    .stage-controls{grid-column:2;grid-row:6;}
+    .tune-hint{grid-column:1;grid-row:3;align-self:start;justify-self:end;}
+    .stage-main .np-track,.stage-main .np-artist{text-align:center;}
+
+    /* the record has a whole column, so it can be generous again */
+    .platter{max-height:min(340px,32vw);}
+  }
+
+  /* ---- shared list styling ------------------------------------------------
+     These were written as grouped selectors that also covered the removed
+     "All stations" card. Dropping that card took the shared declarations with it,
+     so they are restated here for the lists that remain. */
+  .qrow,.sres{position:relative;}
+  .qrow:active,.sres:active{transform:scale(.96);}
+  .queue,.sresults{scrollbar-width:thin;scrollbar-color:rgba(242,236,217,.2) transparent;}
+  /* Safari zooms the page on any focused field under 16px and leaves it offset, so
+     every field selector is listed explicitly. */
+  @media (max-width:760px){
+    input,textarea,select,
+    .searchbox input,
+    details.settings input{font-size:16px !important;}
   }
 </style>
 </head>
@@ -1399,7 +1545,7 @@
           <p><b style="color:var(--paper)">Nothing on air yet.</b><br>Tap a state on the map, or start somewhere random.</p>
           <button class="btn ghost" id="randomBtn" style="width:100%;justify-content:center;">Tune me somewhere</button>
         </div>
-        <div id="npLive" style="display:none;">
+        <div id="npLive">
           <div class="onair-row">
             <span class="onair-dot" id="onAirDot"></span>
             <span class="onair-txt" id="onAirTxt">ON AIR</span>
@@ -1461,9 +1607,13 @@
     <span class="progtime" id="progTime">0:00</span>
   </div>
   <div class="bar-in">
+    <div class="bar-chip" id="barChip" aria-hidden="true"><span id="barChipFreq">&mdash;</span></div>
     <div class="bar-info">
       <div class="t" id="barTitle">Sur Radio &mdash; off air</div>
       <div class="s" id="barSub">Select a state to begin</div>
+    </div>
+    <div class="bar-times" aria-hidden="true">
+      <span id="barElapsed">0:00</span><span class="bar-dash">/</span><span id="barDuration">--:--</span>
     </div>
     <div class="vol">
       <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);">VOL</span>
@@ -1583,11 +1733,9 @@
         <div class="queue" id="queue"></div>
       </div>
 
-      <div class="card">
-        <div class="card-head" style="padding-bottom:10px;"><h2>All stations</h2><span id="stnCount"></span></div>
-        <div class="search"><input id="stnSearch" type="search" placeholder="Search a state, language or genre..." autocomplete="off"></div>
-        <div class="stnlist" id="stnlist"></div>
-      </div>
+      <!-- The "All stations" card lived here. It duplicated the Stations and
+           Collections lists, which already show every frequency with its descriptor,
+           so it only added a second place to keep in step. -->
     </div>
   </div>
 </aside>
@@ -3859,7 +4007,7 @@ const REGIONS = [
   {t:'Hindi rap',a:'Hindi hip hop',m:['rap','party'],g:1},
   {t:'Andaman street rap',a:'Andaman hip hop',m:['rap','modern'],g:1}]},
 /* ---------------- NATIONAL ---------------- */
-{id:'air',name:'All India Radio',desc:'ALL INDIA · EVERY TONGUE · DUSK TILL DAWN',script:'आकाशवाणी',zone:'national',alias:[],freq:'88.0',
+{id:'air',name:'All India Radio',desc:'ALL INDIA · EVERY LANGUAGE · DUSK TILL DAWN',script:'आकाशवाणी',zone:'national',alias:[],freq:'88.0',
  lang:'All Indian languages',
  genres:'the whole country on one frequency \u2014 programmed across every state',
  seed:[]},
@@ -5086,9 +5234,10 @@ function tapRipple(ev){
 }
 function dismissHint(){
   const h=document.getElementById('tapHint');
+  if(h) h.dataset.retired='1';        /* once tuned, the map affordance has done its job */
   if(h&&!h.classList.contains('gone')){
     h.classList.add('gone');
-    setTimeout(()=>{ if(h.parentNode) h.style.display='none'; },600);
+    setTimeout(()=>{ if(h.parentNode) h.classList.add('hide'); },600);
   }
   if(beaconStop){ beaconStop(); beaconStop=null; }
 }
@@ -5562,38 +5711,6 @@ function markPreset(id){
   }
 }
 
-const listEl=document.getElementById('stnlist');
-document.getElementById('stnCount').textContent=REGIONS.length+' ON AIR';
-function renderList(filter){
-  const f=norm(filter||'');
-  listEl.innerHTML='';
-  Object.keys(ZONES).forEach(z=>{
-    const rows=REGIONS.filter(r=>r.zone===z).filter(r=>
-      !f || norm(r.name).indexOf(f)>-1 || norm(r.lang).indexOf(f)>-1 || norm(r.genres).indexOf(f)>-1);
-    if(!rows.length) return;
-    const h=document.createElement('div');
-    h.className='zonehead'; h.textContent=ZONES[z].n;
-    listEl.appendChild(h);
-    rows.sort((a,b)=>a.name.localeCompare(b.name)).forEach(r=>{
-      const b=document.createElement('button');
-      b.className='srow'+(current&&current.id===r.id?' on':''); b.dataset.id=r.id;
-      /* a station card, not a playlist row: name, its frequency, its character line */
-      b.innerHTML='<i style="background:'+ZONES[r.zone].c+'"></i>'+
-        '<span class="n">'+esc(r.name)+
-          '<span class="sub">'+esc(r.desc||r.lang)+'</span></span>'+
-        '<span class="srow-freq">'+esc(r.freq||'')+'<em>MHz</em></span>';
-      b.addEventListener('click',()=>fire(tune(r.id),'tune'));
-      listEl.appendChild(b);
-    });
-  });
-  if(!listEl.children.length){
-    const e=document.createElement('div');
-    e.className='zonehead'; e.textContent='No state matches that search';
-    listEl.appendChild(e);
-  }
-}
-renderList('');
-document.getElementById('stnSearch').addEventListener('input',e=>renderList(e.target.value));
 
 /* ====================== YOUTUBE RESOLUTION =============================== */
 const resolveCache=new Map();
@@ -6428,6 +6545,12 @@ window.onYouTubeIframeAPIReady=function(){
         if(e.data===YT.PlayerState.PLAYING){
           playing=true;syncPlayBtn();veil(false);startProg();
           playedToken=loadToken;              /* this particular load did start */
+          /* whatever the bar was saying - tuning, or an invitation to tap - the
+             transmission is now the truth, so put the track back */
+          const t2=queue[qi];
+          if(t2 && current) setBar(trackTitle(t2),
+            trackArtist(t2)+' \u00b7 '+current.name+' \u00b7 '+
+            (MOODS[moodKey]?MOODS[moodKey].n:'Radio Mix'));
           fire(prefetchAhead(),'prefetch ahead');
           playErrors=0; lastErrIdx=-1;        /* a good play clears the error streak */
         }
@@ -6546,6 +6669,10 @@ function startProg(){
     if(d>0){
       const pct=(t/d*100);
       document.getElementById('progFill').style.width=pct+'%';
+      /* the player bar reads like a transport: elapsed against total */
+      const el=document.getElementById('barElapsed'), du=document.getElementById('barDuration');
+      if(el) el.textContent=fmtTime(t);
+      if(du) du.textContent=fmtTime(d);
       const h=document.getElementById('progHandle');
       if(h) h.style.left=pct+'%';
       progWrap.setAttribute('aria-valuenow',Math.round(pct));
@@ -6658,6 +6785,8 @@ function renderStation(region){
   /* Explore India shows what you are currently tuned to, above the map */
   const md=document.getElementById('stationMode');
   if(md) md.textContent=(MOODS[moodKey]?MOODS[moodKey].n:'Radio Mix');
+  const chip=document.getElementById('barChipFreq');
+  if(chip) chip.textContent=region.freq||'--';
   const en=document.getElementById('exploreNow');
   if(en) en.textContent=(region.freq||'--')+' MHz \u00b7 '+region.name.toUpperCase();
 }
@@ -6690,10 +6819,12 @@ async function tune(id,opts){
   try{ applyVisual(visualFor(region,moodKey,null)); }catch(e){}
   /* you have tuned; the stage takes over again */
   try{ TunePanel.close(); }catch(e){}
-  document.querySelectorAll('.srow').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
   document.getElementById('mapHint').textContent=region.freq+' MHZ \u00b7 '+region.name.toUpperCase();
   document.getElementById('npIdle').style.display='none';
-  document.getElementById('npLive').style.display='block';
+  /* Grid, not block: an inline display:block here silently overrode the stage layout,
+     which collapsed the record's row to nothing and made the disc disappear. The
+     class carries the layout so the two can never disagree again. */
+  document.getElementById('npLive').classList.add('live');
   renderStation(region);
   /* no center frequency shown on the vinyl */
   const vl=document.getElementById('vlabel');
@@ -6830,7 +6961,6 @@ async function recurate(){
    position, which physically reordered the list on every single click - the
    reshuffling that kept coming back. */
 async function playPicked(i){
-  try{ FirstVisit.retire(); }catch(e){}
   if(i<0||i>=queue.length) return;
   /* Choosing a song by hand is a fresh start: it should not inherit an error streak
      from earlier attempts, otherwise a few blocked songs leave the player stuck. */
@@ -7001,7 +7131,9 @@ function paintTrack(track,searching){
     }
   }catch(e){}
   document.getElementById('trackName').textContent=trackTitle(track);
-  document.getElementById('trackArtist').textContent=trackArtist(track);
+  /* the reference pairs the artist with the place it comes from, on one line */
+  document.getElementById('trackArtist').textContent =
+    trackArtist(track) + (current && current.name && !track.w ? ' \u00b7 ' + current.name : '');
   document.getElementById('trackWhy').textContent=track.w||current.genres;
   setBar(searching?'Tuning\u2026':trackTitle(track),
     trackArtist(track)+' \u00b7 '+current.name+' \u00b7 '+MOODS[moodKey].n);
@@ -7095,7 +7227,7 @@ function renderQueue(){
   }
   el.scrollTop=scrollWas;      /* never yank the listener back to the top */
 }
-function next(manual){ if(manual===true){try{FirstVisit.retire();}catch(e){}} playErrors=0; lastErrIdx=-1; fire(playAt(qi+1,0,manual===true),'next'); }
+function next(manual){ playErrors=0; lastErrIdx=-1; fire(playAt(qi+1,0,manual===true),'next'); }
 function prev(){ playErrors=0; lastErrIdx=-1; fire(playAt(Math.max(0,qi-1),0,true),'prev'); }
 
 /* ============================ CONTROLS =================================== */
@@ -7121,22 +7253,21 @@ function offerTapToListen(){
 
 /* Update the small map tap hint: when music is playing show the current track,
    otherwise restore the default prompt. Called from playback/track update paths. */
+/* The label over the map is an affordance for someone who has not tuned yet. It used
+   to re-show itself on every track change - including repeating the now playing line
+   the stage already carries - which fought dismissHint and left it permanently up.
+   It now stays retired once the listener has tuned from anywhere. */
 function updateTapHint(){
   const h=document.getElementById('tapHint');
   if(!h) return;
-  try{
-    if(playing && queue && typeof qi==='number' && qi>=0 && queue[qi]){
-      const t=queue[qi];
-      h.innerHTML = '<span class="tapdot"></span>' + esc(trackTitle(t)) + ' \u2014 ' + esc(trackArtist(t));
-      h.style.display = 'flex';
-      h.classList.remove('gone');
-      return;
-    }
-  }catch(e){}
-  /* fallback to default affordance */
-  h.innerHTML = '<span class="tapdot"></span>Tap any state to start listening';
-  h.style.display = 'flex';
-  h.classList.remove('gone');
+  /* a class, not an inline display: the stylesheet owns layout modes without
+     exception, so nothing here can ever outrank it */
+  if(h.dataset.retired==='1'){
+    h.classList.add('gone','hide');
+    return;
+  }
+  h.innerHTML = '<span class="tapdot"></span>Tap any state to tune';
+  h.classList.remove('gone','hide');
 }
 
 /* Pulse the main play button when playback is available (station loaded, not playing) */
@@ -8111,6 +8242,9 @@ const PanelViews = (function(){
    The network slides over the stage rather than extending the page. Choosing a
    station closes the panel and hands the screen back to the radio, which is the
    whole point: you tune, then you listen. */
+/* The hint retires when the listener has shown they know there is somewhere else to
+   go - opening Tune In, or choosing a different station. Pressing play or skipping a
+   track is listening, not discovering, so it stays up for those. */
 /* ---- first visit ----------------------------------------------------------
    A new listener has no way of knowing there is anywhere else to go. One line under
    the controls says so, and it retires the moment they do anything that shows they
