@@ -1255,7 +1255,8 @@
   .knob:focus-visible{outline:2px solid var(--gold);outline-offset:9px;}
   .knob-ticks{position:absolute;inset:-16px;pointer-events:none;}
   .knob-ticks i{position:absolute;top:0;left:50%;width:1.5px;height:7px;margin-left:-.75px;
-    background:rgba(242,236,217,.30);transform-origin:50% 80px;border-radius:1px;transition:background .3s ease;}
+    background:rgba(242,236,217,.30);transform-origin:50% var(--tick-radius,80px);
+    border-radius:1px;transition:background .3s ease;}
   .knob-ticks i.lit{background:var(--gold);box-shadow:0 0 6px rgba(232,163,61,.9);}
   .knob-body{position:absolute;inset:0;border-radius:50%;
     background:
@@ -1602,7 +1603,7 @@
   .knob-pointer{top:-13px;}
 
   /* the ring is tighter, so the dial reads as one object */
-  .knob-ticks{inset:-12px;}
+  .knob-ticks{inset:-16px;}
   .knob-ticks i.major{height:11px;}
 
   /* clear of the ring, which reaches below the dial */
@@ -1668,6 +1669,22 @@
   .land-sub{color:rgba(232,163,61,.86);}
   /* the connecting word stays ivory, so "Travel ... music" reads as the phrase */
   .land-sub .thru{color:rgba(244,238,222,.82);}
+
+  /* ===================== THE DIAL RING ==================================
+     The ticks rotate about a fixed 80px origin, which is the centre of a 128px dial
+     plus the ring's own inset. On a phone the dial is 112px, so they were pivoting
+     about a point below their true centre and swinging outward - which is why the
+     scale crossed "TURN THE DIAL". The radius is now a variable that moves with the
+     dial, and the gap below allows for the ring's overhang rather than the dial's
+     edge. */
+  .knob{--tick-radius:80px;}   /* 128/2 + 16 inset */
+  .knob-ticks{inset:-12px;}
+  .knob-wrap{gap:34px;}
+
+  @media (max-width:560px){
+    .knob{width:112px;height:112px;--tick-radius:72px;}   /* 112/2 + 16 */
+    .knob-wrap{gap:30px;}
+  }
 </style>
 </head>
 <body>
@@ -3191,7 +3208,6 @@ const REGIONS = [
   {t:'Kirtan Padavali',a:'Bengali classical',m:['classical','devotional']},
   {t:'Sarod Buddhadev Das Gupta',a:'Buddhadev Das Gupta',m:['classical','chill']},
   {t:'Violin recital raga',a:'V G Jog',m:['classical','chill']},
-  {t:'Ei Raat Tomar Amar',a:'Hemanta Mukherjee',m:['retro','chill']},
   {t:'Ke Tumi Nandini',a:'Hemanta Mukherjee',m:['retro','chill']},
   {t:'Ami Chinigo Chini Tomare Hemanta',a:'Hemanta Mukherjee',m:['retro','chill']},
   {t:'Nir Choto Khoti Nei',a:'Bengali adhunik',m:['retro','chill']},
@@ -3285,7 +3301,6 @@ const REGIONS = [
   {t:'Aro Ekbar',a:'Fossils',m:['mymix','party']},
   {t:'Fossils best of',a:'Fossils',m:['mymix','party']},
   {t:'Rupam Islam song',a:'Rupam Islam',m:['mymix','chill'],g:1},
-  {t:'Ghum Ashe Na',a:'Cactus',m:['mymix','party']},
   {t:'Nil Rong Chhilo Bhishon Priyo',a:'Cactus',m:['mymix','chill']},
   {t:'Sweater',a:'Chandrabindoo',m:['mymix','chill']},
   {t:'Amar Bhindeshi Tara',a:'Chandrabindoo',m:['mymix','chill']},
@@ -4537,26 +4552,26 @@ seed:[
   {t:'Ei Meghla Dine Ekla',a:'Hemanta Mukherjee',m:['retro', 'chill', 'hits', 'mymix']},
   {t:'Sedin Dujane Dulechhinu Bone',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
   {t:'Runner',a:'Hemanta Mukherjee',m:['retro', 'folk', 'mymix']},
-  {t:'Ogo Nirupama',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
   {t:'Chirodini Tumi Je Amar',a:'Kishore Kumar',m:['retro', 'chill', 'hits', 'mymix']},
   {t:'Aaj Ei Dintake',a:'Kishore Kumar',m:['retro', 'hits', 'mymix']},
   {t:'Ei To Hethay Kunjo Chhayay',a:'Kishore Kumar',m:['retro', 'chill', 'mymix']},
-  {t:'Nayan Sarasij Kene',a:'Kishore Kumar',m:['retro', 'chill', 'mymix']},
   {t:'Jete Jete Pathe Holo Deri',a:'Kishore Kumar',m:['retro', 'chill', 'mymix']},
   {t:'Mone Pore Ruby Roy',a:'R.D. Burman',m:['retro', 'hits', 'mymix']},
   {t:'Ek Din Pakhi Ure',a:'R.D. Burman',m:['retro', 'chill', 'mymix']},
   {t:'Phire Esho Anuradha',a:'R.D. Burman',m:['retro', 'chill', 'mymix']},
   {t:'Tumi Je Amar',a:'Sandhya Mukherjee',m:['retro', 'chill', 'hits', 'mymix']},
-  {t:'Ghum Ghumaye Raat',a:'Sandhya Mukherjee',m:['retro', 'chill', 'mymix']},
-  {t:'Amar Swapno Tumi',a:'Shyamal Mitra',m:['retro', 'chill', 'mymix']},
   {t:'Jodi Kagoje Lekho Naam',a:'Manabendra Mukherjee',m:['retro', 'chill', 'mymix']},
   {t:'Se Amar Chhoto Bon',a:'Manabendra Mukherjee',m:['retro', 'chill', 'mymix']},
   {t:'Na Na Aaj Raate Ar Jatra Shunte Jabo Na',a:'Asha Bhosle',m:['retro', 'hits', 'mymix']},
-  {t:'Sundari Go Dukho Amar',a:'Asha Bhosle',m:['retro', 'chill', 'mymix']},
   {t:'Aaj Jyotsna Raate Sabai Gechhe Bone',a:'Kanika Bandyopadhyay',m:['classical', 'chill', 'mymix']},
   {t:'Ami Chini Go Chini Tomare',a:'Rabindra Sangeet Hemanta Mukherjee',m:['classical', 'chill', 'mymix']},
-  {t:'Sedin Dujane Lata Mangeshkar Bengali',a:'Lata Mangeshkar',m:['retro', 'chill', 'mymix']},
-  {t:'Nijhum Sandhyay',a:'Lata Mangeshkar',m:['retro', 'chill', 'mymix']}
+  {t:'Ei Raat Tomar Amar',a:'Hemanta Mukherjee',m:['retro','chill']},
+  {t:'Neer Chhoto Khoti Nei',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Ghum Ghum Chand Jhikimiki Tara',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Ami Je Jalsaghare',a:'Manna Dey',m:['retro', 'chill', 'hits', 'mymix']},
+  {t:'Ei Sundar Swarnali Sandhyay',a:'Manna Dey',m:['retro', 'chill', 'mymix']},
+  {t:'Shyamal Mitra Bengali adhunik gaan',a:'Shyamal Mitra',m:['retro', 'chill', 'mymix'],g:1},
+  {t:'Lata Mangeshkar Bengali adhunik gaan',a:'Lata Mangeshkar',m:['retro', 'chill', 'mymix'],g:1}
 ]},
 
 {id:'bengalirock',name:'Bengali Rock',desc:'PARA ROCK \u00b7 BANGLA \u00b7 UNDERGROUND',script:'\u09ac\u09be\u0982\u09b2\u09be',zone:'national',alias:['bangla rock','fossils','moheener ghoraguli','cactus','chandrabindoo'],freq:'102.9',lang:'Bengali',genres:'Moheener Ghoraguli to Fossils \u2014 Kolkata band culture',
@@ -4564,8 +4579,6 @@ seed:[
   {t:'Prithibita Naki Choto Hote Hote',a:'Moheener Ghoraguli',m:['modern', 'chill', 'hits', 'mymix']},
   {t:'Bhalobashi Jyotsnay',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
   {t:'Telephone',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
-  {t:'Ei Sudhu Gaan Gaye',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
-  {t:'Sristi Chhara Ei Ami',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
   {t:'Ekla Ghar',a:'Fossils',m:['party', 'modern', 'hits', 'mymix']},
   {t:'Bishakto Manush',a:'Fossils',m:['party', 'modern', 'mymix']},
   {t:'Hasnuhana',a:'Fossils',m:['chill', 'modern', 'mymix']},
@@ -4573,20 +4586,15 @@ seed:[
   {t:'Bicharpoti',a:'Fossils',m:['party', 'modern', 'mymix']},
   {t:'Aar Ekbar',a:'Fossils',m:['party', 'modern', 'mymix']},
   {t:'Neel Rong Chhilo Bhishon Priyo',a:'Fossils',m:['chill', 'modern', 'hits', 'mymix']},
-  {t:'Mission F',a:'Fossils',m:['party', 'modern', 'mymix']},
-  {t:'Shobai Chup',a:'Fossils',m:['party', 'modern', 'mymix']},
   {t:'Holud Pakhi',a:'Cactus',m:['modern', 'chill', 'hits', 'mymix']},
   {t:'Ghum Ashe Na',a:'Cactus',m:['modern', 'chill', 'mymix']},
-  {t:'Jhora Somoy',a:'Cactus',m:['modern', 'chill', 'mymix']},
   {t:'Cactus Bangla rock live',a:'Cactus',m:['party', 'modern', 'mymix'],g:1},
   {t:'Bhindeshi Tara',a:'Chandrabindoo',m:['chill', 'modern', 'hits', 'mymix']},
   {t:'Sweater',a:'Chandrabindoo',m:['chill', 'modern', 'mymix']},
-  {t:'Ei To Ami',a:'Chandrabindoo',m:['chill', 'modern', 'mymix']},
-  {t:'Juju',a:'Chandrabindoo',m:['modern', 'party', 'mymix']},
   {t:'Lakkhichhara Bangla band song',a:'Lakkhichhara',m:['modern', 'party', 'mymix'],g:1},
   {t:'Krosswindz Bengali rock',a:'Krosswindz',m:['modern', 'chill', 'mymix'],g:1},
   {t:'Bhoomi Bangla band folk rock',a:'Bhoomi',m:['folk', 'modern', 'mymix'],g:1},
-  {t:'Ekla Ghar Amar Desh',a:'Rupam Islam',m:['modern', 'chill', 'mymix']}
+  {t:'Rupam Islam solo Bangla rock',a:'Rupam Islam',m:['modern', 'party', 'mymix'],g:1}
 ]},
 
 {id:'bengalimodern',name:'Bengali Modern',desc:'CONTEMPORARY \u00b7 BANGLA \u00b7 KOLKATA',script:'\u09ac\u09be\u0982\u09b2\u09be',zone:'national',alias:['bangla modern','anupam roy','anjan dutt','arijit bengali'],freq:'103.2',lang:'Bengali',genres:'Anupam Roy, Anjan Dutt, Arijit, Shreya \u2014 the city now',
@@ -4594,14 +4602,11 @@ seed:[
   {t:'Amake Amar Moto Thakte Dao',a:'Anupam Roy',m:['modern', 'chill', 'hits', 'mymix']},
   {t:'Benche Thakar Gaan',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
   {t:'Ami Ki Tomay Khub Birokto Korchi',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
-  {t:'Ekhon Anek Raat',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
   {t:'Kolkata',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
   {t:'Tumi Jake Bhalobasho',a:'Iman Chakraborty',m:['modern', 'chill', 'hits', 'mymix']},
   {t:'Bojhena Se Bojhena',a:'Arijit Singh',m:['modern', 'hits', 'mymix']},
   {t:'Ki Kore Toke Bolbo',a:'Arijit Singh',m:['modern', 'chill', 'hits', 'mymix']},
-  {t:'Bariye Dao Tomar Haath',a:'Arijit Singh',m:['modern', 'chill', 'mymix']},
   {t:'Pherari Mon',a:'Shreya Ghoshal',m:['modern', 'chill', 'hits', 'mymix']},
-  {t:'Sedin Dekha Hoyechilo',a:'Shreya Ghoshal',m:['modern', 'chill', 'mymix']},
   {t:'Bela Bose',a:'Anjan Dutt',m:['modern', 'chill', 'hits', 'mymix']},
   {t:'Ranjana',a:'Anjan Dutt',m:['modern', 'chill', 'hits', 'mymix']},
   {t:'Mary Anne',a:'Anjan Dutt',m:['modern', 'chill', 'mymix']},
@@ -4609,16 +4614,10 @@ seed:[
   {t:'Nilanjana',a:'Nachiketa Chakraborty',m:['modern', 'chill', 'hits', 'mymix']},
   {t:'Brishti Tomake Dilam',a:'Nachiketa Chakraborty',m:['modern', 'chill', 'mymix']},
   {t:'Ei Besh Bhalo Achi',a:'Nachiketa Chakraborty',m:['modern', 'chill', 'mymix']},
-  {t:'Bhalobashi',a:'Somlata Acharyya Chowdhury',m:['modern', 'chill', 'mymix']},
-  {t:'Ei Sohor',a:'Lagnajita Chakraborty',m:['modern', 'chill', 'mymix']},
-  {t:'Boba Tunnel',a:'Anupam Roy',m:['modern', 'party', 'mymix']},
-  {t:'Tui Aamar Hoye Ja',a:'Jeet Gannguli',m:['modern', 'chill', 'hits', 'mymix']},
-  {t:'Ekbar Bol',a:'Jeet Gannguli',m:['modern', 'chill', 'mymix']},
   {t:'Prashmita Paul Bengali cover',a:'Prashmita Paul',m:['modern', 'chill', 'mymix'],g:1},
   {t:'Shantanu Moitra Bengali film score',a:'Shantanu Moitra',m:['modern', 'chill', 'mymix'],g:1},
-  {t:'Sokhi Bhabona Kahare Bole',a:'Iman Chakraborty',m:['classical', 'chill', 'mymix']},
-  {t:'Tomake Bujhi Na Priyo',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
-  {t:'Aami Ki Tomay Bhalobeshechi',a:'Rupam Islam',m:['modern', 'chill', 'hits', 'mymix']}
+  {t:'Aami Ki Tomay Bhalobeshechi',a:'Rupam Islam',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Jeet Gannguli Bengali film song',a:'Jeet Gannguli',m:['modern', 'chill', 'mymix'],g:1}
 ]},
 {id:'hindiclassics',name:'Hindi Classics',desc:'RAGA · GHARANA · DAWN',script:'शास्त्रीय',zone:'national',alias:[],freq:'103.6',
  lang:'Hindi, Urdu',genres:'Hindustani classical and raga-based Hindi classics',
