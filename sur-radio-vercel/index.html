@@ -57,7 +57,7 @@
   .shell{max-width:none;margin:0;overflow-x:clip;
     padding:0 calc(24px + env(safe-area-inset-right)) 132px calc(24px + env(safe-area-inset-left));}
 
-  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 10px;flex-wrap:wrap;}
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 0 10px;flex-wrap:nowrap;}
   .brand{display:flex;align-items:center;gap:11px;}
   .brand svg{width:32px;height:32px;flex:none;}
   .brand-name{font-family:'Fraunces',serif;font-weight:700;font-size:1.3rem;line-height:1;}
@@ -576,15 +576,128 @@
      tabs, bookmarks and a taskbar that gap is large enough that the hero overflowed
      and the play button ended up behind the bar. Sizing against the stage's own
      height fixes it at any window size. */
-  .stage-main{grid-row:2;min-height:0;display:flex;align-items:flex-start;
-    container-type:size;
-    justify-content:center;padding:0 calc(20px + env(safe-area-inset-right)) calc(var(--player-h) + 18px)
-    calc(20px + env(safe-area-inset-left));}
+  .stage-main{
+  grid-row:2;
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  container-type:size;
+
+  padding:
+    0
+    calc(24px + env(safe-area-inset-right))
+    0
+    calc(24px + env(safe-area-inset-left));
+
+  overflow:hidden;
+  overscroll-behavior:contain;
+}
   .stage-main .np{margin-top:auto;margin-bottom:auto;}
   /* the hero is no longer a card; it is the stage itself */
   .stage-main .np{background:none;border:none;box-shadow:none;padding:0;
     width:100%;max-width:520px;text-align:left;}
+/* ============================================================
+   SUR RADIO — DESKTOP RADIO STAGE
+   ============================================================ */
 
+@media (min-width:761px){
+
+  .shell{
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+    grid-template-rows:auto minmax(0,1fr) auto;
+  }
+
+  .stage-main{
+    grid-row:2;
+    min-height:0;
+    height:100%;
+    overflow:hidden;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:0 24px;
+  }
+
+  .stage-main .np{
+    width:min(720px,100%);
+    max-width:720px;
+    height:100%;
+    min-height:0;
+
+    margin:0;
+    padding:0;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+  }
+
+  /* Station identity */
+  .stage-main .station-head{
+    min-height:118px;
+    flex:0 0 auto;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* Vinyl is allowed to shrink based on the actual stage height */
+  .stage-main .deck{
+    flex:0 0 auto;
+    padding:4px 0 0;
+  }
+
+  .stage-main .platter{
+    width:min(340px,44cqh,38vw);
+    height:auto;
+    aspect-ratio:1;
+  }
+
+  .stage-main .deck-meta{
+    margin-top:8px;
+  }
+
+  /* Song information */
+  .stage-main .np-track{
+    margin:8px 0 2px;
+    min-height:2.6em;
+  }
+
+  .stage-main .np-artist{
+    margin:0 0 2px;
+  }
+
+  /* Main controls */
+  .stage-controls{
+    flex:0 0 auto;
+    margin-top:10px;
+    gap:18px;
+  }
+
+  .stage-controls .btn.play{
+    width:62px;
+    height:62px;
+  }
+
+  .stage-controls .btn.ghost{
+    width:46px;
+    height:46px;
+  }
+
+  .stage-main .tune-hint{
+    margin-top:8px;
+  }
+}
   /* the way in, always in the same place */
   .tune-btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;
     background:rgba(242,236,217,.06);border:1px solid rgba(242,236,217,.18);
@@ -643,7 +756,7 @@
   @media (max-width:760px){
     .shell > header{padding:14px calc(14px + env(safe-area-inset-right)) 8px
       calc(14px + env(safe-area-inset-left));}
-    .stage-main{padding:0 calc(16px + env(safe-area-inset-right)) 104px
+    .stage-main{padding:0 calc(16px + env(safe-area-inset-right))
       calc(16px + env(safe-area-inset-left));}
     /* a sheet from the bottom reads better than a side drawer on a phone */
     /* On a phone this is a full-screen overlay, not a sheet attached to the page.
@@ -1344,6 +1457,99 @@
     *{animation:none!important;}
     .bd-layer{transform:scale(1.06);}
   }
+  /* ============================================================
+   SUR RADIO — MOBILE STAGE
+   ============================================================ */
+
+@media (max-width:760px){
+
+  .shell{
+    height:100dvh;
+    min-height:0;
+    overflow:hidden;
+    grid-template-rows:auto minmax(0,1fr) auto;
+  }
+
+  .shell > header{
+    flex-wrap:nowrap;
+    min-width:0;
+  }
+
+  .brand{
+    min-width:0;
+    flex:1 1 auto;
+  }
+
+  .brand-name{
+    white-space:nowrap;
+  }
+
+  .tune-btn{
+    flex:0 0 auto;
+  }
+
+  .stage-main{
+    grid-row:2;
+    min-height:0;
+    height:100%;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+    padding:
+      0
+      calc(16px + env(safe-area-inset-right))
+      8px
+      calc(16px + env(safe-area-inset-left));
+
+    align-items:flex-start;
+  }
+
+  .stage-main .np{
+    width:100%;
+    max-width:520px;
+
+    min-height:100%;
+
+    margin:0 auto;
+    padding:0;
+
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+
+    text-align:center;
+  }
+
+  .stage-main .station-head{
+    min-height:134px;
+    flex:0 0 auto;
+  }
+
+  .stage-main .deck{
+    flex:0 0 auto;
+  }
+
+  .stage-main .platter{
+    width:min(240px,66vw,30cqh);
+  }
+
+  .stage-controls{
+    margin-top:12px;
+    gap:16px;
+  }
+
+  .stage-controls .btn.play{
+    width:58px;
+    height:58px;
+  }
+
+  .stage-controls .btn.ghost{
+    width:44px;
+    height:44px;
+  }
+}
 </style>
 </head>
 <body>
@@ -6587,7 +6793,6 @@ function syncPlayerHeight(){
       const pb = play ? Math.round(play.getBoundingClientRect().bottom) : null;
       const pt = play ? Math.round(play.getBoundingClientRect().top) : null;
       const barTop = bar ? Math.round(bar.getBoundingClientRect().top) : null;
-      console.log('SYNC_PLAYER_HEIGHT', {viewport: window.innerHeight, shell: shH, stage: stH, playerHeight: h, barTop, playTop: pt, playBottom: pb});
     }catch(e){console.warn('layout-debug',e)}
   }catch(e){}
 }
