@@ -723,10 +723,6 @@
      the stage scrolls on its own rather than the document */
   .stage-main{overflow-y:auto;overscroll-behavior:contain;}
 
-  @media (max-height:700px){
-    .station-head{min-height:104px;}
-  }
-
 
   @media (max-width:760px){
     .stage-controls{gap:16px;}
@@ -969,10 +965,11 @@
     background:radial-gradient(circle at 50% 40%, #2a2f52 0%, #14172f 70%);
     box-shadow:inset 0 0 0 1px rgba(242,236,217,.14), 0 2px 8px rgba(0,0,0,.4);
     position:relative;}
-  .bar-chip::after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;
+  .bar-chip::after{content:"";position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);width:6px;height:6px;border-radius:50%;
     background:rgba(242,236,217,.5);}
-  .bar-chip span{font-family:'IBM Plex Mono',monospace;font-size:.5rem;font-weight:600;
-    color:rgba(232,163,61,.9);position:absolute;bottom:4px;letter-spacing:.02em;}
+  /* the chip is a small record: spindle only. The frequency is already stated on the
+     stage, and repeating it here read as a stray number over the artwork. */
   .bar-times{flex:none;display:flex;align-items:baseline;gap:5px;
     font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);
     letter-spacing:.04em;}
@@ -1507,6 +1504,170 @@
     .searchbox input,
     details.settings input{font-size:16px !important;}
   }
+
+  /* ===================== LANDING: COLOUR & DIAL =========================
+     Midnight indigo base, saffron and gold accents, warm ivory type, with terracotta
+     kept as a quiet secondary. No tricolour, no flag motifs - the Indian character
+     comes from the palette and the shortwave language, not from national symbols. */
+  .land-scrim{background:
+    radial-gradient(820px 460px at 50% 30%, rgba(232,163,61,.16), transparent 66%),
+    radial-gradient(620px 420px at 82% 78%, rgba(200,80,67,.11), transparent 70%),
+    linear-gradient(180deg, rgba(11,13,32,.74) 0%, rgba(13,16,40,.82) 46%,
+                            rgba(9,11,26,.94) 100%);}
+  .land-kicker{color:rgba(232,163,61,.86);}
+  .land-sub{color:rgba(244,238,222,.72);}
+  .landing h1{color:#f6f0dd;}
+
+  /* ---- the dial reads as the way in ---- */
+  /* Ticks: a few longer marks every quarter, as a receiver has, so the ring reads as
+     a scale rather than decoration. */
+  .knob-ticks i{background:rgba(244,238,222,.34);}
+  .knob-ticks i.major{background:rgba(232,163,61,.85);height:13px;width:2.2px;}
+  .knob:hover .knob-ticks i.major{background:var(--gold);}
+
+  /* a pointer above the dial, so which way it is turned is unambiguous */
+  .knob-wrap{position:relative;}
+  .knob-pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+    width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;
+    border-top:10px solid var(--gold);opacity:.9;pointer-events:none;
+    filter:drop-shadow(0 2px 6px rgba(232,163,61,.5));}
+
+  /* the knob itself invites a turn */
+  .knob{cursor:grab;transition:transform .18s ease;}
+  .knob:hover{transform:scale(1.03);}
+  .knob:active,.knob.turning-live{cursor:grabbing;}
+  .knob:hover .knob-body{box-shadow:0 22px 46px -14px rgba(0,0,0,.9),
+    inset 0 1px 0 rgba(244,238,222,.34), 0 0 0 8px rgba(232,163,61,.16);}
+  .knob:focus-visible{outline:none;}
+  .knob:focus-visible .knob-body{box-shadow:0 0 0 3px var(--gold),
+    0 22px 46px -14px rgba(0,0,0,.9);}
+  .knob-notch{box-shadow:0 0 14px rgba(232,163,61,.85);}
+
+  /* ---- the one-time demonstration ----
+     The dial drifts across two or three neighbouring frequencies once, then settles
+     back exactly where it started. It shows the dial moves without choosing anything
+     on the listener's behalf, and it never repeats. */
+  .knob.demo .knob-body{animation:dialdemo 3.4s cubic-bezier(.45,0,.35,1) 1;}
+  @keyframes dialdemo{
+    0%   {transform:rotate(-142deg);}
+    22%  {transform:rotate(-128deg);}
+    46%  {transform:rotate(-150deg);}
+    70%  {transform:rotate(-134deg);}
+    100% {transform:rotate(-142deg);}
+  }
+  .land-freq{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.16em;
+    color:rgba(232,163,61,.9);margin:9px 0 0;min-height:1.2em;}
+
+  @media (prefers-reduced-motion:reduce){
+    .knob.demo .knob-body{animation:none;}
+  }
+
+  /* ---- TUNE IN: one glow, once ----
+     A first-time visitor needs to notice this exists. It pulses twice, shortly after
+     the stage appears, and never again - the class is removed when it finishes or the
+     moment the button is used. */
+  .tune-btn.invite{animation:tuneinvite 2.1s ease-out 2;}
+  @keyframes tuneinvite{
+    0%   {box-shadow:0 0 0 0 rgba(232,163,61,.34);border-color:rgba(232,163,61,.5);}
+    55%  {box-shadow:0 0 0 10px rgba(232,163,61,0);border-color:var(--gold);}
+    100% {box-shadow:0 0 0 0 rgba(232,163,61,0);border-color:rgba(232,163,61,.5);}
+  }
+  @media (prefers-reduced-motion:reduce){ .tune-btn.invite{animation:none;} }
+
+  /* ===================== LANDING FIT ====================================
+     align-items:center on a scrollable box clips whatever overflows the TOP and
+     makes it unreachable - the kicker went off the top and the station line off the
+     bottom once the frequency readout was added. Auto margins centre it when it fits
+     and keep it reachable when it does not, and the type and the dial now take the
+     viewport HEIGHT into account, not just its width. */
+  .landing{align-items:flex-start;}
+  .land-in{margin:auto 0;}
+
+  /* This block hid the kicker and the sub-line below 620px of CSS height. At browser
+     zoom an ordinary desktop falls under that, so both lines disappeared on screens
+     with room to spare. The hero scales down instead; only below 560px does one line
+     step aside, and that rule lives with the rest of the landing sizing. */
+
+  /* ===================== LANDING COMPOSITION (restore) ==================
+     Three things had broken the hero:
+     1. The pointer was positioned against .knob-wrap - the whole column, not the
+        dial - so it rendered up beside the headline.
+     2. The frequency readout sat under the tick ring, which extends past the dial,
+        so the two collided.
+     3. A "short window" rule hid the kicker and the sub-line below 620px of CSS
+        height. At browser zoom a normal desktop falls under that, so the lines
+        vanished on screens that had plenty of room. The stack scales down instead. */
+
+  /* the pointer sits on the dial it points at */
+  .knob-pointer{top:-13px;}
+
+  /* the ring is tighter, so the dial reads as one object */
+  .knob-ticks{inset:-12px;}
+  .knob-ticks i.major{height:11px;}
+
+  /* clear of the ring, which reaches below the dial */
+
+  /* the whole hero scales rather than shedding lines */
+  /* A max-height block used to shrink the whole hero here. Browser zoom shrinks the
+     CSS viewport, so an ordinary desktop fell under the threshold and got the small
+     layout. The landing is sized by width only; nothing keys off viewport height. */
+
+  /* the artwork behind the hero should be plainly there, not a dark screen */
+  .land-bg{opacity:1;}
+  .land-scrim{background:
+    radial-gradient(760px 420px at 50% 32%, rgba(232,163,61,.13), transparent 64%),
+    radial-gradient(620px 420px at 84% 80%, rgba(200,80,67,.10), transparent 70%),
+    linear-gradient(180deg, rgba(11,13,32,.58) 0%, rgba(13,16,40,.62) 44%,
+                            rgba(9,11,26,.82) 100%);}
+
+  /* phones get their own proportions, not the desktop's */
+
+  /* ===================== LANDING: BACK TO THE ORIGINAL STACK ============
+     The arrow above the dial and the frequency line under it were both additions of
+     mine, and both took vertical space the composition did not have to give. They
+     are gone. The tuning feedback they provided is kept, but without a layout cost:
+     the reading appears in the caption line that is already there, and the marker is
+     part of the dial's own scale rather than a separate element above it. */
+  .knob-pointer{display:none;}
+  .land-freq{display:none;}
+
+  /* the top of the scale is the mark you tune against */
+  .knob-ticks i.major:first-child{background:var(--gold);height:14px;width:2.6px;
+    box-shadow:0 0 8px rgba(232,163,61,.7);}
+
+  /* the caption carries the reading while the dial moves, then goes back to itself */
+  .knob-cap{transition:color .2s ease;min-height:1.1em;}
+  .knob-cap.reading{color:rgba(232,163,61,.92);letter-spacing:.16em;}
+
+  /* ===================== LANDING SIZING (as originally authored) ========
+     My height-based scaling is what collapsed this: browser zoom shrinks the CSS
+     viewport, so vh terms made the headline small, pulled the dial up into it and
+     hid the sub-line on a desktop with room to spare. The original sizes are
+     width-based, which zoom does not distort. The only addition is clearance for the
+     tick ring, which reaches past the dial and was overlapping the caption. */
+  .land-in h1{font-size:clamp(2.233rem,7.7vw,4.433rem);margin:0 0 22px;}
+  .land-in h1 .cap{color:inherit;}
+  .land-kicker{margin:0 0 14px;}
+  .land-sub{font-size:clamp(1.08rem,3vw,1.52rem);margin:0 0 26px;display:block;}
+  .knob{width:128px;height:128px;}
+  /* 18px was the original gap; the ring overhangs by 12px, so the caption needs more */
+  .knob-wrap{gap:30px;}
+  .land-station{margin:15px 0 0;}
+
+  /* phones keep their own proportions, by width */
+  @media (max-width:560px){
+    .land-in h1{font-size:clamp(1.75rem,8.6vw,2.4rem);margin-bottom:16px;}
+    .knob{width:112px;height:112px;}
+    .knob-wrap{gap:24px;}
+    .land-sub{margin-bottom:18px;}
+  }
+
+  /* "Wander." and "Travel through music" now carry the same saffron as the kicker,
+     so the three secondary lines read as one voice around the cream headline. */
+  .land-in h1 .cap{color:rgba(232,163,61,.86);}
+  .land-sub{color:rgba(232,163,61,.86);}
+  /* the connecting word stays ivory, so "Travel ... music" reads as the phrase */
+  .land-sub .thru{color:rgba(244,238,222,.82);}
 </style>
 </head>
 <body>
@@ -1521,7 +1682,7 @@
   <div class="land-in">
     <p class="land-kicker">The whole country, arranged by frequency</p>
     <h1>Listen. <span class="cap">Wander.</span> Discover.</h1>
-    <p class="land-sub">Travel through music</p>
+    <p class="land-sub">Travel <span class="thru">through</span> music</p>
 
     <div class="knob-wrap">
       <button class="knob" id="enterBtn" aria-label="Turn the dial to enter Sur Radio">
@@ -1552,7 +1713,7 @@
     <button class="tune-btn" id="tuneBtn" aria-expanded="false"
             aria-label="Tune in to another station">
       <span class="tune-dial"><i></i></span>
-      <span class="tune-txt">Tune In<small>Explore stations</small></span>
+      <span class="tune-txt">Tune In<small>Explore India</small></span>
     </button>
   </header>
 
@@ -1624,7 +1785,7 @@
     <span class="progtime" id="progTime">0:00</span>
   </div>
   <div class="bar-in">
-    <div class="bar-chip" id="barChip" aria-hidden="true"><span id="barChipFreq">&mdash;</span></div>
+    <div class="bar-chip" id="barChip" aria-hidden="true"></div>
     <div class="bar-info">
       <div class="t" id="barTitle">Sur Radio &mdash; off air</div>
       <div class="s" id="barSub">Select a state to begin</div>
@@ -4367,93 +4528,98 @@ const REGIONS = [
   {t:'Coke Studio India best of',a:'Coke Studio India',m:['mymix','folk']},
   {t:'Coke Studio Sufi classics',a:'Coke Studio',m:['mymix','devotional']},
   {t:'Coke Studio unplugged classics',a:'Coke Studio',m:['mymix','chill']}]},
-{id:'bengalirock',name:'Bengali Classics',desc:'PARA ROCK · BANGLA · ADDA',script:'বাংলা',zone:'national',alias:[],freq:'102.4',
- lang:'Bengali',genres:'Bangla band rock and the Bengali golden classics',
- seed:[
-  {t:'Ekla Ghar',a:'Fossils',m:['party','mymix','hits']},
-  {t:'Bishakto Manush',a:'Fossils',m:['party','mymix']},
-  {t:'Aro Ekbar',a:'Fossils',m:['party','mymix']},
-  {t:'Hasnuhana',a:'Fossils',m:['chill','mymix']},
-  {t:'Tomake Chai',a:'Fossils',m:['chill','mymix','hits']},
-  {t:'Fossils live concert',a:'Fossils',m:['party','mymix']},
-  {t:'Rupam Islam song',a:'Rupam Islam',m:['chill','mymix']},
-  {t:'Bicharpoti',a:'Fossils',m:['party','mymix']},
-  {t:'Holud Pakhi',a:'Cactus',m:['party','mymix','hits']},
-  {t:'Ghum Ashe Na',a:'Cactus',m:['party','mymix']},
-  {t:'Nil Rong Chhilo Bhishon Priyo',a:'Cactus',m:['chill','mymix']},
-  {t:'Cactus live',a:'Cactus',m:['party','mymix']},
-  {t:'Sweater',a:'Chandrabindoo',m:['chill','mymix']},
-  {t:'Amar Bhindeshi Tara',a:'Chandrabindoo',m:['chill','mymix']},
-  {t:'Hasi Pai',a:'Chandrabindoo',m:['chill','mymix']},
-  {t:'Prohor',a:'Lakkhichhara',m:['party','mymix']},
-  {t:'Kolkata',a:'Lakkhichhara',m:['party','mymix'],g:1},
-  {t:'Barandaye Roddur',a:'Bhoomi',m:['folk','mymix']},
-  {t:'Jatra',a:'Bhoomi',m:['folk','mymix']},
-  {t:'Prithibita Naki',a:'Mohiner Ghoraguli',m:['retro','mymix','hits']},
-  {t:'Bhalobashi Jyotsnay Hatte',a:'Mohiner Ghoraguli',m:['retro','mymix']},
-  {t:'Pakhi',a:'Mohiner Ghoraguli',m:['retro','mymix']},
-  {t:'Bondhu Chol',a:'Krosswindz',m:['chill','mymix']},
-  {t:'Brishti Tomake Dilam',a:'Nachiketa',m:['chill','mymix']},
-  {t:'Ei Sohor',a:'Anupam Roy',m:['chill','mymix']},
-  {t:'Amake Amar Moto Thakte Do',a:'Anupam Roy',m:['chill','mymix','hits']},
-  {t:'Bariye Dao Tomar Haat',a:'Anupam Roy',m:['chill','mymix']},
-  {t:'Ranjana',a:'Anjan Dutt',m:['chill','mymix']},
-  {t:'Bela Bose',a:'Anjan Dutt',m:['retro','mymix','hits']},
-  {t:'Bengali rock anthem',a:'Bengali band',m:['party','hits']},
-  {t:'Parashpathar band song',a:'Parashpathar',m:['chill','mymix']},
-  {t:'Insomnia Bengali band',a:'Insomnia',m:['party']},
-  {t:'Fakira band song',a:'Fakira',m:['folk','mymix']},
-  {t:'Dohar folk band',a:'Dohar',m:['folk','mymix']},
-  {t:'Bengali rock ballad',a:'Bengali band',m:['chill']},
-  {t:'Bengali rock devotional',a:'Bengali band',m:['devotional']},
-  {t:'Bengali band classical fusion',a:'Bengali band',m:['classical'],g:1},
-  {t:'Bengali rock rap fusion',a:'Bengali hip hop',m:['rap']},
-  {t:'Bengali band new song',a:'Bengali band',m:['modern','chill'],g:1},
-  {t:'Coffee House er Sei Addata',a:'Manna Dey',m:['retro','mymix','hits']},
-  {t:'Aami Je Jalsagharey',a:'Manna Dey',m:['retro','mymix']},
-  {t:'Jete Jete Pothe Holo Deri',a:'Manna Dey',m:['retro','mymix']},
-  {t:'Ei Raat Tomar Amar',a:'Hemanta Mukherjee',m:['retro','chill','mymix']},
-  {t:'Ei Poth Jodi Na Shesh Hoy',a:'Hemanta Sandhya Mukherjee',m:['retro','chill','mymix']},
-  {t:'Tumi Je Amar',a:'Sandhya Mukherjee',m:['retro','chill','mymix']},
-  {t:'Ke Prothom Kache Eshechi',a:'Shyamal Mitra',m:['retro','chill','mymix']},
-  {t:'Mone Pore Ruby Roy',a:'R D Burman',m:['retro','chill','mymix']},
-  {t:'Ekhono Sei Brishti',a:'Bengali adhunik',m:['retro','chill','mymix']},
-  {t:'Champa Chameli',a:'Bengali adhunik',m:['retro','folk','mymix']},
-  {t:'Karar Oi Louho Kopat',a:'Nazrul Geeti',m:['retro','folk','mymix']},
-  {t:'Sob Loke Koy',a:'Lalon Baul geeti',m:['folk','devotional','mymix']},
-  {t:'Milon Hobe Koto Dine',a:'Lalon Baul geeti',m:['folk','devotional','mymix']},
-  {t:'Bengali classic devotional',a:'Bengali devotional',m:['devotional','chill']},
-  {t:'Bengali classical raga',a:'Bengali classical',m:['classical','chill']},
-  {t:'Bengali classic dance number',a:'Bengali retro',m:['party','retro']},
-  {t:'Hoyto Tomari Jonyo',a:'Manna Dey',m:['retro','chill','mymix']},
-  {t:'Ami Niralay Boshe',a:'Manna Dey',m:['retro','chill','mymix']},
-  {t:'Jodi Kagoje Lekho Naam',a:'Manna Dey',m:['retro','chill','mymix']},
-  {t:'O Ken Eto Sundari Holo',a:'Manna Dey',m:['retro','chill','mymix']},
-  {t:'Poth Harabo Bolei Ebar',a:'Manna Dey',m:['retro','chill','mymix']},
-  {t:'Ei Kul Bhenge Oi Kul Gori',a:'Manna Dey',m:['retro','folk','mymix']},
-  {t:'Sabai To Sukhi Hote Chay',a:'Manna Dey',m:['retro','chill','mymix']},
-  {t:'Aami Shri Shri Bhajagobinda Bhattacharya',a:'Manna Dey',m:['retro','party','mymix']},
-  {t:'Amay Prosno Kore Nil Dhrubatara',a:'Hemanta Mukherjee',m:['retro','chill','mymix']},
-  {t:'Runner',a:'Hemanta Mukherjee',m:['retro','folk','mymix']},
-  {t:'Ranga Matir Poth',a:'Hemanta Mukherjee',m:['retro','folk','mymix']},
-  {t:'Surer Akashe Tumi Je Go Shuktara',a:'Hemanta Mukherjee',m:['retro','chill','mymix']},
-  {t:'Amar Gaaner Swaralipi',a:'Hemanta Mukherjee',m:['retro','chill','mymix']},
-  {t:'Olir Katha Shune Bakul Hase',a:'Hemanta Mukherjee',m:['retro','chill','mymix']},
-  {t:'Keno Dure Thako',a:'Hemanta Mukherjee',m:['retro','chill','mymix']},
-  {t:'Ke Tumi Nandini',a:'Hemanta Mukherjee',m:['retro','chill','mymix']},
-  {t:'Ekhon Onek Raat',a:'R D Burman',m:['retro','chill','mymix']},
-  {t:'Jete Dao Amay Dekona',a:'R D Burman',m:['retro','chill','mymix']},
-  {t:'Chokhe Chokhe Kotha Bolo',a:'R D Burman',m:['retro','party','mymix']},
-  {t:'R D Burman Bangla best of',a:'R D Burman',m:['retro','mymix']},
-  {t:'Chirodini Tumi Je Amar',a:'Kishore Kumar',m:['retro','chill','mymix','hits']},
-  {t:'Ami Je Ke Tomar',a:'Kishore Kumar',m:['retro','chill','mymix']},
-  {t:'Sei Raate Raat Chhilo Purnima',a:'Kishore Kumar',m:['retro','chill','mymix']},
-  {t:'Aashaar Srabon',a:'Kishore Kumar',m:['retro','chill','mymix']},
-  {t:'Ekdin Pakhi Ure Jabe',a:'Kishore Kumar',m:['retro','chill','mymix']},
-  {t:'Nayan Sarasi Keno',a:'Kishore Kumar',m:['retro','chill','mymix']},
-  {t:'Ek Palake Ektu Dekha',a:'Kishore Kumar',m:['retro','chill','mymix']},
-  {t:'Tare Ami Chokhe Dekhini',a:'Kishore Kumar',m:['retro','chill','mymix']},
-  {t:'Se Jeno Amar Pashe',a:'Kishore Kumar',m:['retro','chill','mymix']}]},
+{id:'bengaliclassics',name:'Bengali Classics',desc:'GOLDEN ERA \u00b7 BANGLA \u00b7 ADDA',script:'\u09ac\u09be\u0982\u09b2\u09be',zone:'national',alias:['bangla classics','hemanta','manna dey','kishore bengali'],freq:'102.4',lang:'Bengali',genres:'the golden era \u2014 Hemanta, Manna Dey, Kishore, Sandhya, R.D. Burman',
+seed:[
+  {t:'Coffee Houser Sei Addata',a:'Manna Dey',m:['retro', 'chill', 'hits', 'mymix']},
+  {t:'Ei Poth Jodi Na Sesh Hoy',a:'Hemanta Mukherjee',m:['retro', 'chill', 'hits', 'mymix']},
+  {t:'Ke Prothom Kache Esechi',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Amay Prashna Kore Neel Dhrubatara',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Ei Meghla Dine Ekla',a:'Hemanta Mukherjee',m:['retro', 'chill', 'hits', 'mymix']},
+  {t:'Sedin Dujane Dulechhinu Bone',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Runner',a:'Hemanta Mukherjee',m:['retro', 'folk', 'mymix']},
+  {t:'Ogo Nirupama',a:'Hemanta Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Chirodini Tumi Je Amar',a:'Kishore Kumar',m:['retro', 'chill', 'hits', 'mymix']},
+  {t:'Aaj Ei Dintake',a:'Kishore Kumar',m:['retro', 'hits', 'mymix']},
+  {t:'Ei To Hethay Kunjo Chhayay',a:'Kishore Kumar',m:['retro', 'chill', 'mymix']},
+  {t:'Nayan Sarasij Kene',a:'Kishore Kumar',m:['retro', 'chill', 'mymix']},
+  {t:'Jete Jete Pathe Holo Deri',a:'Kishore Kumar',m:['retro', 'chill', 'mymix']},
+  {t:'Mone Pore Ruby Roy',a:'R.D. Burman',m:['retro', 'hits', 'mymix']},
+  {t:'Ek Din Pakhi Ure',a:'R.D. Burman',m:['retro', 'chill', 'mymix']},
+  {t:'Phire Esho Anuradha',a:'R.D. Burman',m:['retro', 'chill', 'mymix']},
+  {t:'Tumi Je Amar',a:'Sandhya Mukherjee',m:['retro', 'chill', 'hits', 'mymix']},
+  {t:'Ghum Ghumaye Raat',a:'Sandhya Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Amar Swapno Tumi',a:'Shyamal Mitra',m:['retro', 'chill', 'mymix']},
+  {t:'Jodi Kagoje Lekho Naam',a:'Manabendra Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Se Amar Chhoto Bon',a:'Manabendra Mukherjee',m:['retro', 'chill', 'mymix']},
+  {t:'Na Na Aaj Raate Ar Jatra Shunte Jabo Na',a:'Asha Bhosle',m:['retro', 'hits', 'mymix']},
+  {t:'Sundari Go Dukho Amar',a:'Asha Bhosle',m:['retro', 'chill', 'mymix']},
+  {t:'Aaj Jyotsna Raate Sabai Gechhe Bone',a:'Kanika Bandyopadhyay',m:['classical', 'chill', 'mymix']},
+  {t:'Ami Chini Go Chini Tomare',a:'Rabindra Sangeet Hemanta Mukherjee',m:['classical', 'chill', 'mymix']},
+  {t:'Sedin Dujane Lata Mangeshkar Bengali',a:'Lata Mangeshkar',m:['retro', 'chill', 'mymix']},
+  {t:'Nijhum Sandhyay',a:'Lata Mangeshkar',m:['retro', 'chill', 'mymix']}
+]},
+
+{id:'bengalirock',name:'Bengali Rock',desc:'PARA ROCK \u00b7 BANGLA \u00b7 UNDERGROUND',script:'\u09ac\u09be\u0982\u09b2\u09be',zone:'national',alias:['bangla rock','fossils','moheener ghoraguli','cactus','chandrabindoo'],freq:'102.9',lang:'Bengali',genres:'Moheener Ghoraguli to Fossils \u2014 Kolkata band culture',
+seed:[
+  {t:'Prithibita Naki Choto Hote Hote',a:'Moheener Ghoraguli',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Bhalobashi Jyotsnay',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
+  {t:'Telephone',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
+  {t:'Ei Sudhu Gaan Gaye',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
+  {t:'Sristi Chhara Ei Ami',a:'Moheener Ghoraguli',m:['modern', 'chill', 'mymix']},
+  {t:'Ekla Ghar',a:'Fossils',m:['party', 'modern', 'hits', 'mymix']},
+  {t:'Bishakto Manush',a:'Fossils',m:['party', 'modern', 'mymix']},
+  {t:'Hasnuhana',a:'Fossils',m:['chill', 'modern', 'mymix']},
+  {t:'Tomake Chai',a:'Fossils',m:['chill', 'modern', 'hits', 'mymix']},
+  {t:'Bicharpoti',a:'Fossils',m:['party', 'modern', 'mymix']},
+  {t:'Aar Ekbar',a:'Fossils',m:['party', 'modern', 'mymix']},
+  {t:'Neel Rong Chhilo Bhishon Priyo',a:'Fossils',m:['chill', 'modern', 'hits', 'mymix']},
+  {t:'Mission F',a:'Fossils',m:['party', 'modern', 'mymix']},
+  {t:'Shobai Chup',a:'Fossils',m:['party', 'modern', 'mymix']},
+  {t:'Holud Pakhi',a:'Cactus',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Ghum Ashe Na',a:'Cactus',m:['modern', 'chill', 'mymix']},
+  {t:'Jhora Somoy',a:'Cactus',m:['modern', 'chill', 'mymix']},
+  {t:'Cactus Bangla rock live',a:'Cactus',m:['party', 'modern', 'mymix'],g:1},
+  {t:'Bhindeshi Tara',a:'Chandrabindoo',m:['chill', 'modern', 'hits', 'mymix']},
+  {t:'Sweater',a:'Chandrabindoo',m:['chill', 'modern', 'mymix']},
+  {t:'Ei To Ami',a:'Chandrabindoo',m:['chill', 'modern', 'mymix']},
+  {t:'Juju',a:'Chandrabindoo',m:['modern', 'party', 'mymix']},
+  {t:'Lakkhichhara Bangla band song',a:'Lakkhichhara',m:['modern', 'party', 'mymix'],g:1},
+  {t:'Krosswindz Bengali rock',a:'Krosswindz',m:['modern', 'chill', 'mymix'],g:1},
+  {t:'Bhoomi Bangla band folk rock',a:'Bhoomi',m:['folk', 'modern', 'mymix'],g:1},
+  {t:'Ekla Ghar Amar Desh',a:'Rupam Islam',m:['modern', 'chill', 'mymix']}
+]},
+
+{id:'bengalimodern',name:'Bengali Modern',desc:'CONTEMPORARY \u00b7 BANGLA \u00b7 KOLKATA',script:'\u09ac\u09be\u0982\u09b2\u09be',zone:'national',alias:['bangla modern','anupam roy','anjan dutt','arijit bengali'],freq:'103.2',lang:'Bengali',genres:'Anupam Roy, Anjan Dutt, Arijit, Shreya \u2014 the city now',
+seed:[
+  {t:'Amake Amar Moto Thakte Dao',a:'Anupam Roy',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Benche Thakar Gaan',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
+  {t:'Ami Ki Tomay Khub Birokto Korchi',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
+  {t:'Ekhon Anek Raat',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
+  {t:'Kolkata',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
+  {t:'Tumi Jake Bhalobasho',a:'Iman Chakraborty',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Bojhena Se Bojhena',a:'Arijit Singh',m:['modern', 'hits', 'mymix']},
+  {t:'Ki Kore Toke Bolbo',a:'Arijit Singh',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Bariye Dao Tomar Haath',a:'Arijit Singh',m:['modern', 'chill', 'mymix']},
+  {t:'Pherari Mon',a:'Shreya Ghoshal',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Sedin Dekha Hoyechilo',a:'Shreya Ghoshal',m:['modern', 'chill', 'mymix']},
+  {t:'Bela Bose',a:'Anjan Dutt',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Ranjana',a:'Anjan Dutt',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Mary Anne',a:'Anjan Dutt',m:['modern', 'chill', 'mymix']},
+  {t:'2441139',a:'Anjan Dutt',m:['modern', 'chill', 'mymix']},
+  {t:'Nilanjana',a:'Nachiketa Chakraborty',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Brishti Tomake Dilam',a:'Nachiketa Chakraborty',m:['modern', 'chill', 'mymix']},
+  {t:'Ei Besh Bhalo Achi',a:'Nachiketa Chakraborty',m:['modern', 'chill', 'mymix']},
+  {t:'Bhalobashi',a:'Somlata Acharyya Chowdhury',m:['modern', 'chill', 'mymix']},
+  {t:'Ei Sohor',a:'Lagnajita Chakraborty',m:['modern', 'chill', 'mymix']},
+  {t:'Boba Tunnel',a:'Anupam Roy',m:['modern', 'party', 'mymix']},
+  {t:'Tui Aamar Hoye Ja',a:'Jeet Gannguli',m:['modern', 'chill', 'hits', 'mymix']},
+  {t:'Ekbar Bol',a:'Jeet Gannguli',m:['modern', 'chill', 'mymix']},
+  {t:'Prashmita Paul Bengali cover',a:'Prashmita Paul',m:['modern', 'chill', 'mymix'],g:1},
+  {t:'Shantanu Moitra Bengali film score',a:'Shantanu Moitra',m:['modern', 'chill', 'mymix'],g:1},
+  {t:'Sokhi Bhabona Kahare Bole',a:'Iman Chakraborty',m:['classical', 'chill', 'mymix']},
+  {t:'Tomake Bujhi Na Priyo',a:'Anupam Roy',m:['modern', 'chill', 'mymix']},
+  {t:'Aami Ki Tomay Bhalobeshechi',a:'Rupam Islam',m:['modern', 'chill', 'hits', 'mymix']}
+]},
 {id:'hindiclassics',name:'Hindi Classics',desc:'RAGA · GHARANA · DAWN',script:'शास्त्रीय',zone:'national',alias:[],freq:'103.6',
  lang:'Hindi, Urdu',genres:'Hindustani classical and raga-based Hindi classics',
  seed:[
@@ -4630,7 +4796,11 @@ REGIONS.forEach(r=>{
 const VISUAL = {
   bollywood: {pal:['#7d1f4f','#e0457b','#ffd28a'], terrain:'city'},
   indie:     {pal:['#1d4f6b','#2f9fb5','#ffd98f'], terrain:'city'},
-  bengalirock:   {pal:['#7a2416','#c9452c','#f4c542'], terrain:'city'},
+  /* Three Bengali stations, three different rooms: the golden era in lamp-lit
+     terracotta, the band years cooler and darker, the city now in vermilion. */
+  bengaliclassics:{pal:['#8a3a12','#d4762b','#f7d98a'], terrain:'river'},
+  bengalirock:   {pal:['#5f2f4f','#a8457a','#f2c76b'], terrain:'city'},
+  bengalimodern: {pal:['#7a2416','#c9452c','#f4c542'], terrain:'city'},
   hindiclassics: {pal:['#6b4410','#c98a2b','#f7dfa0'], terrain:'temple'},
   englishclassics:{pal:['#1f3f8a','#4f7fd4','#f5d071'], terrain:'hills'},
   shaadi:        {pal:['#8a1339','#e0426b','#ffd166'], terrain:'city'},
@@ -4809,7 +4979,8 @@ function mReeds(c){          /* tribal flute + reed cluster */
 
 const MOTIF = {
   bollywood:['mic',0],  indie:['guitar',0],
-  bengalirock:['guitar',1], hindiclassics:['strings',1], englishclassics:['guitar',0],
+  bengaliclassics:['bowed',0], bengalirock:['guitar',1], bengalimodern:['strings',0],
+  hindiclassics:['strings',1], englishclassics:['guitar',0],
   shaadi:['drum',1], air:['mic',1],
   jk:['strings',1],       ladakh:['stupa',1],      hp:['drum',0],        punjab:['drum',1],
   haryana:['drum',0],     uttarakhand:['flute',0], delhi:['mic',0],      chandigarh:['mic',0],
@@ -5425,7 +5596,9 @@ async function loadMap(){
     shaadi:         {lon:69.6,lat:11.8,side:'right'},
     air:            {lon:78.9,lat:20.4,side:'right'}   /* centre of the country */,
     indie:          {lon:91.4,lat:15.2,side:'left'},
-    bengalirock:    {lon:90.4,lat:12.2,side:'left'},
+    bengaliclassics:{lon:90.4,lat:12.2,side:'left'},
+    bengalirock:   {lon:91.9,lat:9.6,side:'left'},
+    bengalimodern: {lon:89.0,lat:7.4,side:'left'},
     englishclassics:{lon:85.4,lat:9.0, side:'left'}
   };
   REGIONS.filter(r=>r.zone==='national').forEach(r=>{
@@ -6567,9 +6740,9 @@ window.onYouTubeIframeAPIReady=function(){
           /* whatever the bar was saying - tuning, or an invitation to tap - the
              transmission is now the truth, so put the track back */
           const t2=queue[qi];
-          if(t2 && current) setBar(trackTitle(t2),
-            trackArtist(t2)+' \u00b7 '+current.name+' \u00b7 '+
-            (MOODS[moodKey]?MOODS[moodKey].n:'Radio Mix'));
+          /* one rule for what the bar says, wherever it is set from: a search result
+             describes itself, a station track describes its station */
+          if(t2 && current) setBar(trackTitle(t2), barSubFor(t2));
           fire(prefetchAhead(),'prefetch ahead');
           playErrors=0; lastErrIdx=-1;        /* a good play clears the error streak */
         }
@@ -6804,8 +6977,7 @@ function renderStation(region){
   /* Explore India shows what you are currently tuned to, above the map */
   const md=document.getElementById('stationMode');
   if(md) md.textContent=(MOODS[moodKey]?MOODS[moodKey].n:'Radio Mix');
-  const chip=document.getElementById('barChipFreq');
-  if(chip) chip.textContent=region.freq||'--';
+
   const en=document.getElementById('exploreNow');
   if(en) en.textContent=(region.freq||'--')+' MHz \u00b7 '+region.name.toUpperCase();
 }
@@ -7135,8 +7307,57 @@ function setSessionState(){
 function trackTitle(t){ return t.realT||t.t; }
 function trackArtist(t){ return t.realA||t.a; }
 
+/* ---- station state and playback state are not the same thing ----------------
+   currentStation (the module's `current`) is what the listener tuned to.
+   playingTrack is what is actually coming out of the speaker.
+   Normally they agree and the header describes the station. A track picked from
+   YouTube search does not belong to that station, so it describes itself instead -
+   and the station returns intact as soon as the queue moves on or a station is
+   tuned. Nothing about the station's own state is overwritten. */
+let playingTrack = null;
+
+/* What the player bar says under the title. Stated once so every place that sets the
+   bar agrees - the tune, the track paint, and the moment playback actually starts. */
+function barSubFor(track){
+  if(track && track.src==='youtube'){
+    const who=trackArtist(track);
+    return (who? who+' \u00b7 ' : '')+'YouTube \u00b7 Discovery';
+  }
+  return trackArtist(track)+' \u00b7 '+(current?current.name:'')+
+         ' \u00b7 '+(MOODS[moodKey]?MOODS[moodKey].n:'Radio Mix');
+}
+
+function renderPlayingIdentity(track){
+  playingTrack = track || null;
+  const fromSearch = !!(track && track.src === 'youtube');
+
+  if(!fromSearch){
+    if(current) renderStation(current);   /* the station describes itself again */
+    return;
+  }
+
+  const name = document.getElementById('stationName');
+  const script = document.getElementById('stationScript');
+  const freq = document.getElementById('freq');
+  const mode = document.getElementById('stationMode');
+  const place = document.getElementById('place');
+
+  if(name)   name.textContent = 'YouTube';
+  if(script) script.textContent = '';       /* no local script for a search result */
+  if(freq)   freq.textContent = '\u2014';   /* it sits on no frequency */
+  if(mode)   mode.textContent = 'Discovery';
+  if(place){
+    /* the channel if we have one, otherwise say plainly where it came from */
+    const who = trackArtist(track);
+    place.textContent = who ? (who + ' \u00b7 YouTube \u00b7 Discovery')
+                            : 'YouTube \u00b7 Discovery';
+  }
+}
+
 function paintTrack(track,searching){
   if(!searching) updateMediaSession(track);
+  /* whose identity belongs on screen: the station, or this track */
+  try{ renderPlayingIdentity(track); }catch(e){}
   /* the place stays; the weather changes with the song */
   try{ applyVisual(visualFor(current,moodKey,track)); }catch(e){}
   try{ markPlayingMoods(track); }catch(e){}
@@ -7154,8 +7375,7 @@ function paintTrack(track,searching){
   document.getElementById('trackArtist').textContent =
     trackArtist(track) + (current && current.name && !track.w ? ' \u00b7 ' + current.name : '');
   document.getElementById('trackWhy').textContent=track.w||current.genres;
-  setBar(searching?'Tuning\u2026':trackTitle(track),
-    trackArtist(track)+' \u00b7 '+current.name+' \u00b7 '+MOODS[moodKey].n);
+  setBar(searching?'Tuning\u2026':trackTitle(track), barSubFor(track));
   try{ updateTapHint(); }catch(e){}
 }
 let uidSeq=0;
@@ -7593,7 +7813,11 @@ function pickYouTube(r){
   closeSearch(true);
   const region=current||byId('bollywood')||REGIONS[0];
   toast('Playing '+r.title);
-  fire(tune(region.id,{first:{t:r.title,a:r.author,w:'Chosen from YouTube search',vid:r.id}}),'youtube pick');
+  /* src marks where this track came from. The station is still tuned underneath - the
+     listener returns to it when the song ends - but the player must not describe a
+     YouTube result using that station's frequency, genre, region or mood. */
+  fire(tune(region.id,{first:{t:r.title,a:r.author,w:'Chosen from YouTube search',
+    vid:r.id, src:'youtube'}}),'youtube pick');
 }
 
 function closeSearch(keepText){
@@ -7762,8 +7986,12 @@ function landingBackdropSVG(){ return landingFarSVG()+landingFriezeSVG(); }
   const el=document.getElementById('knobTicks');
   if(!el) return;
   /* a ring of dial ticks, so the knob reads as a tuner and not a volume dial */
+  /* every fourth mark is longer and gold, the way a receiver's scale is graduated */
   let h='';
-  for(let i=0;i<32;i++) h+='<i style="transform:rotate('+(i*11.25)+'deg)"></i>';
+  for(let i=0;i<32;i++){
+    const major = i%4===0;
+    h+='<i class="'+(major?'major':'')+'" style="transform:rotate('+(i*11.25)+'deg)"></i>';
+  }
   el.innerHTML=h;
 })();
 
@@ -7986,7 +8214,8 @@ const REGION_CRAFT = {
   telangana:'ikat', ap:'ikat', gujarat:'ikat',
   ladakh:'thangka', sikkim:'thangka', jk:'thangka', hp:'thangka', uttarakhand:'thangka',
   /* the curated stations borrow the language of the music rather than a place */
-  bollywood:'miniature', indie:'none', bengalirock:'alpona', hindiclassics:'miniature',
+  bollywood:'miniature', indie:'none', bengaliclassics:'alpona', bengalirock:'alpona', bengalimodern:'alpona',
+  hindiclassics:'miniature',
   englishclassics:'none', shaadi:'phulkari', air:'miniature'
 };
 
@@ -8341,7 +8570,18 @@ const TunePanel = (function(){
       if(first&&first.focus) setTimeout(()=>{try{first.focus();}catch(e){}},430);
     }
   }
-  if(btn)   btn.addEventListener('click',function(){ buzz(TAP); try{FirstVisit.retire();}catch(e){} set(!open); });
+  if(btn){
+    btn.addEventListener('click',function(){
+      btn.classList.remove('invite');
+      buzz(TAP); try{FirstVisit.retire();}catch(e){} set(!open);
+    });
+    /* the single invitation, only for someone who has not tuned before */
+    setTimeout(function(){
+      try{ if(FirstVisit.isRetired()) return; }catch(e){}
+      btn.classList.add('invite');
+      setTimeout(function(){ btn.classList.remove('invite'); },4600);
+    },2600);
+  }
   if(close) close.addEventListener('click',function(){ buzz(TAP); set(false); });
   if(veil)  veil.addEventListener('click',function(){ set(false); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&open) set(false); });
@@ -8352,6 +8592,52 @@ const TunePanel = (function(){
    A knob you can only click is a button wearing a costume. This tracks the angle
    of the pointer around the knob's centre, turns it with the finger, and enters
    once it has been rotated far enough. A plain tap still works. */
+
+/* ---- a single demonstration ------------------------------------------------
+   A dial that never moves does not look like a dial. This drifts it across two or
+   three neighbouring frequencies once, a moment after the page settles, and returns
+   it exactly where it began - so it teaches the gesture without choosing a station
+   for the listener. It runs once per visit, stops the instant they touch anything,
+   and does not run at all for someone who has asked for reduced motion. */
+(function demonstrateDial(){
+  const knob=document.getElementById('enterBtn');
+  const read=document.querySelector('.knob-cap');
+  const readText=read?read.textContent:'';
+  if(!knob) return;
+  let stopped=false;
+  try{
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  }catch(e){}
+
+  function stop(){
+    if(stopped) return;
+    stopped=true;
+    knob.classList.remove('demo');
+    if(read){ read.classList.remove('reading'); read.textContent=readText; }
+  }
+  ['pointerdown','keydown','wheel','touchstart'].forEach(function(ev){
+    window.addEventListener(ev,stop,{once:true,passive:true});
+  });
+
+  setTimeout(function(){
+    if(stopped||entered) return;
+    knob.classList.add('demo');
+    /* the readout follows the sweep, so the movement plainly means frequency */
+    const steps=[['88.0',0],['89.4',760],['86.9',1580],['88.6',2400],['88.0',3300]];
+    steps.forEach(function(st){
+      setTimeout(function(){
+        if(stopped||entered||!read) return;
+        read.classList.add('reading');
+        read.textContent=st[0]+' MHz';
+      },st[1]);
+    });
+    setTimeout(function(){
+      knob.classList.remove('demo');
+      if(read){ read.classList.remove('reading'); read.textContent=readText; }
+    },3500);
+  },1500);
+})();
+
 (function makeKnobTurnable(){
   const knob=document.getElementById('enterBtn');
   if(!knob) return;
@@ -8370,6 +8656,20 @@ const TunePanel = (function(){
   if(!body) return;               /* no visual to rotate; tap still enters */
 
   const START=-142, TARGET=158, SPAN=TARGET-START;   // matches the CSS rest/entered angles
+  /* The caption already occupies a line, so the reading borrows it rather than
+     adding one. It returns to "Turn the dial" the moment the dial is let go. */
+  const cap=document.querySelector('.knob-cap');
+  const CAP_TEXT=cap?cap.textContent:'Turn the dial';
+  function showFreq(frac){
+    if(!cap) return;
+    cap.classList.add('reading');
+    cap.textContent=(87.5+frac*20).toFixed(1)+' MHz';
+  }
+  function restoreCap(){
+    if(!cap) return;
+    cap.classList.remove('reading');
+    cap.textContent=CAP_TEXT;
+  }
   let dragging=false, lastAngle=0, turned=0, moved=false;
 
   const angleOf=(e)=>{
@@ -8383,11 +8683,13 @@ const TunePanel = (function(){
       const lit=Math.round((deg/SPAN)*ticks.children.length);
       for(let i=0;i<ticks.children.length;i++) ticks.children[i].classList.toggle('lit',i<lit);
     }
+    showFreq(deg/SPAN);          /* the dial reads out as it turns */
   };
 
   knob.addEventListener('pointerdown',function(e){
     if(entered) return;
     dragging=true; moved=false; turned=0;
+    knob.classList.remove('demo');   /* the listener has taken over */
     lastAngle=angleOf(e);
     knob.classList.add('turning-live');
     if(knob.setPointerCapture) knob.setPointerCapture(e.pointerId);
@@ -8406,6 +8708,7 @@ const TunePanel = (function(){
   });
   function release(){
     if(!dragging) return;
+    restoreCap();
     dragging=false;
     knob.classList.remove('turning-live');
     if(entered) return;
