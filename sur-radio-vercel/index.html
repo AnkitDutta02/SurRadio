@@ -1693,6 +1693,57 @@
   @media (max-width:560px){
     .land-sub{margin-bottom:30px;}
   }
+
+  /* ===================== SHORT PHONES ==================================
+     Two separate faults, both visible on a 360x740 Android with the URL bar showing:
+
+     1. In a flex column every item may shrink by default. The title and the artist
+        had no flex of their own, so on a short screen their BOXES shrank below the
+        text inside them and the words spilled out underneath the transport. That is
+        the overlap in the screenshot - not a positioning error.
+
+     2. The record was sized with vh. On Android vh is the LARGE viewport, measured
+        as though the URL bar were hidden, so the disc was sized for ~112px of space
+        the page did not actually have. svh is the small viewport - the one you get
+        while the bar is visible - which is the honest figure to size against.
+
+     The record is now the only part of the column that gives way, and it gives way
+     by having its container capped rather than by being squeezed, so it stays a
+     circle. Desktop is untouched: this whole block is below the two-column
+     breakpoint. */
+  @media (max-width:1099px){
+    /* the words hold their size, always */
+    .station-head,.np-track,.np-artist,.stage-controls,.tune-hint,.onair-row{
+      flex:0 0 auto;}
+
+    /* the record is what yields, and only down to a legible minimum */
+    /* flex:0 1 auto with min-height:0 makes the deck's height come from its content,
+       and its content is the record measuring 100% of the deck - a circular
+       definition that resolves to nothing, which is why the disc disappeared. It now
+       GROWS into the space the words leave, capped above and floored below, so it
+       always has a real height for the record to measure. */
+    .deck{flex:1 1 auto;min-height:110px;width:100%;
+      max-height:min(72vw, 30svh, 240px);}
+    .platter{height:100%;width:auto;max-width:none;aspect-ratio:1;margin:0 auto;}
+  }
+
+  @media (max-width:760px){
+    .deck{max-height:min(74vw, 28svh, 240px);}
+  }
+  @media (max-width:560px){
+    .deck{max-height:min(72vw, 26svh, 220px);}
+  }
+  /* a genuinely short phone: the disc steps back further so the song, the artist and
+     the transport are all still whole */
+  @media (max-width:560px) and (max-height:780px){
+    .deck{max-height:min(60vw, 22svh, 180px);}
+    #npLive{gap:clamp(5px,1.2vh,12px);}
+  }
+
+  @supports not (height:100svh){
+    /* older engines: fall back to the dynamic viewport, then to vh */
+    @media (max-width:1099px){ .deck{max-height:min(72vw, 28dvh, 240px);} }
+  }
 </style>
 </head>
 <body>
